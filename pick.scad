@@ -1,5 +1,5 @@
 /*
-	 Guitar Pick.
+    Guitar Pick.
 
     Copyright 2014, Peter and Tim Molteno. tim@molteno.net
   
@@ -32,7 +32,7 @@ difference() {
   pick();
 
   // Now decorate the pick with some features.
-  translate([pick_length,0,17]) sphere(r=17, center=true, $fn=101);
+  translate([pick_length,0,17]) sphere(r=17, center=true, $fn=51);
   translate([pick_length,0,]) cylinder(r=4, h=10, center=true, $fn=25);
   translate([pick_length,0,]) {
     for (angle = [0:60:300]) {
