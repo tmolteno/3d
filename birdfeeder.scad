@@ -20,7 +20,7 @@ $fn=12;
 
 hopper_height = 120;
 wall_thickness = 3; 
-base_diameter = 150;
+base_diameter = 145;
 
 module base() {
   difference() {
