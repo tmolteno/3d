@@ -1,11 +1,14 @@
-3d
+3d Models
 ==
 
 Various OpenSCAD designs that can be printed on a 3D printer.
 
 To print you should compile them using the OpenSCAD program.
 
-License
+The Makefile will build all the models, and
+generate .stl files.
+
+##License
 
 These designs are free software: you can redistribute them
 and/or modify them under the terms of the GNU General Public 
