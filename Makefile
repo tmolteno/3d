@@ -1,4 +1,4 @@
-all: birdfeeder.stl pick.stl pick2.stl 
+all: birdfeeder.stl guitar_pick.stl guitar_pick2.stl 
 
 .SECONDARY:
 
