@@ -42,9 +42,17 @@ wingspan = 140;
 tail_length = 60;
 nose_length = 30;
 
-module wing() {
-  translate([0,0,0]) rotate([90,0,0]) linear_extrude(height=wingspan, center=true) flat_foil(25);
+module wing_left() {
+  rotate([90,0,0]) hull() {
+     translate([25,0,wingspan/2]) linear_extrude(height=1, center=true) flat_foil(25);
+     linear_extrude(height=1, center=true) flat_foil(45);
+    }
 }
+
+module wing_right() {
+  mirror([0,1,0]) wing_left();
+}
+
 
 module fuselage() {
   hull() {
@@ -55,8 +63,8 @@ module fuselage() {
 
 module stabilizer_right() {
   hull() {
-    cube([20,3,1.5]);
-    translate([15, 20, 0]) cylinder(r=6, h=0.8);
+    cube([20,2,1.5]);
+    translate([15, 20, 0]) cylinder(r=6, h=0.6);
   }
 }
 
@@ -66,12 +74,13 @@ module stabilizer_left() {
 
 module stabilizer_vert() {
   hull() {
-    cube([20,2,1]);
+    translate([0, -1, 1]) cube([20,2,1]);
     translate([15, 0, 15]) rotate([90,0,0]) cylinder(r=4, h=0.8);
   }
 }
 
-wing();
+wing_right();
+wing_left();
 fuselage();
 translate([tail_length,0,0]) stabilizer_right();
 translate([tail_length,0,0]) stabilizer_left();
