@@ -30,25 +30,32 @@ rotate([0,0,-2]) scale([s,s,s]) polygon(points=[
  [0.975528, 0.000494], [0.986185, 0.000286], [0.993844, 0.000130], [0.998459, 0.000033],
  [1.000000, 0.000000]]);
 }
-		
-wingspan = 130;
+
+module flat_foil(s) {
+  difference() {
+    translate([0, 0.5]) airfoil(s);
+    translate([0,-2]) square([s,2]);
+  }
+}
+	
+wingspan = 140;
 tail_length = 60;
 nose_length = 30;
 
 module wing() {
-  translate([0,0,1]) rotate([90,0,0]) linear_extrude(height=wingspan, center=true) airfoil(25);
+  translate([0,0,0]) rotate([90,0,0]) linear_extrude(height=wingspan, center=true) flat_foil(25);
 }
 
 module fuselage() {
   hull() {
-    translate([-nose_length,0,5]) sphere(r=5);
-    translate([tail_length+20,0,2]) sphere(r=2);
+    translate([-nose_length,0,5]) sphere(r=5, $fn=21);
+    translate([tail_length+20,0,2]) sphere(r=2, $fn=21);
   }
 }
 
 module stabilizer_right() {
   hull() {
-    cube([20,3,2]);
+    cube([20,3,1.5]);
     translate([15, 20, 0]) cylinder(r=6, h=0.8);
   }
 }
