@@ -1,6 +1,8 @@
 /*
     Openscad Birdfeeder.
 
+    This birdfeeder can be hung in a tree, and filled with seeds.
+
     Copyright (C) 2014. Tim Molteno, tim@molteno.net
   
     This program is free software: you can redistribute it and/or modify
@@ -16,11 +18,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-$fn=12;
+$fn=32;
 
 hopper_height = 120;
 wall_thickness = 3; 
 base_diameter = 145;
+cap_height = 20;
 
 module base() {
   difference() {
@@ -36,27 +39,27 @@ module base() {
 
 module hopper() {
   union() { 
-  difference() {
-    cylinder(r=25, h=hopper_height);
-    translate([0,0,0]) cylinder(r=25-wall_thickness, h=hopper_height+5);
-    translate([0,0,5]) rotate([90,0,0]) cylinder(r=12, h=100, center=true);
-    translate([0,0,5]) rotate([0,90,0]) cylinder(r=12, h=100, center=true);
-    translate([0,0,hopper_height-15]) rotate([90,0,0]) cylinder(r=12, h=100);
+    difference() {
+      cylinder(r=25, h=hopper_height);
+      translate([0,0,0]) cylinder(r=25-wall_thickness, h=hopper_height+5);
+      translate([0,0,5]) rotate([90,0,0]) cylinder(r=12, h=100, center=true);
+      translate([0,0,5]) rotate([0,90,0]) cylinder(r=12, h=100, center=true);
+      translate([0,0,hopper_height-15]) rotate([90,0,0]) cylinder(r=12, h=100);
+    }
+    cylinder(r1=28, r2=25.5, h=5); // base plate
   }
-  cylinder(r=25, h=5); // base plate
-}
 }
 
 module cap() {
   translate([0,0,hopper_height]) {
     difference() {
-      translate([0,0,4]) cylinder(r1=25, r2=5, h=30);
-      cylinder(r1=25-wall_thickness, r2=1, h=30);
+      translate([0,0,4]) cylinder(r1=25, r2=5, h=cap_height);
+      cylinder(r1=25-wall_thickness, r2=1, h=cap_height);
     }
-    translate([0,0,33]) {
+    translate([0,0,cap_height+3]) {
       difference() {
         cylinder(r=5, h=15);
-        translate([0,0,10]) rotate([90,0,0]) cylinder(r=3, h=30, center=true); 
+        translate([0,0,10]) rotate([90,0,0]) cylinder(r=3, h=cap_height, center=true); 
       }
     }
   }
