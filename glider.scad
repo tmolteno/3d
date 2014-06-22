@@ -7,7 +7,7 @@
 /* NACA 5412 Airfoil M=5.0% P=40.0% T=12.0% */
 
 module airfoil(s) {
- rotate([0,0,0]) scale([s,s,s]) polygon(points=[
+rotate([0,0,-2]) scale([s,s,s]) polygon(points=[
  [1.000000,-0.000000], [0.998459, 0.000480], [0.993844, 0.001912], [0.986185, 0.004266],
  [0.975528, 0.007497], [0.961940, 0.011541], [0.945503, 0.016321], [0.926320, 0.021747],
  [0.904508, 0.027720], [0.880203, 0.034131], [0.853553, 0.040868], [0.824724, 0.047815],
@@ -32,21 +32,40 @@ module airfoil(s) {
 }
 		
 wingspan = 130;
+tail_length = 60;
+nose_length = 30;
 
 module wing() {
-  rotate([90,0,0]) linear_extrude(height=wingspan, scale=[2,2], center=true) airfoil(35);
+  translate([0,0,1]) rotate([90,0,0]) linear_extrude(height=wingspan, center=true) airfoil(25);
 }
 
 module fuselage() {
-  
+  hull() {
+    translate([-nose_length,0,5]) sphere(r=5);
+    translate([tail_length+20,0,2]) sphere(r=2);
+  }
 }
 
-module stabilizer() {
+module stabilizer_right() {
   hull() {
-    cube([20,5,2]);
-    translate([15, 20, 0]) cylinder(r=6, h=1);
+    cube([20,3,2]);
+    translate([15, 20, 0]) cylinder(r=6, h=0.8);
+  }
+}
+
+module stabilizer_left() {
+  mirror([0,1,0]) stabilizer_right();
+}
+
+module stabilizer_vert() {
+  hull() {
+    cube([20,2,1]);
+    translate([15, 0, 15]) rotate([90,0,0]) cylinder(r=4, h=0.8);
   }
 }
 
 wing();
-translate([60,0,0]) stabilizer();
+fuselage();
+translate([tail_length,0,0]) stabilizer_right();
+translate([tail_length,0,0]) stabilizer_left();
+translate([tail_length,0,0]) stabilizer_vert();
