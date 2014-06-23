@@ -1,7 +1,21 @@
 /*
 	Openscad glider.
 
+    Copyright (C) Tim Molteno, tim@molteno.net
 
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* NACA 5412 Airfoil M=5.0% P=40.0% T=12.0% */
@@ -31,6 +45,7 @@ rotate([0,0,-2]) scale([s,s,s]) polygon(points=[
  [1.000000, 0.000000]]);
 }
 
+/* This is a foil with a flat bottom for easy printing */
 module flat_foil(s) {
   difference() {
     translate([0, 0.5]) airfoil(s);
@@ -38,16 +53,27 @@ module flat_foil(s) {
   }
 }
 	
-wingspan = 140;
-tail_length = 60;
-nose_length = 30;
+wingspan = 150;
+tail_length = 80;
+nose_length = 40;
+
+wing_chord = 35;
+wing_z = 4;
 
 module wing_left() {
   rotate([90,0,0]) hull() {
-     translate([25,0,wingspan/2]) linear_extrude(height=1, center=true) flat_foil(25);
-     linear_extrude(height=1, center=true) flat_foil(45);
+     translate([35,0,wingspan/2]) linear_extrude(height=0.1, center=true) flat_foil(20);
+     linear_extrude(height=0.11, center=true) flat_foil(wing_chord);
     }
 }
+
+module wing_center() {
+  rotate([90,0,0]) hull() {
+     translate([0,0,wingspan/2]) linear_extrude(height=1, center=true) flat_foil(wing_chord);
+     translate([0,0,-wingspan/2]) linear_extrude(height=1, center=true) flat_foil(wing_chord);
+    }
+}
+
 
 module wing_right() {
   mirror([0,1,0]) wing_left();
@@ -55,9 +81,13 @@ module wing_right() {
 
 
 module fuselage() {
-  hull() {
-    translate([-nose_length,0,5]) sphere(r=5, $fn=21);
-    translate([tail_length+20,0,2]) sphere(r=2, $fn=21);
+  difference() {
+    hull() {
+      translate([-nose_length,0,5]) rotate([0,90,0]) cylinder(r=6, h=5, $fn=21);
+      translate([tail_length+20,0,2]) sphere(r=3, $fn=21);
+    }
+    translate([0,0,wing_z]) wing_center();
+    translate([tail_length,0,0]) stabilizer_vert();
   }
 }
 
@@ -79,9 +109,21 @@ module stabilizer_vert() {
   }
 }
 
-wing_right();
-wing_left();
-fuselage();
-translate([tail_length,0,0]) stabilizer_right();
-translate([tail_length,0,0]) stabilizer_left();
-translate([tail_length,0,0]) stabilizer_vert();
+/* This is the whole plane, as assembled. To print, you
+   must generate a separate .stl for each of these parts
+*/
+module plane() {
+  union() {
+    fuselage();
+    %translate([0,0,wing_z]) {
+      wing_center();
+      translate([0, wingspan/2,0]) rotate([10,0,0]) wing_right();
+      translate([0, -wingspan/2,0]) rotate([-10,0,0])  wing_left();
+    }
+    translate([tail_length,0,0]) stabilizer_right();
+    translate([tail_length,0,0]) stabilizer_left();
+    %translate([tail_length,0,0]) stabilizer_vert();
+  }
+}
+
+plane();
