@@ -1,4 +1,4 @@
-all: glider.stl 
+all: wing_tips.stl wing_center.stl fuselage.stl
 
 .SECONDARY:
 
