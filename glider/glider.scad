@@ -21,7 +21,7 @@
 /* NACA 5412 Airfoil M=5.0% P=40.0% T=12.0% */
 
 module airfoil(s) {
-rotate([0,0,-2]) scale([s,s,s]) polygon(points=[
+rotate([0,0,-2]) scale([s,s,s]) mirror([1,0])  polygon(points=[
  [1.000000,-0.000000], [0.998459, 0.000480], [0.993844, 0.001912], [0.986185, 0.004266],
  [0.975528, 0.007497], [0.961940, 0.011541], [0.945503, 0.016321], [0.926320, 0.021747],
  [0.904508, 0.027720], [0.880203, 0.034131], [0.853553, 0.040868], [0.824724, 0.047815],
@@ -53,16 +53,17 @@ module flat_foil(s) {
   }
 }
 	
-wingspan = 150;
-tail_length = 80;
+wingspan = 145;
+tail_length = 90;
 nose_length = 40;
 
-wing_chord = 35;
-wing_z = 4;
+wing_x = 25;
+wing_chord = 55;
+wing_z = 2;
 
 module wing_left() {
   rotate([90,0,0]) hull() {
-     translate([35,0,wingspan/2]) linear_extrude(height=0.1, center=true) flat_foil(20);
+     translate([-35,0,wingspan/2]) linear_extrude(height=0.1, center=true) flat_foil(20);
      linear_extrude(height=0.11, center=true) flat_foil(wing_chord);
     }
 }
@@ -79,22 +80,73 @@ module wing_right() {
   mirror([0,1,0]) wing_left();
 }
 
-
-module fuselage() {
-  difference() {
-    hull() {
-      translate([-nose_length,0,5]) rotate([0,90,0]) cylinder(r=6, h=5, $fn=21);
-      translate([tail_length+20,0,2]) sphere(r=3, $fn=21);
+module wings() {
+    translate([wing_x,0,wing_z]) {
+      wing_center();
+      translate([0, wingspan/2,0]) rotate([10,0,0]) wing_right();
+      translate([0, -wingspan/2,0]) rotate([-10,0,0])  wing_left();
     }
-    translate([0,0,wing_z]) wing_center();
-    translate([tail_length,0,0]) stabilizer_vert();
+}
+
+
+
+
+/** FUSELAGE **/
+
+module motor_mount() {
+  difference() {
+    union() {
+      cylinder(r=6.5, h=10);
+      translate([0,0,0.75]) cube([26,7 ,1.5], center=true);
+      translate([0,0,0.75]) cube([7, 26,1.5], center=true);
+    }
+    cylinder(r=4, h=12, center=true);
+    for (angle = [0,90,180,270]) {
+      rotate(angle) translate([10,0,0]) cylinder(r=1.5, h=5, center=true);
+    }
   }
 }
 
+/* Turnigy 2730-1500 */
+module motor() {
+  rotate([0,90,0]) {
+    motor_mount();
+    cylinder(r=1.5, h=42); // shaft
+    translate([0,0,3]) cylinder(r=4, h=15); // housing
+    translate([0,0,18]) cylinder(r=13.5, h=10); // outrunner
+    translate([0,0,28]) cylinder(r=4, h=4.5); // forward housing
+  }
+}
+
+module fuselage_plain() {
+    %translate([nose_length,0,0]) motor();
+    hull() {
+      translate([nose_length-5,0,0]) rotate([0,90,0]) cylinder(r=13.5, h=5, $fn=21);
+      sphere(r=15, $fn=21);
+    }
+    hull() {
+      translate([-tail_length-20,0,2]) sphere(r=3, $fn=21);
+      sphere(r=15, $fn=21);
+    }
+
+}
+
+module fuselage() {
+  difference() {
+    fuselage_plain();
+    wings();
+    translate([-tail_length,0,0]) stabilizer_vert();
+  }
+}
+
+
+
+/** STABILIZERS **/
+
 module stabilizer_right() {
   hull() {
-    cube([20,2,1.5]);
-    translate([15, 20, 0]) cylinder(r=6, h=0.6);
+    translate([-20,0,0]) cube([20,2,1.5]);
+    translate([-12, 40, 0]) cylinder(r=6, h=0.6);
   }
 }
 
@@ -103,11 +155,13 @@ module stabilizer_left() {
 }
 
 module stabilizer_vert() {
+  translate([-20,0,0])
   hull() {
     translate([0, -1, 1]) cube([20,2,1]);
-    translate([15, 0, 15]) rotate([90,0,0]) cylinder(r=4, h=0.8);
+    translate([4, 0, 40]) rotate([90,0,0]) cylinder(r=4, h=0.8);
   }
 }
+
 
 /* This is the whole plane, as assembled. To print, you
    must generate a separate .stl for each of these parts
@@ -115,14 +169,10 @@ module stabilizer_vert() {
 module plane() {
   union() {
     fuselage();
-    %translate([0,0,wing_z]) {
-      wing_center();
-      translate([0, wingspan/2,0]) rotate([10,0,0]) wing_right();
-      translate([0, -wingspan/2,0]) rotate([-10,0,0])  wing_left();
-    }
-    translate([tail_length,0,0]) stabilizer_right();
-    translate([tail_length,0,0]) stabilizer_left();
-    %translate([tail_length,0,0]) stabilizer_vert();
+    wings();
+    translate([-tail_length,0,0]) stabilizer_right();
+    translate([-tail_length,0,0]) stabilizer_left();
+    %translate([-tail_length,0,0]) stabilizer_vert();
   }
 }
 
