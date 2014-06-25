@@ -22,3 +22,27 @@ module motor() {
     translate([0,0,28]) cylinder(r=4, h=4.5); // forward housing
   }
 }
+
+
+/* Turnigy nano-tech 300mAH 2S 35-70C */
+module battery() {
+  cube([18,46,12.5);
+}
+
+
+/* Servo. Turnigy TG9e */
+
+module servo() {
+  cube([12, 23, 23]);
+  translate[0,0,16.5]) cube([12, 32.5, 2]);
+  translate[0,0,23]) cylinder(r=6, h=4);
+  translate[0,0,27]) cylinder(r=2.5, h=2.5);
+}
+
+module servo_arm() {
+  cylinder(r=3.5, h=4);
+  translate([0,0,2.5]) hull() {
+    cylinder(r=3.5, h=1.5);
+    translate([14,0,0]) cylinder(r=2, h=1.5);
+  }
+}
