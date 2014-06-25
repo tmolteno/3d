@@ -21,7 +21,7 @@
 /* NACA 5412 Airfoil M=5.0% P=40.0% T=12.0% */
 
 module airfoil(s) {
-rotate([0,0,-2]) scale([s,s,s]) mirror([1,0])  polygon(points=[
+rotate([0,0,2]) scale([s,s,s]) mirror([1,0])  polygon(points=[
  [1.000000,-0.000000], [0.998459, 0.000480], [0.993844, 0.001912], [0.986185, 0.004266],
  [0.975528, 0.007497], [0.961940, 0.011541], [0.945503, 0.016321], [0.926320, 0.021747],
  [0.904508, 0.027720], [0.880203, 0.034131], [0.853553, 0.040868], [0.824724, 0.047815],
@@ -48,8 +48,8 @@ rotate([0,0,-2]) scale([s,s,s]) mirror([1,0])  polygon(points=[
 /* This is a foil with a flat bottom for easy printing */
 module flat_foil(s) {
   difference() {
-    translate([0, 0.5]) airfoil(s);
-    translate([0,-2]) square([s,2]);
+    translate([0,0.02*s, 0]) linear_extrude(height=0.1) airfoil(s);
+    translate([-s, -s-5, -1]) cube([s+5,s+5,2]);
   }
 }
 	
@@ -63,15 +63,15 @@ wing_z = 2;
 
 module wing_left() {
   rotate([90,0,0]) hull() {
-     translate([-35,0,wingspan/2]) linear_extrude(height=0.1, center=true) flat_foil(20);
-     linear_extrude(height=0.11, center=true) flat_foil(wing_chord);
+     translate([-35,0,0.7*wingspan]) flat_foil(20);
+     flat_foil(wing_chord);
     }
 }
 
 module wing_center() {
   rotate([90,0,0]) hull() {
-     translate([0,0,wingspan/2]) linear_extrude(height=1, center=true) flat_foil(wing_chord);
-     translate([0,0,-wingspan/2]) linear_extrude(height=1, center=true) flat_foil(wing_chord);
+     translate([0,0,wingspan/2]) flat_foil(wing_chord);
+     translate([0,0,-wingspan/2]) flat_foil(wing_chord);
     }
 }
 
@@ -118,17 +118,23 @@ module motor() {
   }
 }
 
-module fuselage_plain() {
-    %translate([nose_length,0,0]) motor();
-    hull() {
-      translate([nose_length-5,0,0]) rotate([0,90,0]) cylinder(r=13.5, h=5, $fn=21);
-      sphere(r=15, $fn=21);
+module firewall() {
+   rotate([0,90,0]) difference() {
+	cylinder(r=13.5, h=5, $fn=21);
+    for (angle = [0,90,180,270]) {
+      rotate(angle) translate([10,0,0]) cylinder(r=1.5, h=12, center=true);
     }
-    hull() {
-      translate([-tail_length-20,0,2]) sphere(r=3, $fn=21);
-      sphere(r=15, $fn=21);
-    }
+  }
+}
 
+module fuselage_plain() {
+    %translate([nose_length+5,0,0]) motor();
+    translate([nose_length,0,0]) firewall();
+    hull() {
+      translate([nose_length-5,0,0]) firewall();
+      sphere(r=15, $fn=21);
+      translate([-tail_length-20,0,2]) sphere(r=3, $fn=21);
+    }
 }
 
 module fuselage() {
