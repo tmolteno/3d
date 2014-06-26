@@ -1,5 +1,5 @@
 /*
-	Openscad glider.
+    Openscad Aeroplane.
 
     Copyright (C) Tim Molteno, tim@molteno.net
 
@@ -63,7 +63,7 @@ wing_z = 2;
 
 module wing_left() {
   rotate([90,0,0]) hull() {
-     translate([-35,0,0.7*wingspan]) flat_foil(20);
+     translate([-55,0,0.85*wingspan]) flat_foil(20);
      flat_foil(wing_chord);
     }
 }
@@ -93,30 +93,7 @@ module wings() {
 
 /** FUSELAGE **/
 
-module motor_mount() {
-  difference() {
-    union() {
-      cylinder(r=6.5, h=10);
-      translate([0,0,0.75]) cube([26,7 ,1.5], center=true);
-      translate([0,0,0.75]) cube([7, 26,1.5], center=true);
-    }
-    cylinder(r=4, h=12, center=true);
-    for (angle = [0,90,180,270]) {
-      rotate(angle) translate([10,0,0]) cylinder(r=1.5, h=5, center=true);
-    }
-  }
-}
-
-/* Turnigy 2730-1500 */
-module motor() {
-  rotate([0,90,0]) {
-    motor_mount();
-    cylinder(r=1.5, h=42); // shaft
-    translate([0,0,3]) cylinder(r=4, h=15); // housing
-    translate([0,0,18]) cylinder(r=13.5, h=10); // outrunner
-    translate([0,0,28]) cylinder(r=4, h=4.5); // forward housing
-  }
-}
+use <motor.scad>;
 
 module firewall() {
    rotate([0,90,0]) difference() {
@@ -143,6 +120,9 @@ module fuselage() {
     wings();
     translate([-tail_length,0,0]) stabilizer_vert();
   }
+  %translate([0,0,30]) battery();
+  %translate([0,30,30]) servo();
+  %translate([0,-30,30]) servo();
 }
 
 

@@ -1,3 +1,23 @@
+/*
+    Motor mounts for the OpenSCAD aeroplane
+
+    Copyright (C) Tim Molteno, tim@molteno.net
+
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module motor_mount() {
   difference() {
     union() {
@@ -16,8 +36,8 @@ module motor_mount() {
 module motor() {
   rotate([0,90,0]) {
     motor_mount();
-    cylinder(r=1.5, h=42); // shaft
-    translate([0,0,3]) cylinder(r=4, h=15); // housing
+    color("silver") cylinder(r=1.5, h=42); // shaft
+    colour("gold") translate([0,0,3]) cylinder(r=4, h=15); // housing
     translate([0,0,18]) cylinder(r=13.5, h=10); // outrunner
     translate([0,0,28]) cylinder(r=4, h=4.5); // forward housing
   }
@@ -26,17 +46,17 @@ module motor() {
 
 /* Turnigy nano-tech 300mAH 2S 35-70C */
 module battery() {
-  cube([18,46,12.5);
+  cube([46, 18,12.5], center=true);
 }
 
 
 /* Servo. Turnigy TG9e */
 
 module servo() {
-  cube([12, 23, 23]);
-  translate[0,0,16.5]) cube([12, 32.5, 2]);
-  translate[0,0,23]) cylinder(r=6, h=4);
-  translate[0,0,27]) cylinder(r=2.5, h=2.5);
+  translate([-6, -11.5,0]) cube([12, 23, 23]);
+  translate([-6,-16.25,16.5]) cube([12, 32.5, 2]);
+  translate([0,0,23]) cylinder(r=6, h=4);
+  translate([0,0,27]) cylinder(r=2.5, h=2.5);
 }
 
 module servo_arm() {
