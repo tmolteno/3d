@@ -37,8 +37,8 @@ module motor() {
   rotate([0,90,0]) {
     motor_mount();
     color("silver") cylinder(r=1.5, h=42); // shaft
-    colour("gold") translate([0,0,3]) cylinder(r=4, h=15); // housing
-    translate([0,0,18]) cylinder(r=13.5, h=10); // outrunner
+    color("gold") translate([0,0,3]) cylinder(r=4, h=15); // housing
+    color("red") translate([0,0,18]) cylinder(r=13.5, h=10); // outrunner
     translate([0,0,28]) cylinder(r=4, h=4.5); // forward housing
   }
 }
@@ -66,3 +66,5 @@ module servo_arm() {
     translate([14,0,0]) cylinder(r=2, h=1.5);
   }
 }
+
+motor();
