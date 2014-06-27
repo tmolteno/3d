@@ -53,10 +53,12 @@ module battery() {
 /* Servo. Turnigy TG9e */
 
 module servo() {
-  translate([-6, -11.5,0]) cube([12, 23, 23]);
-  translate([-6,-16.25,16.5]) cube([12, 32.5, 2]);
-  translate([0,0,23]) cylinder(r=6, h=4);
-  translate([0,0,27]) cylinder(r=2.5, h=2.5);
+  rotate([0,0,90]) {
+    translate([-6, -11.5,0]) cube([12, 23, 23]);
+    translate([-6,-16.25,16.5]) cube([12, 32.5, 2]);
+    translate([0,0,23]) cylinder(r=6, h=4);
+    translate([0,0,27]) cylinder(r=2.5, h=2.5);
+  }
 }
 
 module servo_arm() {

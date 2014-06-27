@@ -54,12 +54,16 @@ module flat_foil(s) {
 }
 	
 wingspan = 135;
-tail_length = 90;
+tail_length = 95;
 nose_length = 40;
 
 wing_x = 25;
 wing_chord = 55;
-wing_z = 2;
+wing_z = -10;
+
+servo_z = -5;
+
+dihedral_angle = 15;
 
 module wing_left() {
   rotate([90,0,0]) hull() {
@@ -83,8 +87,8 @@ module wing_right() {
 module wings() {
     translate([wing_x,0,wing_z]) {
       wing_center();
-      translate([0, wingspan/2,0]) rotate([10,0,0]) wing_right();
-      translate([0, -wingspan/2,0]) rotate([-10,0,0])  wing_left();
+      translate([0, wingspan/2,0]) rotate([dihedral_angle,0,0]) wing_right();
+      translate([0, -wingspan/2,0]) rotate([-dihedral_angle,0,0])  wing_left();
     }
 }
 
@@ -109,8 +113,8 @@ module fuselage_plain() {
     translate([nose_length,0,0]) firewall();
     hull() {
       translate([nose_length-5,0,0]) firewall();
-      sphere(r=15, $fn=21);
-      translate([-tail_length-20,0,2]) sphere(r=3, $fn=21);
+      sphere(r=20, $fn=21);
+      translate([-tail_length-20,0,2]) sphere(r=5, $fn=21);
     }
 }
 
@@ -118,11 +122,11 @@ module fuselage() {
   difference() {
     fuselage_plain();
     wings();
-    translate([-tail_length,0,0]) stabilizer_vert();
+    translate([-tail_length,0,0]) stabilizers();
+    #translate([0,0,10]) battery();
+    #translate([-70,0,servo_z]) servo();
+    #translate([-35,0,servo_z]) servo();
   }
-  %translate([0,0,30]) battery();
-  %translate([0,30,30]) servo();
-  %translate([0,-30,30]) servo();
 }
 
 
@@ -140,12 +144,25 @@ module stabilizer_left() {
   mirror([0,1,0]) stabilizer_right();
 }
 
+
+module rudder() {
+  cube([25,1,38]);
+}
+
+
 module stabilizer_vert() {
   translate([-20,0,0])
   hull() {
     translate([0, -1, 1]) cube([20,2,1]);
     translate([4, 0, 40]) rotate([90,0,0]) cylinder(r=4, h=0.8);
   }
+}
+
+module stabilizers() {
+    stabilizer_right();
+    stabilizer_left();
+    stabilizer_vert();
+    translate([-46,0,5]) rudder();
 }
 
 
@@ -156,9 +173,8 @@ module plane() {
   union() {
     fuselage();
     wings();
-    translate([-tail_length,0,0]) stabilizer_right();
-    translate([-tail_length,0,0]) stabilizer_left();
-    translate([-tail_length,0,0]) stabilizer_vert();
+    translate([10,0,40]) wings();
+    translate([-tail_length,0,0]) stabilizers();
   }
 }
 
