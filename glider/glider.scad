@@ -53,7 +53,7 @@ module flat_foil(s) {
   }
 }
 	
-wingspan = 145;
+wingspan = 135;
 tail_length = 90;
 nose_length = 40;
 
@@ -158,7 +158,7 @@ module plane() {
     wings();
     translate([-tail_length,0,0]) stabilizer_right();
     translate([-tail_length,0,0]) stabilizer_left();
-    %translate([-tail_length,0,0]) stabilizer_vert();
+    translate([-tail_length,0,0]) stabilizer_vert();
   }
 }
 

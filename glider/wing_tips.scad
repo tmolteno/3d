@@ -22,4 +22,4 @@
 use <glider.scad>;
 
 wing_left();
-translate([0,-95,0]) rotate([0,0,40]) wing_right(); 
+translate([-80,-135,0]) rotate([0,0,-35]) wing_right(); 
