@@ -80,10 +80,10 @@ module hopper() {
 
 module cap() {
    {
-    translate([0,0,20]) cylinder(r1=hopper_radius+5, r2=5, h=cap_height+5);
-    cylinder(r=hopper_radius-wall_thickness-0.5,h=21);
-    translate([0,0,5]) bayonet();
-    translate([0,0,5]) rotate(180) bayonet();
+    translate([0,0,18]) cylinder(r1=hopper_radius+5, r2=5, h=cap_height+7);
+    cylinder(r=hopper_radius-wall_thickness-0.5,h=19);
+    translate([0,0,3]) bayonet();
+    translate([0,0,3]) rotate(180) bayonet();
     translate([0,0,cap_height+20]) {
       difference() {
         hull () {
@@ -107,5 +107,5 @@ module feeder() {
 
   
 feeder();
-translate([0,0,hopper_height - 15]) cap();
+translate([0,0,hopper_height - 13]) cap();
 
