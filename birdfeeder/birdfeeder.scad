@@ -71,16 +71,17 @@ module hopper() {
       translate([0,0,0]) cylinder(r=hopper_radius-wall_thickness, h=hopper_height+5);
       translate([0,0,5]) rotate([90,0,0]) cylinder(r=10, h=100, center=true);
       translate([0,0,5]) rotate([0,90,0]) cylinder(r=10, h=100, center=true);
-      translate([0,0,hopper_height-14]) bayonet_fitting();
-      translate([0,0,hopper_height-14]) rotate(180) bayonet_fitting();
+      translate([0,0,hopper_height-12]) bayonet_fitting();
+      translate([0,0,hopper_height-12]) rotate(180) bayonet_fitting();
     }
-    cylinder(r1=base_diameter/2-3, r2=25.5, h=5); // base plate
+    cylinder(r1=base_diameter/2-10, r2=25.5, h=5); // base plate
   }
 }
 
 module cap() {
    {
     translate([0,0,18]) cylinder(r1=hopper_radius+5, r2=5, h=cap_height+7);
+    translate([0,0,16]) cylinder(r1=hopper_radius - wall_thickness, r2=hopper_radius+5, h=2);
     cylinder(r=hopper_radius-wall_thickness-0.5,h=19);
     translate([0,0,3]) bayonet();
     translate([0,0,3]) rotate(180) bayonet();
@@ -107,5 +108,5 @@ module feeder() {
 
   
 feeder();
-translate([0,0,hopper_height - 13]) cap();
+translate([0,0,hopper_height - 11]) cap();
 
