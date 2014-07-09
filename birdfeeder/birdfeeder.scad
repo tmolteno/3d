@@ -64,17 +64,26 @@ module bayonet_fitting() {
  }
 }
 
+module hopper_wall() {
+  difference() {
+      cylinder(r=hopper_radius, h=hopper_height);
+      translate([0,0,0]) cylinder(r=hopper_radius-wall_thickness, h=hopper_height+5);
+  }
+}
 module hopper() {
   union() { 
     difference() {
-      cylinder(r=hopper_radius, h=hopper_height);
-      translate([0,0,0]) cylinder(r=hopper_radius-wall_thickness, h=hopper_height+5);
-      translate([0,0,5]) rotate([90,0,0]) cylinder(r=10, h=100, center=true);
-      translate([0,0,5]) rotate([0,90,0]) cylinder(r=10, h=100, center=true);
+      hopper_wall();
+      translate([0,0,5]) rotate([90,0,0]) rotate(45) cube([18,18,60], center=true);
+      translate([0,0,5]) rotate([0,90,0]) rotate(45) cube([18,18,60], center=true);
       translate([0,0,hopper_height-12]) bayonet_fitting();
       translate([0,0,hopper_height-12]) rotate(180) bayonet_fitting();
     }
     cylinder(r1=base_diameter/2-10, r2=25.5, h=5); // base plate
+    intersection() {
+      translate([0,0,hopper_height-12]) rotate(189) cube([100,0.8,10],center=true);
+      hopper_wall();
+    }
   }
 }
 
