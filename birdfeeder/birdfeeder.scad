@@ -18,7 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-$fn=32;
+$fn=31;
 
 hopper_height = 120;
 wall_thickness = 3; 
@@ -27,8 +27,8 @@ cap_height = 20;
 
 module base() {
   difference() {
-   cylinder(r=base_diameter/2, h=15);
-   translate([0,0,5]) cylinder(r=base_diameter/2 - wall_thickness, h=15);
+   cylinder(r=base_diameter/2, h=15, $fn=175);
+   translate([0,0,5]) cylinder(r=base_diameter/2 - wall_thickness, h=15, $fn=175);
    
    for (angle = [0:40:320]) {
      rotate(angle) translate([60,0,-5]) cylinder(r=2, h=25);
@@ -66,8 +66,8 @@ module bayonet_fitting() {
 
 module hopper_wall() {
   difference() {
-      cylinder(r=hopper_radius, h=hopper_height);
-      translate([0,0,0]) cylinder(r=hopper_radius-wall_thickness, h=hopper_height+5);
+      cylinder(r=hopper_radius, h=hopper_height, $fn=101);
+      translate([0,0,0]) cylinder(r=hopper_radius-wall_thickness, h=hopper_height+5, $fn=101);
   }
 }
 module hopper() {
@@ -89,9 +89,9 @@ module hopper() {
 
 module cap() {
    {
-    translate([0,0,18]) cylinder(r1=hopper_radius+5, r2=5, h=cap_height+7);
+    translate([0,0,18]) cylinder(r1=hopper_radius+5, r2=5, h=cap_height+7, $fn=101);
     translate([0,0,16]) cylinder(r1=hopper_radius - wall_thickness, r2=hopper_radius+5, h=2);
-    cylinder(r=hopper_radius-wall_thickness-0.5,h=19);
+    cylinder(r=hopper_radius-wall_thickness-0.5,h=19, $fn=101);
     translate([0,0,3]) bayonet();
     translate([0,0,3]) rotate(180) bayonet();
     translate([0,0,cap_height+20]) {
