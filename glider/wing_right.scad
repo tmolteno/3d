@@ -1,9 +1,9 @@
 /*
 	Openscad glider.
 
-    The left and right wing tip
+    The right wing tip
 
-    Copyright (C) Tim Molteno, tim@molteno.net
+    Copyright (C) 2014 Tim Molteno, tim@molteno.net
 
     
     This program is free software: you can redistribute it and/or modify
@@ -21,5 +21,4 @@
 */
 use <glider.scad>;
 
-wing_left();
-translate([-80,-135,0]) rotate([0,0,-35]) wing_right(); 
+wing_right();

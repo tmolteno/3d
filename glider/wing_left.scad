@@ -1,7 +1,7 @@
 /*
 	Openscad glider.
 
-    Center Wing
+    The left wing tip
 
     Copyright (C) 2014 Tim Molteno, tim@molteno.net
 
@@ -21,4 +21,4 @@
 */
 use <glider.scad>;
 
-wing_center();
+wing_left();

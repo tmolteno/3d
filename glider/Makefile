@@ -1,4 +1,4 @@
-all: wing_tips.stl wing_center.stl fuselage.stl
+all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
 
 .SECONDARY:
 
