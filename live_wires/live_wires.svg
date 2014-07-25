@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   width="287.90186"
+   height="787.45557"
+   sodipodi:docname="live_wires.svg">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1155"
+     inkscape:window-height="891"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="1.6835026"
+     inkscape:cx="108.12111"
+     inkscape:cy="594.76291"
+     inkscape:window-x="0"
+     inkscape:window-y="31"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <path
+     style="fill:#ff0000;stroke:none"
+     d="M 184.04589,185.8279 61.681965,497.67772 132.96192,451.93974 98.509942,551.73169 87.223951,524.4077 l -8.909995,125.33393 62.369964,-79.59595 -20.78999,0 80.18995,-214.43388 -66.52796,44.54997 81.97195,-179.98189 c 0,0 -5.93999,6.53399 -16.63199,1.188 -10.69199,-5.346 -15.44399,-32.66999 -14.84999,-35.63998 z"
+     id="path2987"
+     inkscape:connector-curvature="0" />
+  <text
+     xml:space="preserve"
+     style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     x="8.2219954"
+     y="734.68359"
+     id="text3008"
+     sodipodi:linespacing="125%"><tspan
+       sodipodi:role="line"
+       id="tspan3010"
+       x="8.2219954"
+       y="734.68359"
+       style="font-size:56px;font-weight:bold;letter-spacing:0.18999995px;fill:#ff0000;-inkscape-font-specification:Sans Bold">BEWARE</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:99.00000095%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     x="144.39049"
+     y="92.989975"
+     id="text3780"
+     sodipodi:linespacing="99.000001%"><tspan
+       sodipodi:role="line"
+       id="tspan3782"
+       x="143.59549"
+       y="92.989975"
+       style="font-size:64px;font-weight:bold;line-height:99.00000095%;letter-spacing:-1.59000003px;fill:#ff0000;-inkscape-font-specification:Sans Bold">LIVE</tspan><tspan
+       sodipodi:role="line"
+       x="143.59549"
+       y="156.34998"
+       id="tspan3784"
+       style="font-size:64px;font-weight:bold;line-height:99.00000095%;letter-spacing:-1.59000003px;fill:#ff0000;-inkscape-font-specification:Sans Bold">WIRES</tspan></text>
+  <rect
+     style="fill:none;stroke:#000000;stroke-width:2.64071703;stroke-opacity:1"
+     id="rect3790"
+     width="285.26114"
+     height="784.81482"
+     x="1.3203585"
+     y="1.3203585" />
+</svg>
