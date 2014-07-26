@@ -1,4 +1,4 @@
-all: loom.stl
+all: hexafish.stl octafish.stl decafish.stl dodecafish.stl
 
 .SECONDARY:
 

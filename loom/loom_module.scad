@@ -19,16 +19,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-n_posts      = 8;     /* Number of posts */
-post_spacing = 11.0;  /* Spacing between posts around perimeter */
 post_height  = 18.0;  /* Height of the Loom from Bottom to top */
 base_height  = 4.0;   /* Height of the base (mm) */
 
-width = (post_spacing*n_posts) / 3.1415;
-center = width - 10.0;
-step_angle = 360 / n_posts;
-
-
+  
 module post(h) {
   difference() {
     hull() {
@@ -43,7 +37,7 @@ module post(h) {
 }
 
 
-module base() {
+module base(width, center, step_angle) {
   
   for (angle = [0:step_angle:(360 - step_angle)]) {
     rotate(angle)  translate([width/2-1.5,0,0]) post(post_height);
@@ -55,14 +49,24 @@ module base() {
 }
 
 
-intersection() {
-  difference() {
-    base();
-    translate([0,0,6]) difference() {
-      cylinder(r=width, h=17);
-      translate([0,0,8.9]) cylinder(r2=width/2+5, r1=width/2-1, h=9);
-      translate([0,0,-0.5]) cylinder(r=width/2-1, h=10);
+module loom(n_posts, post_spacing) {
+
+  width = (post_spacing*n_posts) / 3.1415;
+  center = width - 10.0;
+  step_angle = 360 / n_posts;
+
+
+  intersection() {
+    difference() {
+      base(width, center, step_angle);
+      translate([0,0,6]) difference() {
+	cylinder(r=width, h=17);
+	translate([0,0,8.9]) cylinder(r2=width/2+5, r1=width/2-1, h=9);
+	translate([0,0,-0.5]) cylinder(r=width/2-1, h=10);
+      }
     }
+    cylinder(r=width/2, h=50, $fn=31);
   }
-  cylinder(r=width/2, h=50, $fn=31);
 }
+
+
