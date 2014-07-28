@@ -23,18 +23,15 @@ use<loom_module.scad>;
 
 post(h=20);
 w=12;
-
+n_posts=10;
 //Base
 hull() {
-  translate([0,-24,0])cylinder(r=3, h=4.5);
-  translate([0,36,0])cylinder(r=3, h=4.5);
+  translate([0,0,0])cylinder(r=3, h=4.5);
+  translate([0,n_posts*w,0])cylinder(r=3, h=4.5);
 }
 //Posts
-translate([0,w,0])post(h=20);
-translate([0,w*2,0])post(h=20);
-translate([0,w*3,0])post(h=20);
-translate([0,w-w*2,0])post(h=20);
-translate([0,w-w*3,0])post(h=20);
-
+for (i = [1:n_posts]) {
+  translate([0,w*i,0])post(h=20);
+}
 
 
