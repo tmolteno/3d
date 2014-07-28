@@ -1,4 +1,4 @@
-all: hexafish.stl octafish.stl decafish.stl dodecafish.stl
+all: hexafish.stl octafish.stl decafish.stl dodecafish.stl dragon_scale.stl
 
 .SECONDARY:
 
