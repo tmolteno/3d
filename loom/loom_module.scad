@@ -34,7 +34,7 @@ module post(h) {
       translate([2,0,-1]) cylinder(r = 2.2, h=h + 2, $fn=13);
     }
     translate([2.5,0, base_height+3.75]) hull() {
-      rotate([90,0,0]) cylinder(r=2.5, h=10, center=true, $fn=19);
+      translate([2,0,1.5]) rotate([90,0,0]) cylinder(r=4, h=10, center=true, $fn=19);
       translate([1,0,5]) rotate([90,0,0]) cylinder(r=3.5, h=10, center=true, $fn=19);
     }
     translate([2.5,-5,-2.5]) cube([10,10,h+5]);
@@ -69,5 +69,5 @@ module loom(n_posts, post_spacing) {
 }
 
 
-loom(8, 12);
-//post(18);
+//loom(8, 12);
+post(18);
