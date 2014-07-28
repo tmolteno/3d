@@ -1,2 +1,2 @@
 use <loom_module.scad>;
-loom(8, 11);
+loom(8, 12);
