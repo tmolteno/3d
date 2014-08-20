@@ -23,8 +23,8 @@ hold_radius = 11;
 
 module pick() {
   hull() {
-    translate([0,0,0.0]) cylinder(r=tip_radius,h=1);
-    translate([pick_length,0,0]) cylinder(r=hold_radius,h=3);
+    translate([0,0,0.0]) cylinder(r=tip_radius,h=0.5);
+    translate([pick_length,0,0]) cylinder(r=hold_radius,h=0.5);
   }
 }
 
