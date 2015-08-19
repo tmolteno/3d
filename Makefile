@@ -18,3 +18,7 @@ include $(wildcard *.deps)
 %.tab: %.scad
 	cp $< $@
 	expand $@ > $<
+
+
+clean:
+	rm -f *.deps

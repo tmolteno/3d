@@ -38,5 +38,5 @@ difference() {
     for (angle = [0:60:300]) {
       rotate(angle) translate([5.95,0,0]) cylinder(r=1, h=5, center=true);
     }
-  }
+  } 
 }
