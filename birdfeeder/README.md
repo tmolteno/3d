@@ -1,14 +1,11 @@
-3d Models
+OpenSCAD Birdfeeder
 ==
 
-Various OpenSCAD designs that can be printed on a 3D printer.
+Copyright Tim Molteno 2014. tim@molteno.net
 
-To print you should compile them using the OpenSCAD program.
-
-The Makefile will build all the models, and
-generate .stl files.
-
-Copyright (c) Tim Molteno 2014 tim@molteno.net
+This is the second version of the birdfeeder. It has been improved to
+add a bayonet fitting between the cap and the hopper. This allows the
+feeder to remain attached (hanging) while the feed is replenished.
 
 ##License
 

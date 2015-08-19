@@ -1,7 +1,7 @@
 3d Models
 ==
 
-Various OpenSCAD designs that can be printed on a 3D printer.
+OpenSCAD designs for some guitar picks.
 
 To print you should compile them using the OpenSCAD program.
 

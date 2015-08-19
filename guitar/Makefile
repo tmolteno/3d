@@ -1,4 +1,4 @@
-all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
+all: guitar_pick.stl guitar_pick2.stl 
 
 .SECONDARY:
 
@@ -18,3 +18,7 @@ include $(wildcard *.deps)
 %.tab: %.scad
 	cp $< $@
 	expand $@ > $<
+
+
+clean:
+	rm -f *.deps

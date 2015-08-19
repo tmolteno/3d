@@ -1,4 +1,4 @@
-all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
+all: hexafish.stl octafish.stl decafish.stl dodecafish.stl dragon_scale.stl monster_tail.stl
 
 .SECONDARY:
 
@@ -6,7 +6,7 @@ all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
 include $(wildcard *.deps)
 
 %.stl: %.ascii.stl
-	meshlabserver -i $< -o $@ -s meshclean.mlx
+	meshlabserver -i $< -o $@ -s ../meshclean.mlx
 
 %.ascii.stl: %.scad
 	openscad -m make -d $*.deps -o $@ $<

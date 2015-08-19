@@ -1,7 +1,7 @@
 /*
     Openscad Aeroplane.
 
-    Copyright (C) Tim Molteno, tim@molteno.net
+    Copyright (C) 2014 Tim Molteno, tim@molteno.net
 
     
     This program is free software: you can redistribute it and/or modify
@@ -66,17 +66,27 @@ servo_z = -5;
 dihedral_angle = 15;
 
 module wing_left() {
-  rotate([90,0,0]) hull() {
-     translate([-55,0,0.85*wingspan]) flat_foil(20);
-     flat_foil(wing_chord);
+  rotate([90,0,0]) {
+    hull() {
+      translate([-55,0,0.82*wingspan]) flat_foil(20);
+      flat_foil(wing_chord);
     }
+    hull() {
+      translate([-55,0,0.82*wingspan]) flat_foil(20);
+      translate([-70,12,0.88*wingspan]) flat_foil(10);
+    }
+  }
 }
 
 module wing_center() {
-  rotate([90,0,0]) hull() {
-     translate([0,0,wingspan/2]) flat_foil(wing_chord);
-     translate([0,0,-wingspan/2]) flat_foil(wing_chord);
+  difference() {
+    rotate([90,0,0]) hull() {
+      translate([0,0,wingspan/2]) flat_foil(wing_chord);
+      translate([0,0,-wingspan/2]) flat_foil(wing_chord);
     }
+    translate([0, wingspan/2,0]) rotate([dihedral_angle,0,0]) wing_right();
+    translate([0, -wingspan/2,0]) rotate([-dihedral_angle,0,0])  wing_left();
+  }
 }
 
 

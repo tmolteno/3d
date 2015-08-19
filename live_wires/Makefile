@@ -1,4 +1,4 @@
-all: birdfeeder.stl guitar_pick.stl guitar_pick2.stl 
+all: live_wires.stl
 
 .SECONDARY:
 
@@ -6,7 +6,7 @@ all: birdfeeder.stl guitar_pick.stl guitar_pick2.stl
 include $(wildcard *.deps)
 
 %.stl: %.ascii.stl
-	meshlabserver -i $< -o $@ -s meshclean.mlx
+	meshlabserver -i $< -o $@ -s ../meshclean.mlx
 
 %.ascii.stl: %.scad
 	openscad -m make -d $*.deps -o $@ $<
@@ -18,7 +18,3 @@ include $(wildcard *.deps)
 %.tab: %.scad
 	cp $< $@
 	expand $@ > $<
-
-
-clean:
-	rm -f *.deps

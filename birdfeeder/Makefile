@@ -1,4 +1,4 @@
-all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
+all: base.stl cap.stl
 
 .SECONDARY:
 
@@ -6,7 +6,7 @@ all: wing_left.stl wing_right.stl wing_center.stl fuselage.stl
 include $(wildcard *.deps)
 
 %.stl: %.ascii.stl
-	meshlabserver -i $< -o $@ -s meshclean.mlx
+	meshlabserver -i $< -o $@ -s ../meshclean.mlx
 
 %.ascii.stl: %.scad
 	openscad -m make -d $*.deps -o $@ $<
