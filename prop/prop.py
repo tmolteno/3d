@@ -6,6 +6,7 @@
 
 import numpy as np
 import math
+from stl import mesh
 
 class Foil:
     def __init__(self, chord, angle_of_attack):
@@ -27,17 +28,20 @@ class Prop:
     
     def design(self):
         trailing_thickness = 0.5
-        
+        self.foils = []
         for r in np.linspace(0, self.radius, 20):
-            print r,
             circumference = np.pi * 2 * r
             helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
+            chord = 12.0
             angle_of_attack = math.atan(self.pitch / circumference)
-            print angle_of_attack*180 / np.pi
+            f = Foil(chord, angle_of_attack)
+            self.foils.append([r, f])
             
     def gen_stl(self, filename):
-        from stl import mesh
-
+        for x in self.foils:
+            r, f = x
+            print r, f.aoa *180 / np.pi
+            
         # Define the 8 vertices of the cube
         vertices = np.array([\
             [-1, -1, -1],
