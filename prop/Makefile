@@ -1,0 +1,3 @@
+prop:
+	python prop.py
+
