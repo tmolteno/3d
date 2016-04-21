@@ -10,9 +10,24 @@ from stl import mesh
 
 import foil
 
+class DesignParameters:
+    '''Design Parameters for prop
+    
+    '''
+    def __init__(self):
+      self.velocity = 0.0  # m/s
+      self.altitude = 0.0  # MAS
+      self.RPM = 10000.0   #
+      self.power = 70      # Watts
+      self.radius = 0.0    # m
+      
+      
 class Prop:
     
     def __init__(self, diameter, pitch):
+        ''' TODO don't use pitch. It only works in cases where
+            the flow is uniform
+        '''
         self.diameter = diameter  # m
         self.pitch = pitch # m
         self.radius = self.diameter / 2.0
@@ -26,7 +41,7 @@ class Prop:
     def design(self):
         trailing_thickness = 0.5
         self.foils = []
-        for r in np.linspace(0, self.radius, 20):
+        for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
             helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
             chord = self.get_chord(r)
