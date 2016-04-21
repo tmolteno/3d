@@ -13,35 +13,36 @@ import foil
 class Prop:
     
     def __init__(self, diameter, pitch):
-        self.diameter = diameter  # mm
-        self.pitch = pitch # mm
+        self.diameter = diameter  # m
+        self.pitch = pitch # m
         self.radius = self.diameter / 2.0
         
-    def get_chord_self(r):
-        chord_root = 4.0
-        chord_end = 2.0
-        chord = (r / self.radius)*(chord_root - chord_end)
+    def get_chord(self,r):
+        chord_root = 20.0 / 1000
+        chord_end = 10.0 / 1000
+        chord = chord_end + (1.0 - r / self.radius)*(chord_root - chord_end)
         return chord
-    
+
     def design(self):
         trailing_thickness = 0.5
         self.foils = []
         for r in np.linspace(0, self.radius, 20):
             circumference = np.pi * 2 * r
             helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
-            chord = 12.0
+            chord = self.get_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
             f = foil.Foil(chord, angle_of_attack)
             self.foils.append([r, f])
-            
-    def gen_stl(self, filename):
+
         for x in self.foils:
             r, f = x
-            rpm = 10000
-            omega = (rpm/60)*2*np.pi
-            r_m = r / 1000
+            rpm = 10000.0
+            omega = (rpm/60)*2.0*np.pi
+            r_m = r
             v = r_m * omega
-            print r, f.aoa *180 / np.pi, f.Reynolds(v)
+            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+            
+    def gen_stl(self, filename):
             
         # Define the 8 vertices of the cube
         vertices = np.array([\
@@ -77,7 +78,7 @@ class Prop:
         # Write the mesh to file "cube.stl"
         cube.save(filename)
         
-p = Prop(120.0, 25.0)
+p = Prop(240.0/1000, 25.0 / 1000)
 
 p.design()
 p.gen_stl('test.stl')
