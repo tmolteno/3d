@@ -92,8 +92,11 @@ class Prop:
 
         # Write the mesh to file "cube.stl"
         cube.save(filename)
-        
-p = Prop(240.0/1000, 25.0 / 1000)
+
+diameter = 120.0  # mm
+pitch = 60.0 # mm
+
+p = Prop(diameter/1000, pitch / 1000)
 
 p.design()
 p.gen_stl('test.stl')
