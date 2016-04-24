@@ -42,13 +42,12 @@ class NACA4Foil(Foil):
   
     def get_points(self, n):
         ''' Return a list of x,y coordinates for the foil
-            http://www.aerospaceweb.org/question/airfoils/q0041.shtml
+            NACA report 460
         '''
         
         t = self.thickness
         p = self.p
         m = self.m
-        
         
         x = np.linspace(0, 1.0, n)
       
@@ -58,8 +57,6 @@ class NACA4Foil(Foil):
              0.2843*(x**3) + \
             -0.1015*(x**4))
 
-        ## TODO complete the cambered calculations below.
-        
         yc = (m / (p**2)) * (2.0*p*x - x**2) 
         yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
         yc[x > p] = yc2[x > p]
@@ -78,15 +75,15 @@ class NACA4Foil(Foil):
         c = self.chord
         return [[xl*c,yl*c],[xu*c,yu*c]]
     
-        # return [[x,y],[x,-y]]
-
+    def plot(self):
+        pt, pb = f.get_points(30)
+        import matplotlib.pyplot as plt
+        plt.plot(pt[0], pt[1], 'x')
+        plt.plot(pb[0], pb[1], 'o')
+        plt.show()
+        
 if __name__ == "__main__":
     
-    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.02, p=0.4)
-    pt, pb = f.get_points(200)
-    import matplotlib.pyplot as plt
-    plt.plot(pt[0], pt[1])
-    plt.plot(pb[0], pb[1])
-    plt.show()
-    print pt[0]
+    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.04, p=0.5)
+    f.plot()
     
