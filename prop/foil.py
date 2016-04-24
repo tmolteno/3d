@@ -29,7 +29,7 @@ class Foil(object):
 
 
 class NACA4Foil(Foil):
-    def __init__(self, chord, thickness, m=0.0, p=0.25, angle_of_attack=0.0):
+    def __init__(self, chord, thickness, m=0.0, p=0.4, angle_of_attack=0.0):
         Foil.__init__(self,chord, angle_of_attack)
         self.thickness = thickness
         self.m = m
@@ -45,45 +45,44 @@ class NACA4Foil(Foil):
             http://www.aerospaceweb.org/question/airfoils/q0041.shtml
         '''
         
-        c = self.chord
         t = self.thickness
         p = self.p
         m = self.m
         
         
-        x = np.linspace(0, self.chord, n)
-        xc = np.linspace(0, 1.0, n)
+        x = np.linspace(0, 1.0, n)
       
-
-        a = 0.2969*np.sqrt(xc)
-        b = -0.1260*(xc)
-        c = -0.3516*(xc**2)
-        d = 0.2843*(xc**3)
-        e = -0.1015*(xc**4)
-        
-        y = 5.0*t*(a+b+c+d+e)
+        yt = 5.0*t*(0.2969*np.sqrt(x) + \
+            -0.1260*(x) + \
+            -0.3516*(x**2) + \
+             0.2843*(x**3) + \
+            -0.1015*(x**4))
 
         ## TODO complete the cambered calculations below.
         
-        yc = (m * x / (p**2)) * (2.0*p - xc) 
-        yc[xc > p] = ((m*(c-x) / ((1.0 - p)**2)) * (1.0 + xc - 2.0*p))[xc > p]
-
-        dyc = 2.0 * m * (p - xc) / (p**2)
-        dyc[xc > p] = (2.0*m * (p - xc) / ((1.0 - p)**2))[xc > p]
+        yc = (m / (p**2)) * (2.0*p*x - x**2) 
+        yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
+        yc[x > p] = yc2[x > p]
+        
+        dyc=m*(2.0*p - 2*x)/p**2
+        dyc[x > p]=(2*m*(p - x)/(p - 1.0)**2)[x > p]
         
         theta = np.arctan(dyc)
-        xu = x - yc*np.sin(theta)
-        yu = y + yc*np.cos(theta)
         
-        xl = x + yc*np.sin(theta)
-        yl = y - yc*np.cos(theta)
+        xu = x - yt*np.sin(theta)
+        yu = yc + yt*np.cos(theta)
         
-        return [[xl,yl],[xu,yu]]
+        xl = x + yt*np.sin(theta)
+        yl = yc - yt*np.cos(theta)
+        
+        c = self.chord
+        return [[xl*c,yl*c],[xu*c,yu*c]]
     
         # return [[x,y],[x,-y]]
 
 if __name__ == "__main__":
-    f = NACA4Foil(0.1, 0.1)
+    
+    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.02, p=0.4)
     pt, pb = f.get_points(200)
     import matplotlib.pyplot as plt
     plt.plot(pt[0], pt[1])
