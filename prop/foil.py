@@ -22,10 +22,29 @@ class Foil(object):
   
   
   
-    def get_points(self, n):
+    def get_shape_points(self, n):
         ''' Return a list of x,y coordinates for the foil
         '''
-        return None
+        x = np.linspace(0, self.chord, n)
+        y = 0.001*np.ones(n)
+        return [[x,-y],[x,y]]
+    
+    
+    def get_points(self, n):
+        pl, pu = self.get_shape_points(n)
+        xl, yl = pl
+        xu, yu = pu
+        xl,yl = self.rotate(xl,yl, self.aoa)
+        xu,yu = self.rotate(xu,yu, self.aoa)
+        return [[xl,yl],[xu,yu]]
+
+        
+    def rotate(self, x, y, theta):
+        ''' Rotate the points to the angle of attack around'''
+        x2 = x*np.cos(theta) + y*np.sin(theta)
+        y2 = -x*np.sin(theta) + y*np.cos(theta)
+        return [x2,y2]
+
 
 
 class NACA4Foil(Foil):
@@ -40,7 +59,7 @@ class NACA4Foil(Foil):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
   
   
-    def get_points(self, n):
+    def get_shape_points(self, n):
         ''' Return a list of x,y coordinates for the foil
             NACA report 460
         '''
@@ -71,7 +90,7 @@ class NACA4Foil(Foil):
         
         xl = x + yt*np.sin(theta)
         yl = yc - yt*np.cos(theta)
-        
+                
         c = self.chord
         return [[xl*c,yl*c],[xu*c,yu*c]]
     
@@ -84,6 +103,6 @@ class NACA4Foil(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.04, p=0.5)
+    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.04, p=0.5, angle_of_attack=np.pi/4)
     f.plot()
     

@@ -58,7 +58,12 @@ class Prop:
             print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename):
-            
+        
+        for x in self.foils:
+            r, f = x
+            pts = f.get_points(30)
+            print pts
+
         # Define the 8 vertices of the cube
         vertices = np.array([\
             [-1, -1, -1],
