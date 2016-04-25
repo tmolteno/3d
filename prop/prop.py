@@ -59,10 +59,23 @@ class Prop:
             
     def gen_stl(self, filename):
         
-        for x in self.foils:
-            r, f = x
-            pts = f.get_points(30)
-            print pts
+        first_foil = self.foils[0]
+        
+        for r, f in self.foils:
+            n = 30
+            pl, pu = f.get_points(n)
+            ''' points are in the y - z plane. The x value is set by the radius'''
+            yl, zl = pl
+            yu, zu = pu
+            x = np.zeros(n) + r
+            
+            vertices = np.zeros([n,3])
+            vertices[:,0] = x
+            vertices[:,1] = y
+            vertices[:,2] = zl
+            
+            print vertices
+            print yu
 
         # Define the 8 vertices of the cube
         vertices = np.array([\
