@@ -18,7 +18,7 @@ module prop() {
             rotate(0) blade();
             rotate(120) blade();
             rotate(240) blade();
-            translate([0,0,-20]) cylinder(d=12, h=20, $fn=51);
+            translate([0,0,-10]) cylinder(d=12, h=10, $fn=51);
             }
        //  cylinder(r=100, h=10, center=true);
         }

@@ -31,48 +31,67 @@ class Prop:
         self.pitch = pitch # m
         self.radius = self.diameter / 2.0
         
-    def get_chord(self,r):
+    def get_max_chord(self,r):
+        ''' Allowed chord as a function of radius (m) 
+            Limited by mechanical strength, or weight issues
+        '''
         chord_root = 20.0 / 1000
-        chord_end = 10.0 / 1000
+        chord_end = 7.0 / 1000
         chord = chord_end + (1.0 - r / self.radius)*(chord_root - chord_end)
         return chord
 
-    def design(self):
-        trailing_thickness = 0.0
+    def get_foil_thickness(self,r):
+        ''' Allowed foil thickness as a function of radius (m) 
+            Limited by mechanical strength, or weight issues
+        '''
+        thickness_root = 5.0 / 1000
+        thickness_end = 1.0 / 1000
+        thickness = thickness_end + (1.0 - r / self.radius)*(thickness_root - thickness_end)
+        return thickness
+
+    def get_max_depth(self,r):
+        ''' Allowed depth of the prop as a function of radius (m)
+            This is a property of the environment that the prop operates in.
+        '''
+        depth = 10.0 / 1000
+        return depth
+
+    def get_velocity(self, r):
+        circumference = np.pi * 2 * r
+        helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
+        rpm = 10000.0
+        rps = rpm / 60
+        v = helical_length * rps
+        return v
+      
+    def design(self, trailing_thickness):
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
-            helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
-            chord = self.get_chord(r)
+            chord = self.get_max_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
             f = foil.Foil(chord, angle_of_attack)
             self.foils.append([r, f])
 
-        for x in self.foils:
-            r, f = x
-            rpm = 10000.0
-            omega = (rpm/60)*2.0*np.pi
-            r_m = r
-            v = r_m * omega
+        for r,f in self.foils:
+            v = self.get_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
 
     def designNACA(self, trailing_thickness):
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
-            helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
-            chord = self.get_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
-            f = foil.NACA4(chord=chord, thickness=0.15, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
+
+            depth_max = self.get_max_depth(r)
+            chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
+            thickness = self.get_foil_thickness(r)
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
             f.set_trailing_edge(trailing_thickness/chord)
             self.foils.append([r, f])
 
-        for x in self.foils:
-            r, f = x
-            rpm = 10000.0
-            omega = (rpm/60)*2.0*np.pi
-            r_m = r
-            v = r_m * omega
+        for r,f in self.foils:
+            v = self.get_velocity(r)
             print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename, n):
@@ -133,7 +152,7 @@ if __name__ == "__main__":
     parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
     parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
-    parser.add_argument('--min-edge', type=float, default=1.0, help="The minimum thickness of the foil (mm).")
+    parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
     parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
