@@ -31,7 +31,7 @@ class STL:
           p0 = self.index(n,i)
           p1 = self.index(n,i+1)
           p2 = self.index(n+1, i)
-          faces.append([p0,p1,p2])
+          faces.append([p1,p0,p2])
           p0 = self.index(n+1,i)
           p1 = self.index(n+1,i+1)
           p2 = self.index(n, i+1)
