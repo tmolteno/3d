@@ -57,7 +57,7 @@ class Prop:
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
 
     def designNACA(self):
-        trailing_thickness = 0.2
+        trailing_thickness = 0.02
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
