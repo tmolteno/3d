@@ -75,11 +75,11 @@ class Prop:
             v = r_m * omega
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
-    def gen_stl(self, filename):
+    def gen_stl(self, filename, n):
         
         stl = stl_tools.STL()
-        n = 50
-
+        scale = 1000.0 # Convert to mm.
+        
         top_lines = []
         bottom_lines = []
         
@@ -91,19 +91,20 @@ class Prop:
             x = np.zeros(n) + r
             
             line = np.zeros([n,3])
-            line[:,0] = x
-            line[:,1] = yu
-            line[:,2] = zu
+            line[:,0] = x*scale
+            line[:,1] = yu*scale
+            line[:,2] = zu*scale
             
             top_lines.append(line)
             
             line = np.zeros([n,3])
-            line[:,0] = x
-            line[:,1] = yl
-            line[:,2] = zl
+            line[:,0] = x*scale
+            line[:,1] = yl*scale
+            line[:,2] = zl*scale
             
             bottom_lines.append(line)
 
+        stl.add_line(bottom_lines[0])
         ## Do the top surface
         for tl in top_lines:
             stl.add_line(tl)
@@ -113,8 +114,6 @@ class Prop:
         for bl in bottom_lines:
             stl.add_line(bl)
                 
-        # Now join the first again.
-        stl.add_line(top_lines[0])
         stl.gen_stl(filename)
 
 if __name__ == "__main__":
@@ -122,6 +121,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Design a prop.')
     parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
     parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
+    parser.add_argument('--n', type=int, default=30, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
@@ -129,4 +129,4 @@ if __name__ == "__main__":
     p = Prop(args.diameter/1000, args.pitch / 1000)
 
     p.designNACA()
-    p.gen_stl(args.stl)
+    p.gen_stl(args.stl, args.n)
