@@ -38,7 +38,7 @@ class Prop:
         return chord
 
     def design(self):
-        trailing_thickness = 0.5
+        trailing_thickness = 0.0
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
@@ -57,7 +57,7 @@ class Prop:
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
 
     def designNACA(self):
-        trailing_thickness = 0.5
+        trailing_thickness = 0.2
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
@@ -65,6 +65,7 @@ class Prop:
             chord = self.get_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
             f = foil.NACA4(chord=chord, thickness=0.15, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
+            f.set_trailing_edge(trailing_thickness)
             self.foils.append([r, f])
 
         for x in self.foils:
@@ -73,7 +74,7 @@ class Prop:
             omega = (rpm/60)*2.0*np.pi
             r_m = r
             v = r_m * omega
-            #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename, n):
         
@@ -83,6 +84,8 @@ class Prop:
         top_lines = []
         bottom_lines = []
         
+        bottom_edge = []
+        top_edge = []
         for r, f in self.foils:
             pl, pu = f.get_points(n)
             ''' points are in the y - z plane. The x value is set by the radius'''
@@ -96,6 +99,7 @@ class Prop:
             line[:,2] = zu*scale
             
             top_lines.append(line)
+            top_edge.append(line[-1,:])
             
             line = np.zeros([n,3])
             line[:,0] = x*scale
@@ -103,6 +107,7 @@ class Prop:
             line[:,2] = zl*scale
             
             bottom_lines.append(line)
+            bottom_edge.append(line[-1,:])
 
         stl.add_line(bottom_lines[0])
         ## Do the top surface
@@ -113,7 +118,14 @@ class Prop:
         bottom_lines.reverse()
         for bl in bottom_lines:
             stl.add_line(bl)
-                
+        
+        ## Join the trailing edges
+        stl.new_block()
+        stl.add_line(bottom_edge)
+        stl.add_line(top_edge)
+        
+        print bottom_edge
+
         stl.gen_stl(filename)
 
 if __name__ == "__main__":
@@ -121,7 +133,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Design a prop.')
     parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
     parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
-    parser.add_argument('--n', type=int, default=30, help="The number of points in the top and bottom of the foil")
+    parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     

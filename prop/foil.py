@@ -5,6 +5,7 @@ class Foil(object):
     def __init__(self, chord, angle_of_attack):
         self.chord = chord
         self.aoa = angle_of_attack
+        self.trailing_edge = 0.0
 
     ''' Calculate Reynolds number from air density rho
         and kinematic ciscoscity (nu)
@@ -20,7 +21,8 @@ class Foil(object):
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
   
-  
+    def set_trailing_edge(self, t):
+        self.trailing_edge = t
   
     def get_shape_points(self, n):
         ''' Return a list of x,y coordinates for the foil
@@ -69,12 +71,13 @@ class NACA4(Foil):
         m = self.m
         
         x = np.linspace(0, 1.0, n)
+        y_offset = np.linspace(0, self.trailing_edge/2, n)
       
         yt = 5.0*t*(0.2969*np.sqrt(x) + \
             -0.1260*(x) + \
             -0.3516*(x**2) + \
              0.2843*(x**3) + \
-            -0.1015*(x**4))
+            -0.1015*(x**4)) + y_offset
 
         yc = (m / (p**2)) * (2.0*p*x - x**2) 
         yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
@@ -104,5 +107,6 @@ class NACA4(Foil):
 if __name__ == "__main__":
     
     f = NACA4(chord=0.1, thickness=0.15, m=0.04, p=0.5, angle_of_attack=np.pi/4)
+    f.set_trailing_edge(0.01)
     f.plot()
     
