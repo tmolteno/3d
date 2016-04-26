@@ -56,8 +56,7 @@ class Prop:
             v = r_m * omega
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
 
-    def designNACA(self):
-        trailing_thickness = 0.02
+    def designNACA(self, trailing_thickness):
         self.foils = []
         for r in np.linspace(1e-6, self.radius, 40):
             circumference = np.pi * 2 * r
@@ -65,7 +64,7 @@ class Prop:
             chord = self.get_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
             f = foil.NACA4(chord=chord, thickness=0.15, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
-            f.set_trailing_edge(trailing_thickness)
+            f.set_trailing_edge(trailing_thickness/chord)
             self.foils.append([r, f])
 
         for x in self.foils:
@@ -134,11 +133,12 @@ if __name__ == "__main__":
     parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
     parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
+    parser.add_argument('--min-edge', type=float, default=1.0, help="The minimum thickness of the foil (mm).")
     parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
 
     p = Prop(args.diameter/1000, args.pitch / 1000)
 
-    p.designNACA()
+    p.designNACA(args.min_edge / 1000)
     p.gen_stl(args.stl, args.n)
