@@ -23,7 +23,7 @@ class STL:
         
         cube = Mesh(np.concatenate([
             b.gen_stl().data.copy() for b in self.blocks
-        ]))        
+        ]),remove_duplicate_polygons=RemoveDuplicates.NONE)
 
         cube.save(fname)
           
