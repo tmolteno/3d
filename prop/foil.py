@@ -47,7 +47,7 @@ class Foil(object):
 
 
 
-class NACA4Foil(Foil):
+class NACA4(Foil):
     def __init__(self, chord, thickness, m=0.0, p=0.4, angle_of_attack=0.0):
         Foil.__init__(self,chord, angle_of_attack)
         self.thickness = thickness
@@ -103,6 +103,6 @@ class NACA4Foil(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4Foil(chord=0.1, thickness=0.15, m=0.04, p=0.5, angle_of_attack=np.pi/4)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.04, p=0.5, angle_of_attack=np.pi/4)
     f.plot()
     

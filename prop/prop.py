@@ -6,9 +6,8 @@
 
 import numpy as np
 import math
-from stl import mesh
-
 import foil
+import stl_tools
 
 class DesignParameters:
     '''Design Parameters for prop
@@ -55,66 +54,79 @@ class Prop:
             omega = (rpm/60)*2.0*np.pi
             r_m = r
             v = r_m * omega
-            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+            #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+
+    def designNACA(self):
+        trailing_thickness = 0.5
+        self.foils = []
+        for r in np.linspace(1e-6, self.radius, 40):
+            circumference = np.pi * 2 * r
+            helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
+            chord = self.get_chord(r)
+            angle_of_attack = math.atan(self.pitch / circumference)
+            f = foil.NACA4(chord=chord, thickness=0.15, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
+            self.foils.append([r, f])
+
+        for x in self.foils:
+            r, f = x
+            rpm = 10000.0
+            omega = (rpm/60)*2.0*np.pi
+            r_m = r
+            v = r_m * omega
+            #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename):
         
-        first_foil = self.foils[0]
+        stl = stl_tools.STL()
+        n = 50
+
+        top_lines = []
+        bottom_lines = []
         
         for r, f in self.foils:
-            n = 30
             pl, pu = f.get_points(n)
             ''' points are in the y - z plane. The x value is set by the radius'''
             yl, zl = pl
             yu, zu = pu
             x = np.zeros(n) + r
             
-            vertices = np.zeros([n,3])
-            vertices[:,0] = x
-            vertices[:,1] = y
-            vertices[:,2] = zl
+            line = np.zeros([n,3])
+            line[:,0] = x
+            line[:,1] = yu
+            line[:,2] = zu
             
-            print vertices
-            print yu
+            top_lines.append(line)
+            
+            line = np.zeros([n,3])
+            line[:,0] = x
+            line[:,1] = yl
+            line[:,2] = zl
+            
+            bottom_lines.append(line)
 
-        # Define the 8 vertices of the cube
-        vertices = np.array([\
-            [-1, -1, -1],
-            [+1, -1, -1],
-            [+1, +1, -1],
-            [-1, +1, -1],
-            [-1, -1, +1],
-            [+1, -1, +1],
-            [+1, +1, +1],
-            [-1, +1, +1]])
-        # Define the 12 triangles composing the cube
-        faces = np.array([\
-            [0,3,1],
-            [1,3,2],
-            [0,4,7],
-            [0,7,3],
-            [4,5,6],
-            [4,6,7],
-            [5,1,2],
-            [5,2,6],
-            [2,3,6],
-            [3,7,6],
-            [0,1,5],
-            [0,5,4]])
+        ## Do the top surface
+        for tl in top_lines:
+            stl.add_line(tl)
+            
+        ## Do the bottom surface
+        bottom_lines.reverse()
+        for bl in bottom_lines:
+            stl.add_line(bl)
+                
+        # Now join the first again.
+        stl.add_line(top_lines[0])
+        stl.gen_stl(filename)
 
-        # Create the mesh
-        cube = mesh.Mesh(np.zeros(faces.shape[0], dtype=mesh.Mesh.dtype))
-        for i, f in enumerate(faces):
-            for j in range(3):
-                cube.vectors[i][j] = vertices[f[j],:]
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Design a prop.')
+    parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
+    parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
+    parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
+    args = parser.parse_args()
+    
 
-        # Write the mesh to file "cube.stl"
-        cube.save(filename)
+    p = Prop(args.diameter/1000, args.pitch / 1000)
 
-diameter = 120.0  # mm
-pitch = 60.0 # mm
-
-p = Prop(diameter/1000, pitch / 1000)
-
-p.design()
-p.gen_stl('test.stl')
+    p.designNACA()
+    p.gen_stl(args.stl)

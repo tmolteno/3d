@@ -1,6 +1,6 @@
 module raw_blade() {
         union() {
-            import("prop2.stl");
+            import("blade5x3.stl");
         }
 }
 
