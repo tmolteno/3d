@@ -78,23 +78,6 @@ class Prop:
         for r,f in self.foils:
             v = self.get_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
-
-    def designNACA(self, trailing_thickness):
-        self.foils = []
-        for r in np.linspace(1e-6, self.radius, self.radial_steps):
-            circumference = np.pi * 2 * r
-            angle_of_attack = math.atan(self.pitch / circumference)
-
-            depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
-            thickness = self.get_foil_thickness(r)
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
-            f.set_trailing_edge(trailing_thickness/chord)
-            self.foils.append([r, f])
-
-        for r,f in self.foils:
-            v = self.get_velocity(r)
-            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename, n):
         
@@ -148,6 +131,28 @@ class Prop:
 
         stl.gen_stl(filename)
 
+
+class NACAProp(Prop):
+    ''' Prop that uses NACA Airfoils
+    '''
+    def design(self, trailing_thickness):
+        self.foils = []
+        for r in np.linspace(1e-6, self.radius, self.radial_steps):
+            circumference = np.pi * 2 * r
+            angle_of_attack = math.atan(self.pitch / circumference)
+
+            depth_max = self.get_max_depth(r)
+            chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
+            thickness = self.get_foil_thickness(r)
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
+            f.set_trailing_edge(trailing_thickness/chord)
+            self.foils.append([r, f])
+
+        for r,f in self.foils:
+            v = self.get_velocity(r)
+            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop.')
@@ -159,7 +164,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
 
-    p = Prop(args.diameter/1000, args.pitch / 1000)
+    p = NACAProp(args.diameter/1000, args.pitch / 1000)
 
-    p.designNACA(args.min_edge / 1000)
+    p.design(args.min_edge / 1000)
     p.gen_stl(args.stl, args.n)
