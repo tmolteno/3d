@@ -30,6 +30,8 @@ class Prop:
         self.diameter = diameter  # m
         self.pitch = pitch # m
         self.radius = self.diameter / 2.0
+        self.radial_resolution = 2.0 / 1000  # How often to create a profile
+        self.radial_steps = self.radius / self.radial_resolution
         
     def get_max_chord(self,r):
         ''' Allowed chord as a function of radius (m) 
@@ -66,7 +68,7 @@ class Prop:
       
     def design(self, trailing_thickness):
         self.foils = []
-        for r in np.linspace(1e-6, self.radius, 40):
+        for r in np.linspace(1e-6, self.radius, self.radial_steps):
             circumference = np.pi * 2 * r
             chord = self.get_max_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
@@ -79,7 +81,7 @@ class Prop:
 
     def designNACA(self, trailing_thickness):
         self.foils = []
-        for r in np.linspace(1e-6, self.radius, 40):
+        for r in np.linspace(1e-6, self.radius, self.radial_steps):
             circumference = np.pi * 2 * r
             angle_of_attack = math.atan(self.pitch / circumference)
 

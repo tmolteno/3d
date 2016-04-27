@@ -1,5 +1,5 @@
 prop:
-	python prop.py --diameter 120 --pitch 50 --stl 'blade5x3.ascii.stl'
+	python prop.py --diameter 130 --pitch 50 --stl 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 	openscad -m make -d pyprop.deps -o pyprop.ascii.stl pyprop.scad
 	meshlabserver -i pyprop.ascii.stl -o pyprop.stl -s meshclean.mlx

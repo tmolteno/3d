@@ -1,16 +1,13 @@
-module raw_blade() {
-        union() {
-            import("blade5x3.stl");
-        }
-}
-
 module blade() {
-    union() {
-        raw_blade();
-    }
+            import("blade5x3.stl");
 }
 
 center_hole = 5;
+hub_diameter = 12.0;
+hub_height = 10.0;
+
+$fn=121;
+
 module prop() {
     difference() {
         intersection() {
@@ -18,11 +15,10 @@ module prop() {
             rotate(0) blade();
             rotate(120) blade();
             rotate(240) blade();
-            translate([0,0,-10]) cylinder(d=12, h=10, $fn=51);
+            translate([0,0,-hub_height]) cylinder(d=hub_diameter, h=hub_height+0.5);
             }
-       //  cylinder(r=100, h=10, center=true);
         }
-       cylinder(d = center_hole, h=55, center=true, $fn=31);
+       cylinder(d = center_hole, h=55, center=true);
     }
 }
 prop();
