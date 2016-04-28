@@ -50,7 +50,16 @@ class Foil(object):
 
 
 class NACA4(Foil):
+    '''
+    Foil generated from the NACA 4 series
+    '''
+    
     def __init__(self, chord, thickness, m=0.0, p=0.4, angle_of_attack=0.0):
+        ''' 
+            Parameters:
+              m - maximum camber as a percentage of the chord.
+              p - location of maximum camber as a percentage of chord line from leading edge
+        '''
         Foil.__init__(self,chord, angle_of_attack)
         self.thickness = thickness
         self.m = m
@@ -64,6 +73,8 @@ class NACA4(Foil):
     def get_shape_points(self, n):
         ''' Return a list of x,y coordinates for the foil
             NACA report 460
+            
+            The zero in the x axis is shifted to the center of pressure (chord / 4)
         '''
         
         t = self.thickness
@@ -93,7 +104,19 @@ class NACA4(Foil):
         
         xl = x + yt*np.sin(theta)
         yl = yc - yt*np.cos(theta)
-                
+        
+        # Translate to a system where 0,0 is the max_x, max_y
+        max_y = np.max(yu)
+        print max_y
+        max_x = xu[yu==max_y][0]
+        print max_x
+        
+        xu = xu - max_x
+        xl = xl - max_x
+        
+        yu = yu - max_y
+        yl = yl - max_y
+        
         c = self.chord
         return [[xl*c,yl*c],[xu*c,yu*c]]
     
@@ -106,7 +129,7 @@ class NACA4(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4(chord=0.1, thickness=0.15, m=0.04, p=0.5, angle_of_attack=np.pi/4)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=np.pi/4)
     f.set_trailing_edge(0.01)
     f.plot()
     

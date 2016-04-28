@@ -14,13 +14,18 @@ class DesignParameters:
     
     '''
     def __init__(self):
-      self.velocity = 0.0  # m/s
+      self.velocity = 1.0  # m/s
       self.altitude = 0.0  # MAS
       self.RPM = 10000.0   #
       self.power = 70      # Watts
       self.radius = 0.0    # m
+      self.hub_radius = 5.0 / 1000
       
-      
+    def rps(self):
+      return self.RPM / 60.0
+    
+from scipy.interpolate import PchipInterpolator
+
 class Prop:
     
     def __init__(self, diameter, pitch):
@@ -33,13 +38,27 @@ class Prop:
         self.radial_resolution = 2.0 / 1000  # How often to create a profile
         self.radial_steps = self.radius / self.radial_resolution
         
+        self.param = DesignParameters()
+        
     def get_max_chord(self,r):
         ''' Allowed chord as a function of radius (m) 
             Limited by mechanical strength, or weight issues
         '''
-        chord_root = 20.0 / 1000
-        chord_end = 7.0 / 1000
-        chord = chord_end + (1.0 - r / self.radius)*(chord_root - chord_end)
+
+        hub_r = 5.0 / 1000
+        max_r = self.radius / 4
+
+        hub_c = hub_r
+        max_c = self.radius / 3
+        end_c = hub_r
+
+        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
+        y = np.array([hub_c, hub_c, max_c, end_c, end_c] )
+
+        s = PchipInterpolator(x, y)
+
+        
+        chord = s(r)
         return chord
 
     def get_foil_thickness(self,r):
@@ -55,15 +74,19 @@ class Prop:
         ''' Allowed depth of the prop as a function of radius (m)
             This is a property of the environment that the prop operates in.
         '''
-        depth = 10.0 / 1000
+        x = r / self.radius
+        hub_depth = 6.0 / 1000
+        max_depth = 15.0 / 1000
+        max_width = 1.0 / 4.0
+
+        depth = max_depth * np.exp(-5.0*(x - max_width)**2)
+        
         return depth
 
     def get_velocity(self, r):
         circumference = np.pi * 2 * r
         helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
-        rpm = 10000.0
-        rps = rpm / 60
-        v = helical_length * rps
+        v = helical_length * self.param.rps()
         return v
       
     def design(self, trailing_thickness):
@@ -137,14 +160,17 @@ class NACAProp(Prop):
     '''
     def design(self, trailing_thickness):
         self.foils = []
-        for r in np.linspace(1e-6, self.radius, self.radial_steps):
+        for r in np.linspace(self.param.hub_radius, self.radius, self.radial_steps):
             circumference = np.pi * 2 * r
-            angle_of_attack = math.atan(self.pitch / circumference)
+            # Assume a slow velocity forward, and an angle of attack of 8 degrees
+            pitch_per_rev = self.param.velocity / (self.param.rps())
+            angle_of_attack = math.atan(pitch_per_rev / circumference) + 8.0*np.pi / 180
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
             thickness = self.get_foil_thickness(r)
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.04, p=0.5, angle_of_attack=angle_of_attack)
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, \
+                m=0.04, p=0.5, angle_of_attack=angle_of_attack)
             f.set_trailing_edge(trailing_thickness/chord)
             self.foils.append([r, f])
 

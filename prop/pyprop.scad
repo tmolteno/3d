@@ -4,7 +4,7 @@ module blade() {
 
 center_hole = 5;
 hub_diameter = 12.0;
-hub_height = 10.0;
+hub_height = 6.0;
 
 $fn=121;
 
