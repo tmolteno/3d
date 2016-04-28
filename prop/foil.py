@@ -105,11 +105,12 @@ class NACA4(Foil):
         xl = x + yt*np.sin(theta)
         yl = yc - yt*np.cos(theta)
         
-        # Translate to a system where 0,0 is the max_x, max_y
+        # Translate to a system where 0,0 is the max_x, max_y (these are defined by p and t)
+        # max(yt) = 0.5, occurs at x=.2998
+        # max(dyc) = p
+        max_x = 0.3
         max_y = np.max(yu)
-        print max_y
-        max_x = xu[yu==max_y][0]
-        print max_x
+        # print np.max(yu), max_y, np.argmax(yu) 
         
         xu = xu - max_x
         xl = xl - max_x

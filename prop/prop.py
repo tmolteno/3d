@@ -46,13 +46,13 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.radius / 4
+        max_r = self.radius / 3
 
         hub_c = hub_r
         max_c = self.radius / 3
-        end_c = hub_r
+        end_c = self.radius / 8
 
-        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
+        x = np.array([0, hub_r, max_r, 0.8*self.radius, self.radius] )
         y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
 
         s = PchipInterpolator(x, y)
@@ -195,16 +195,16 @@ class NACAProp(Prop):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Design a prop.')
+    parser = argparse.ArgumentParser(description='Design a prop blade.')
     parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
     parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
-    parser.add_argument('--stl', default='prop.stl', help="The STL filename to generate.")
+    parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
 
     p = NACAProp(args.diameter/1000, args.pitch / 1000)
 
     p.design(args.min_edge / 1000)
-    p.gen_stl(args.stl, args.n)
+    p.gen_stl(args.stl_file, args.n)

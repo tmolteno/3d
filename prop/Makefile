@@ -1,6 +1,10 @@
+all:	prop scad
+
 prop:
-	python prop.py --n 40 --diameter 130 --pitch 50 --stl 'blade5x3.ascii.stl'
+	python prop.py --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
+
+scad:	prop
 	openscad -m make -d pyprop.deps -o pyprop.ascii.stl pyprop.scad
 	meshlabserver -i pyprop.ascii.stl -o pyprop.stl -s meshclean.mlx
 	
@@ -8,15 +12,13 @@ prop:
 sym:
 	python naca_sym.py
 
-all: base.stl cap.stl
-
 .SECONDARY:
 
 # Explicit wildcard expansion suppresses errors when no files are found.
 include $(wildcard *.deps)
 
 %.stl: %.ascii.stl
-	meshlabserver -i $< -o $@ -s ../meshclean.mlx
+	meshlabserver -i $< -o $@ -s meshclean.mlx
 
 %.ascii.stl: %.scad
 	openscad -m make -d $*.deps -o $@ $<
