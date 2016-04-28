@@ -1,7 +1,7 @@
 all:	prop scad
 
 prop:
-	python prop.py --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
+	python prop.py --min-edge 0.25 --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
 scad:	prop
