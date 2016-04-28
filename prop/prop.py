@@ -45,7 +45,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
 
-        hub_r = 5.0 / 1000
+        hub_r = self.param.hub_radius
         max_r = self.radius / 4
 
         hub_c = hub_r
@@ -53,11 +53,10 @@ class Prop:
         end_c = hub_r
 
         x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
-        y = np.array([hub_c, hub_c, max_c, end_c, end_c] )
+        y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
 
         s = PchipInterpolator(x, y)
 
-        
         chord = s(r)
         return chord
 
@@ -74,13 +73,18 @@ class Prop:
         ''' Allowed depth of the prop as a function of radius (m)
             This is a property of the environment that the prop operates in.
         '''
-        x = r / self.radius
+        hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
-        max_depth = 15.0 / 1000
-        max_width = 1.0 / 4.0
+        max_depth = 12.0 / 1000
+        max_r = self.radius / 4.0
+        end_depth = 2.0 / 1000
 
-        depth = max_depth * np.exp(-5.0*(x - max_width)**2)
-        
+        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
+        y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+
+        s = PchipInterpolator(x, y)
+
+        depth = s(r)
         return depth
 
     def get_velocity(self, r):
@@ -119,8 +123,18 @@ class Prop:
             yu, zu = pu
             x = np.zeros(n) + r
             
+            # Transform the profile to lie on a circle of radius r
+            c = 2.0*np.pi*r   # Circumference
+            theta_l = 2.0*np.pi*yl / c  # angular coordinate along circumference (fraction)
+            xl = r*np.cos(theta_l)
+            yl = r*np.sin(theta_l)
+
+            theta_u = 2.0*np.pi*yu / c  # angular coordinate along circumference (fraction)
+            xu = r*np.cos(theta_u)
+            yu = r*np.sin(theta_u)
+            
             line = np.zeros([n,3])
-            line[:,0] = x*scale
+            line[:,0] = xu*scale
             line[:,1] = yu*scale
             line[:,2] = zu*scale
             
@@ -128,7 +142,7 @@ class Prop:
             top_edge.append(line[-1,:])
             
             line = np.zeros([n,3])
-            line[:,0] = x*scale
+            line[:,0] = xl*scale
             line[:,1] = yl*scale
             line[:,2] = zl*scale
             
