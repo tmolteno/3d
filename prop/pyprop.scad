@@ -15,10 +15,11 @@ module prop() {
             rotate(0) blade();
             rotate(120) blade();
             rotate(240) blade();
-            translate([0,0,-hub_height]) cylinder(d=hub_diameter, h=hub_height+0.5);
+            translate([0,0,-hub_height]) cylinder(d=hub_diameter, h=hub_height);
             }
         }
        cylinder(d = center_hole, h=55, center=true);
+       translate([-100,-100,0]) cube([200,200,200]);
     }
 }
 prop();
