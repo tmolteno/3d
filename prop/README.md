@@ -1,3 +1,12 @@
+# Propeller Design in Python
+
+This code will generate propeller designs automatically that can be 3D printed. Below is an example of a three-bladed prop designed with this software.
+
+![alt text][prop5x3]
+
+
+
+
 # Creating Props using JavaProp, FreeCAD and OpenSCAD.
 
 ## Step 1. Design your prop in JavaProp.
@@ -25,3 +34,6 @@ Then export this as an .stl file.
 # Step 4. Use OpenSCAD
 
 Import the .stl file inside openscad. The file prop5x3.scad shows how this is done.
+
+
+[prop5x3]: https://github.com/tmolteno/3d/blob/master/prop/images/prop5x3.png "Three Bladed Prop"

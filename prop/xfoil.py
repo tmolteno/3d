@@ -220,5 +220,7 @@ class NonBlockingStreamReader:
 
 
 if __name__ == "__main__":
-    print oper_visc_alpha("NACA 2215", [0,5,1], 2E6, Mach=.6,
-                          gen_naca=True, show_seconds=2)
+    #print oper_visc_alpha("NACA 2215", [0,35,5], 5E4, Mach=.06,
+                          #gen_naca=True, show_seconds=20)
+    print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
+                        gen_naca=True, show_seconds=20)

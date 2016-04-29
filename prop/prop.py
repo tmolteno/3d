@@ -75,9 +75,9 @@ class Prop:
         '''
         hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
-        max_depth = 12.0 / 1000
+        max_depth = 13.0 / 1000
         max_r = self.radius / 4.0
-        end_depth = 2.0 / 1000
+        end_depth = 3.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
@@ -178,7 +178,7 @@ class NACAProp(Prop):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             pitch_per_rev = self.param.velocity / (self.param.rps())
-            angle_of_attack = math.atan(pitch_per_rev / circumference) + 12.0*np.pi / 180
+            angle_of_attack = math.atan(pitch_per_rev / circumference) + 15.0*np.pi / 180
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
