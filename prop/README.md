@@ -4,8 +4,25 @@ This code will generate propeller designs automatically that can be 3D printed. 
 
 ![alt text][prop5x3]
 
+## Creating a blade
+
+A single blade is generated as an STL file using the command:
+
+    python prop.py --min-edge 0.35 --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
+
+The mesh can be cleaned using meshlab to remove duplicate vertices with:
+
+    meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
+
+## Using OpenSCAD to generate a propeller
+
+OpenSCAD imports the blade STL and generates a prop. The file pyprop.scad generates a three bladed prop (the one shown above).
 
 
+## TODO
+
+* Optimize foils for angle of attack and shape.
+* Allow JSON input of optimization criterion (like free space, torque, RPM and power)
 
 # Creating Props using JavaProp, FreeCAD and OpenSCAD.
 
