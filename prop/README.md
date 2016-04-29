@@ -1,5 +1,6 @@
-# Prop
+# Propeller Design in Python
 
+This code will generate propeller designs automatically that can be 3D printed. Below is an example of a three-bladed prop designed with this software.
 
 ![alt text][prop5x3]
 
@@ -35,4 +36,4 @@ Then export this as an .stl file.
 Import the .stl file inside openscad. The file prop5x3.scad shows how this is done.
 
 
-[prop5x3]: https://github.com/tmolteno/3d/raw/master/3d/prop/images/prop5x3.png "Three Bladed Prop"
+[prop5x3]: https://github.com/tmolteno/3d/blob/master/prop/images/prop5x3.png "Three Bladed Prop"
