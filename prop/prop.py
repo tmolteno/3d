@@ -16,7 +16,7 @@ class DesignParameters:
     def __init__(self):
       self.velocity = 1.0  # m/s
       self.altitude = 0.0  # MAS
-      self.RPM = 10000.0   #
+      self.RPM = 3000.0   #
       self.power = 70      # Watts
       self.radius = 0.0    # m
       self.hub_radius = 5.0 / 1000
@@ -36,7 +36,7 @@ class Prop:
         self.pitch = pitch # m
         self.radius = self.diameter / 2.0
         self.radial_resolution = 2.0 / 1000  # How often to create a profile
-        self.radial_steps = self.radius / self.radial_resolution
+        self.radial_steps = int(self.radius / self.radial_resolution)
         
         self.param = DesignParameters()
         
@@ -52,7 +52,7 @@ class Prop:
         max_c = self.radius / 3
         end_c = self.radius / 8
 
-        x = np.array([0, hub_r, max_r, 0.8*self.radius, self.radius] )
+        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
         y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
 
         s = PchipInterpolator(x, y)
@@ -75,8 +75,8 @@ class Prop:
         '''
         hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
-        max_depth = 13.0 / 1000
-        max_r = self.radius / 4.0
+        max_depth = 15.0 / 1000
+        max_r = self.radius / 2.0
         end_depth = 3.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
@@ -173,12 +173,15 @@ class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
     def design(self, trailing_thickness):
+        forward_travel_per_rev = self.param.velocity / (self.param.rps())
+        print("Revs per second %f" % self.param.rps())
+        print("Forward travel per rev %f" % forward_travel_per_rev)
         self.foils = []
         for r in np.linspace(self.param.hub_radius, self.radius, self.radial_steps):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            pitch_per_rev = self.param.velocity / (self.param.rps())
-            angle_of_attack = math.atan(pitch_per_rev / circumference) + 15.0*np.pi / 180
+            
+            angle_of_attack = math.atan(forward_travel_per_rev / circumference) + 15.0*np.pi / 180
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
