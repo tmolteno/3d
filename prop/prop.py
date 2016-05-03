@@ -9,36 +9,17 @@ import math
 import foil
 import stl_tools
 
-class DesignParameters:
-    '''Design Parameters for prop
-    
-    '''
-    def __init__(self):
-      self.velocity = 1.0  # m/s
-      self.altitude = 0.0  # MAS
-      self.RPM = 3000.0   #
-      self.power = 70      # Watts
-      self.radius = 0.0    # m
-      self.hub_radius = 5.0 / 1000
-      
-    def rps(self):
-      return self.RPM / 60.0
-    
+from design_parameters import DesignParameters
+
 from scipy.interpolate import PchipInterpolator
 
 class Prop:
     
-    def __init__(self, diameter, pitch):
-        ''' TODO don't use pitch. It only works in cases where
-            the flow is uniform
-        '''
-        self.diameter = diameter  # m
-        self.pitch = pitch # m
-        self.radius = self.diameter / 2.0
+    def __init__(self, param):
+        self.param = param
         self.radial_resolution = 2.0 / 1000  # How often to create a profile
-        self.radial_steps = int(self.radius / self.radial_resolution)
+        self.radial_steps = int(self.param.radius / self.radial_resolution)
         
-        self.param = DesignParameters()
         
     def get_max_chord(self,r):
         ''' Allowed chord as a function of radius (m) 
@@ -46,13 +27,13 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.radius / 3
+        max_r = self.param.radius / 3
 
         hub_c = hub_r
-        max_c = self.radius / 3
-        end_c = self.radius / 8
+        max_c = self.param.radius / 3
+        end_c = self.param.radius / 8
 
-        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
+        x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
 
         s = PchipInterpolator(x, y)
@@ -66,7 +47,7 @@ class Prop:
         '''
         thickness_root = 5.0 / 1000
         thickness_end = 1.0 / 1000
-        thickness = thickness_end + (1.0 - r / self.radius)*(thickness_root - thickness_end)
+        thickness = thickness_end + (1.0 - r / self.param.radius)*(thickness_root - thickness_end)
         return thickness
 
     def get_max_depth(self,r):
@@ -76,10 +57,10 @@ class Prop:
         hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
         max_depth = 15.0 / 1000
-        max_r = self.radius / 2.0
+        max_r = self.param.radius / 2.0
         end_depth = 3.0 / 1000
 
-        x = np.array([0, hub_r, max_r, 0.9*self.radius, self.radius] )
+        x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
 
         s = PchipInterpolator(x, y)
@@ -87,15 +68,24 @@ class Prop:
         depth = s(r)
         return depth
 
-    def get_velocity(self, r):
+    def get_blade_velocity(self, r):
         circumference = np.pi * 2 * r
-        helical_length = np.sqrt(circumference*circumference + self.pitch*self.pitch)
+        forward_travel_per_rev = self.param.velocity / (self.param.rps())
+
+        helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
         v = helical_length * self.param.rps()
         return v
       
+    def get_forward_windspeed(self, r):
+        ''' Get the airspeed as a function of radius.
+            For hovering props, this will vary considerably and this function should contain
+            a model that describes this.
+        '''
+        return self.param.velocity
+      
     def design(self, trailing_thickness):
         self.foils = []
-        for r in np.linspace(1e-6, self.radius, self.radial_steps):
+        for r in np.linspace(1e-6, self.param.radius, self.radial_steps):
             circumference = np.pi * 2 * r
             chord = self.get_max_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
@@ -103,7 +93,7 @@ class Prop:
             self.foils.append([r, f])
 
         for r,f in self.foils:
-            v = self.get_velocity(r)
+            v = self.get_blade_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
             
     def gen_stl(self, filename, n):
@@ -177,7 +167,7 @@ class NACAProp(Prop):
         print("Revs per second %f" % self.param.rps())
         print("Forward travel per rev %f" % forward_travel_per_rev)
         self.foils = []
-        for r in np.linspace(self.param.hub_radius, self.radius, self.radial_steps):
+        for r in np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             
@@ -192,22 +182,21 @@ class NACAProp(Prop):
             self.foils.append([r, f])
 
         for r,f in self.foils:
-            v = self.get_velocity(r)
+            v = self.get_blade_velocity(r)
             print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
 
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop blade.')
-    parser.add_argument('--diameter', type=float, required=True, help="Propeller diameter in mm.")
-    parser.add_argument('--pitch', type=float, required=True, help="The pitch in mm")
+    parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
-
-    p = NACAProp(args.diameter/1000, args.pitch / 1000)
+    param = DesignParameters(args.param)
+    p = NACAProp(param)
 
     p.design(args.min_edge / 1000)
     p.gen_stl(args.stl_file, args.n)

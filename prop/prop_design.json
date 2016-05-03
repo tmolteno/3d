@@ -1,0 +1,8 @@
+{
+  "radius": 0.0625, 
+  "power": 70, 
+  "hub_radius": 0.005, 
+  "altitude": 0.0, 
+  "velocity": 1.0, 
+  "RPM": 8000.0
+}
