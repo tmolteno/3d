@@ -5,7 +5,7 @@ class DesignParameters:
     
     '''
     def __init__(self, filename=0):
-        self.velocity = 1.0  # m/s
+        self.forward_airspeed = 1.0  # m/s
         self.altitude = 0.0  # MAS
         self.RPM = 3000.0   #
         self.power = 70      # Watts
@@ -23,7 +23,7 @@ class DesignParameters:
     
     def to_json(self):
         configdict = {}
-        configdict['velocity'] = self.velocity
+        configdict['forward_airspeed'] = self.forward_airspeed
         configdict['altitude'] = self.altitude
         configdict['RPM'] = self.RPM
         configdict['power'] = self.power
@@ -34,7 +34,7 @@ class DesignParameters:
       
     def from_json(self, data):
         settings = json.loads(data)
-        self.velocity = float(settings['velocity'])
+        self.forward_airspeed = float(settings['forward_airspeed'])
         self.altitude = float(settings['altitude'])
         self.RPM = float(settings['RPM'])
         self.power = settings['power']

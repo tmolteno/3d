@@ -70,7 +70,7 @@ class Prop:
 
     def get_blade_velocity(self, r):
         circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.param.velocity / (self.param.rps())
+        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
 
         helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
         v = helical_length * self.param.rps()
@@ -81,7 +81,7 @@ class Prop:
             For hovering props, this will vary considerably and this function should contain
             a model that describes this.
         '''
-        return self.param.velocity
+        return self.param.forward_airspeed
       
     def design(self, trailing_thickness):
         self.foils = []
@@ -163,7 +163,7 @@ class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
     def design(self, trailing_thickness):
-        forward_travel_per_rev = self.param.velocity / (self.param.rps())
+        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
         print("Revs per second %f" % self.param.rps())
         print("Forward travel per rev %f" % forward_travel_per_rev)
         self.foils = []
