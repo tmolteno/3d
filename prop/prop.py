@@ -27,7 +27,7 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.param.radius / 3
+        max_r = self.param.radius / 2
 
         hub_c = hub_r
         max_c = self.param.radius / 3
@@ -70,7 +70,7 @@ class Prop:
 
     def get_blade_velocity(self, r):
         circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
+        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
 
         helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
         v = helical_length * self.param.rps()
@@ -81,7 +81,20 @@ class Prop:
             For hovering props, this will vary considerably and this function should contain
             a model that describes this.
         '''
-        return self.param.forward_airspeed
+        v = self.param.forward_airspeed
+        
+        hub_v = 3.0*v    # These should be determined by the thrust and area
+        max_v = 2.0*v
+        end_v = 1.2*v
+
+        max_r = self.param.radius / 2.0
+
+        x = np.array([0, max_r, self.param.radius, 2*self.param.radius] )
+        y = np.array([hub_v, max_v, end_v, v] )
+
+        s = PchipInterpolator(x, y)
+
+        return s(r)
       
     def design(self, trailing_thickness):
         self.foils = []
@@ -154,8 +167,6 @@ class Prop:
         stl.add_line(bottom_edge)
         stl.add_line(top_edge)
         
-        print bottom_edge
-
         stl.gen_stl(filename)
 
 
