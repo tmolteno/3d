@@ -81,7 +81,9 @@ class NACA4(Foil):
         p = self.p
         m = self.m
         
-        x = np.linspace(0, 1.0, n)
+        x = np.linspace(0, 1.0, n)    # TODO use cosine spacing of points.
+        x = 1.0 - np.cos(x * np.pi / 2)
+        
         y_offset = np.linspace(0, self.trailing_edge/2, n)
       
         yt = 5.0*t*(0.2969*np.sqrt(x) + \
