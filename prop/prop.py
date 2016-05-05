@@ -15,9 +15,9 @@ from scipy.interpolate import PchipInterpolator
 
 class Prop:
     
-    def __init__(self, param):
+    def __init__(self, param, resolution):
         self.param = param
-        self.radial_resolution = 2.0 / 1000  # How often to create a profile
+        self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
         
         
@@ -108,49 +108,104 @@ class Prop:
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+    
+    
+    def get_foil_points(self, n, r, f):
+        pl, pu = f.get_points(n)
+        ''' points are in the y - z plane. The x value is set by the radius'''
+        yl, zl = pl
+        yu, zu = pu
+        x = np.zeros(n) + r
+        
+        # Transform the profile to lie on a circle of radius r
+        c = 2.0*np.pi*r   # Circumference
+        theta_l = 2.0*np.pi*yl / c  # angular coordinate along circumference (fraction)
+        xl = r*np.cos(theta_l)
+        yl = r*np.sin(theta_l)
+
+        theta_u = 2.0*np.pi*yu / c  # angular coordinate along circumference (fraction)
+        xu = r*np.cos(theta_u)
+        yu = r*np.sin(theta_u)
+        
+        upper_line = np.zeros([n,3])
+        upper_line[:,0] = xu
+        upper_line[:,1] = yu
+        upper_line[:,2] = zu
+        
+        lower_line = np.zeros([n,3])
+        lower_line[:,0] = xl
+        lower_line[:,1] = yl
+        lower_line[:,2] = zl
+        
+        return lower_line, upper_line
+
+    def gen_mesh(self, filename, n):
+        import pygmsh as pg
+        geom = pg.Geometry()
+
+        loops = []
+        for r, f in self.foils:
+            car = 0.5/1000
+            line_l, line_u = self.get_foil_points(n, r, f)
+            loop_points = np.concatenate((line_l, line_u[::-1]), axis=0)
+            g_pts = []
+            for p in loop_points[0:-2]:
+              g_pts.append(geom.add_point(p,car))
+              
+            l_foil = geom.add_bspline(g_pts)
+            
+            loops.append(l_foil)
+
+        #print geom.get_code()
+        geom.add_ruled_surface([loops[0], loops[1]])
+        
+        #l in range(len(loops) - 1):
+            #geom.add_surface(loops[l], loops[l+1])
+        #poly = geom.add_polygon([
+            #[0.0,   0.5, 0.0],
+            #[-0.1,  0.1, 0.0],
+            #[-0.5,  0.0, 0.0],
+            #[-0.1, -0.1, 0.0],
+            #[0.0,  -0.5, 0.0],
+            #[0.1,  -0.1, 0.0],
+            #[0.5,   0.0, 0.0],
+            #[0.1,   0.1, 0.0]
+            #],
+            #lcar=0.05
+            #)
+        #axis = [0, 0, 1]
+
+        #geom.extrude(
+            #'Surface{%s}' % poly,
+            #translation_axis=axis,
+            #rotation_axis=axis,
+            #point_on_axis=[0, 0, 0],
+            #angle=2.0 / 6.0 * np.pi
+            #)
+
+        points, cells = pg.generate_mesh(geom)
+
+        import meshio
+        meshio.write(filename, points, cells)
             
     def gen_stl(self, filename, n):
-        
         stl = stl_tools.STL()
-        scale = 1000.0 # Convert to mm.
         
+        scale = 1000.0 # Convert to mm.
         top_lines = []
         bottom_lines = []
         
         bottom_edge = []
         top_edge = []
         for r, f in self.foils:
-            pl, pu = f.get_points(n)
-            ''' points are in the y - z plane. The x value is set by the radius'''
-            yl, zl = pl
-            yu, zu = pu
-            x = np.zeros(n) + r
+            line_l, line_u = self.get_foil_points(n, r, f)
             
-            # Transform the profile to lie on a circle of radius r
-            c = 2.0*np.pi*r   # Circumference
-            theta_l = 2.0*np.pi*yl / c  # angular coordinate along circumference (fraction)
-            xl = r*np.cos(theta_l)
-            yl = r*np.sin(theta_l)
-
-            theta_u = 2.0*np.pi*yu / c  # angular coordinate along circumference (fraction)
-            xu = r*np.cos(theta_u)
-            yu = r*np.sin(theta_u)
+            top_lines.append(line_u*scale)
+            top_edge.append(line_u[-1,:]*scale)
             
-            line = np.zeros([n,3])
-            line[:,0] = xu*scale
-            line[:,1] = yu*scale
-            line[:,2] = zu*scale
             
-            top_lines.append(line)
-            top_edge.append(line[-1,:])
-            
-            line = np.zeros([n,3])
-            line[:,0] = xl*scale
-            line[:,1] = yl*scale
-            line[:,2] = zl*scale
-            
-            bottom_lines.append(line)
-            bottom_edge.append(line[-1,:])
+            bottom_lines.append(line_l*scale)
+            bottom_edge.append(line_l[-1,:]*scale)
 
         stl.add_line(bottom_lines[0])
         ## Do the top surface
@@ -202,12 +257,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Design a prop blade.')
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
+    parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
+    parser.add_argument('--resolution', type=float, default=2.0, help="The spacing between foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
     param = DesignParameters(args.param)
-    p = NACAProp(param)
-
+    p = NACAProp(param, args.resolution / 1000)
     p.design(args.min_edge / 1000)
+
+    if (args.mesh):
+      p.gen_mesh('gmsh.vtu', args.n)
+      
     p.gen_stl(args.stl_file, args.n)
