@@ -145,7 +145,7 @@ class Xfoil():
     
     def __init__(self, path="/usr/bin"):
         """Spawn xfoil child process"""
-        xf = "/usr/bin/xfoil"
+        xf = "/home/tim/github/xfoil/build/bin/xfoil"
         self.xfinst = subp.Popen(xf,
                   stdin=subp.PIPE, stdout=subp.PIPE, stderr=subp.PIPE)
         self._stdoutnonblock = NonBlockingStreamReader(self.xfinst.stdout)
@@ -219,8 +219,10 @@ class NonBlockingStreamReader:
             return None
 
 
+import foil
+
 if __name__ == "__main__":
-    #print oper_visc_alpha("NACA 2215", [0,35,5], 5E4, Mach=.06,
-                          #gen_naca=True, show_seconds=20)
-    print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
-                        gen_naca=True, show_seconds=20)
+    polar = oper_visc_alpha("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
+    print polar
+    #print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
+                        #gen_naca=True, show_seconds=20)

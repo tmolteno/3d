@@ -1,5 +1,8 @@
 import numpy as np
 
+import xfoil
+from random import choice
+from string import ascii_uppercase
 
 class Foil(object):
     def __init__(self, chord, angle_of_attack):
@@ -25,7 +28,7 @@ class Foil(object):
         self.trailing_edge = t
   
     def get_shape_points(self, n):
-        ''' Return a list of x,y coordinates for the foil
+        ''' Return a list of x,y coordinates for the foil with zero angle of attack
         '''
         x = np.linspace(0, self.chord, n)
         y = 0.001*np.ones(n)
@@ -48,7 +51,39 @@ class Foil(object):
         return [x2,y2]
 
 
+    def simulate_coef(self, velocity):
+      ''' Use XFOIL to simulate the performance of this get_shape
+      '''
+      pl, pu = self.get_shape_points(n=30)
+      
+      ''' This contains only the X,Y coordinates, which run from the 
+          trailing edge, round the leading edge, back to the trailing edge 
+          in either direction:
+      '''
+      xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
+      ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
+      
+      coordslist = np.array((xcoords, ycoords)).T
+      coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
+                      for coord in coordslist]
+      # Join with linebreaks in between
+      points = '\n'.join(coordstrlist)
+      
+      Re = self.Reynolds(velocity)
 
+      # Save points to a file
+      randstr = ''.join(choice(ascii_uppercase) for i in range(20))
+      filename = "parsec_{}.dat".format(randstr)
+      with open(filename, 'w') as af:
+        af.write(points)
+        
+      # Let Xfoil do its magic
+      print self.aoa
+      polar = xfoil.oper_visc_alpha(filename, self.aoa * 180 / np.pi, Re,
+                                    iterlim=80, show_seconds=0)
+      return polar
+    
+    
 class NACA4(Foil):
     '''
     Foil generated from the NACA 4 series
@@ -81,8 +116,9 @@ class NACA4(Foil):
         p = self.p
         m = self.m
         
-        x = np.linspace(0, 1.0, n)    # TODO use cosine spacing of points.
-        x = 1.0 - np.cos(x * np.pi / 2)
+        beta = np.linspace(0, np.pi, n)    # Use cosine spacing of points.
+        x = (1.0 - np.cos(beta))/2
+        print x
         
         y_offset = np.linspace(0, self.trailing_edge/2, n)
       
@@ -90,7 +126,7 @@ class NACA4(Foil):
             -0.1260*(x) + \
             -0.3516*(x**2) + \
              0.2843*(x**3) + \
-            -0.1015*(x**4)) + y_offset
+            -0.1036*(x**4)) + y_offset
 
         yc = (m / (p**2)) * (2.0*p*x - x**2) 
         yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
@@ -132,7 +168,8 @@ class NACA4(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=np.pi/4)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
     f.plot()
+    print f.simulate_coef(1.0)
     
