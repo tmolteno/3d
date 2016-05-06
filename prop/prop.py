@@ -68,6 +68,13 @@ class Prop:
         depth = s(r)
         return depth
 
+    def get_helical_length(self, r):
+        circumference = np.pi * 2 * r
+        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
+
+        helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
+        return helical_length
+
     def get_blade_velocity(self, r):
         circumference = np.pi * 2 * r
         forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
@@ -237,15 +244,18 @@ class NACAProp(Prop):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             
-            twist = math.atan(forward_travel_per_rev / circumference) + 1.0*np.pi / 180
+            twist = math.atan(forward_travel_per_rev / circumference) + 8.0*np.pi / 180
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
             thickness = self.get_foil_thickness(r)
+            
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
                 m=0.1, p=0.5, angle_of_attack=twist)
+            
             f.set_trailing_edge(trailing_thickness/chord)
             
+            v = self.get_blade_velocity(r)
 
             self.foils.append([r, f])
 
@@ -257,9 +267,15 @@ class NACAProp(Prop):
 
             alpha = f.aoa - twist
           
-            polars = f.simulate_coef(v, alpha)
+            polars = f.get_polars(v)
             
-            print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), polars['CL'] / polars['CD'])
+            cl = np.array(polars['CL'])
+            cd = np.array(polars['CD'])
+            alfa = np.radians(polars['alpha'])
+                            
+            j = np.argmax(cl)
+            f.aoa = alfa[j] + twist
+            print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
 
 
 if __name__ == "__main__":

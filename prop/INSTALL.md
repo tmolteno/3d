@@ -1,5 +1,5 @@
 # Prereq
     sudo aptitude install xfoil python-pip
-    sudo pip install numpy-stl
+    sudo pip install numpy-stl enum enum34
 
 

@@ -52,7 +52,8 @@ class Foil(object):
         return [x2,y2]
 
 
-    def simulate_coef(self, velocity, alpha):
+    def get_polars(self, velocity):
+      
       ''' Use XFOIL to simulate the performance of this get_shape
       '''
       pl, pu = self.get_shape_points(n=30)
@@ -79,15 +80,19 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      result = xfoil.oper_visc_alpha(filename, alpha * 180 / np.pi, Re,
-                                    iterlim=1880, show_seconds=3)
-      
-      
+      alfa = (-10, 30, 2)
+      results = xfoil.oper_visc_alpha(filename, alfa, Re,
+                                    iterlim=1880, show_seconds=0)
+      labels = results[1]
+      values = results[0]
       
       polar = {}
+      for label in labels:
+          polar[label] = []
       
-      for label, value in zip(result[1], result[0][0]):
-          polar[label] = value
+      for v in values:
+          for label, value in zip(labels, v):
+            polar[label].append(value)
       
       os.remove(filename)
       return polar
@@ -178,9 +183,19 @@ if __name__ == "__main__":
     
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
-    angles = np.linspace(-10,30, 30)
-    for a in angles:
-      alpha = a*np.pi / 180.0
-      polars = f.simulate_coef(100.0, alpha)
-      print "%f %f" % (a, polars['CL'] / polars['CD'])
     
+    angles = np.linspace(-10,30, 25)
+    
+    polars = f.get_polars(10.0)
+
+    alpha = polars['alpha']
+    for i,a in enumerate(alpha):
+      print "%f %f" % (a, polars['CL'][i] / polars['CD'][i])
+    
+    print polars.keys()
+    
+    import matplotlib.pyplot as plt
+    plt.plot(polars['alpha'], polars['CL'], 'x')
+    plt.plot(polars['alpha'], polars['CD'], 'o')
+    plt.plot(polars['alpha'], polars['CDp'], 'o')
+    plt.show()
