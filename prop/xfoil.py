@@ -24,6 +24,11 @@ import re
 from threading import Thread
 from Queue import Queue, Empty
 
+
+'''
+   INSTALL from https://github.com/RobotLocomotion/xfoil.git
+'''
+
 def oper_visc_alpha(*args, **kwargs):
     """Wrapper for _oper_visc"""
     return _oper_visc(["ALFA","ASEQ"], *args, **kwargs)
