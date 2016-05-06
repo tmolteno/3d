@@ -78,9 +78,12 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      print self.aoa
-      polar = xfoil.oper_visc_alpha(filename, self.aoa * 180 / np.pi, Re,
+      result = xfoil.oper_visc_alpha(filename, self.aoa * 180 / np.pi, Re,
                                     iterlim=80, show_seconds=0)
+      polar = {}
+      for label, value in zip(result[1], result[0][0]):
+          polar[label] = value
+          
       return polar
     
     
