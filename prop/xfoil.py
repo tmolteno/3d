@@ -94,14 +94,14 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     # List polar and send recognizable end marker
     xf.cmd("PLIS\nENDD\n\n", autonewline=False)
     
-    print "Xfoil module starting read"
+    #print "Xfoil module starting read"
     # Keep reading until end marker is encountered
     output = ['']
     while not re.search("ENDD", output[-1]):
         line = xf.readline()
         if line:
             output.append(line)
-    print "Xfoil module ending read"
+    #print "Xfoil module ending read"
     if show_seconds:
         sleep(show_seconds)
     #print ''.join(output)

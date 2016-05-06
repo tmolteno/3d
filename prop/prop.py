@@ -237,19 +237,29 @@ class NACAProp(Prop):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             
-            angle_of_attack = math.atan(forward_travel_per_rev / circumference) + 15.0*np.pi / 180
+            twist = math.atan(forward_travel_per_rev / circumference)
 
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(angle_of_attack))
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
             thickness = self.get_foil_thickness(r)/1.5
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
-                m=0.1, p=0.5, angle_of_attack=angle_of_attack)
+                m=0.1, p=0.5, angle_of_attack=twist + 5.0*np.pi / 180)
             f.set_trailing_edge(trailing_thickness/chord)
+            
+
             self.foils.append([r, f])
 
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
-            print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
+            circumference = np.pi * 2 * r
+            # Assume a slow velocity forward, and an angle of attack of 8 degrees
+            twist = math.atan(forward_travel_per_rev / circumference)
+
+            alpha = f.aoa - twist
+          
+            polars = f.simulate_coef(v, alpha)
+            
+            print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), polars['CL'] / polars['CD'])
 
 
 if __name__ == "__main__":

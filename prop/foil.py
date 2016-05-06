@@ -52,7 +52,7 @@ class Foil(object):
         return [x2,y2]
 
 
-    def simulate_coef(self, velocity):
+    def simulate_coef(self, velocity, alpha):
       ''' Use XFOIL to simulate the performance of this get_shape
       '''
       pl, pu = self.get_shape_points(n=30)
@@ -79,12 +79,13 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      result = xfoil.oper_visc_alpha(filename, self.aoa * 180 / np.pi, Re,
-                                    iterlim=1880, show_seconds=1)
+      result = xfoil.oper_visc_alpha(filename, alpha * 180 / np.pi, Re,
+                                    iterlim=1880, show_seconds=3)
       
-      print result
+      
       
       polar = {}
+      
       for label, value in zip(result[1], result[0][0]):
           polar[label] = value
       
@@ -180,7 +181,6 @@ if __name__ == "__main__":
     angles = np.linspace(-10,30, 30)
     for a in angles:
       alpha = a*np.pi / 180.0
-      f.aoa = alpha
-      polars = f.simulate_coef(100.0)
+      polars = f.simulate_coef(100.0, alpha)
       print "%f %f" % (a, polars['CL'] / polars['CD'])
     
