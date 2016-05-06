@@ -3,6 +3,7 @@ import numpy as np
 import xfoil
 from random import choice
 from string import ascii_uppercase
+import os
 
 class Foil(object):
     def __init__(self, chord, angle_of_attack):
@@ -79,11 +80,15 @@ class Foil(object):
         
       # Let Xfoil do its magic
       result = xfoil.oper_visc_alpha(filename, self.aoa * 180 / np.pi, Re,
-                                    iterlim=80, show_seconds=0)
+                                    iterlim=1880, show_seconds=1)
+      
+      print result
+      
       polar = {}
       for label, value in zip(result[1], result[0][0]):
           polar[label] = value
-          
+      
+      os.remove(filename)
       return polar
     
     
@@ -121,7 +126,6 @@ class NACA4(Foil):
         
         beta = np.linspace(0, np.pi, n)    # Use cosine spacing of points.
         x = (1.0 - np.cos(beta))/2
-        print x
         
         y_offset = np.linspace(0, self.trailing_edge/2, n)
       
@@ -173,6 +177,10 @@ if __name__ == "__main__":
     
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
-    polars = f.simulate_coef(1.0)
-    print 
+    angles = np.linspace(-10,30, 30)
+    for a in angles:
+      alpha = a*np.pi / 180.0
+      f.aoa = alpha
+      polars = f.simulate_coef(100.0)
+      print "%f %f" % (a, polars['CL'] / polars['CD'])
     
