@@ -237,13 +237,13 @@ class NACAProp(Prop):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             
-            twist = math.atan(forward_travel_per_rev / circumference)
+            twist = math.atan(forward_travel_per_rev / circumference) + 1.0*np.pi / 180
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
-            thickness = self.get_foil_thickness(r)/1.5
+            thickness = self.get_foil_thickness(r)
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
-                m=0.1, p=0.5, angle_of_attack=twist + 5.0*np.pi / 180)
+                m=0.1, p=0.5, angle_of_attack=twist)
             f.set_trailing_edge(trailing_thickness/chord)
             
 
