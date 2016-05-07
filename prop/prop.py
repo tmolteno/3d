@@ -76,11 +76,7 @@ class Prop:
         return helical_length
 
     def get_blade_velocity(self, r):
-        circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
-
-        helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
-        v = helical_length * self.param.rps()
+        v = self.get_helical_length(r) * self.param.rps()
         return v
       
     def get_forward_windspeed(self, r):
@@ -254,8 +250,6 @@ class NACAProp(Prop):
                 m=0.1, p=0.5, angle_of_attack=twist)
             
             f.set_trailing_edge(trailing_thickness/chord)
-            
-            v = self.get_blade_velocity(r)
 
             self.foils.append([r, f])
 
@@ -264,8 +258,6 @@ class NACAProp(Prop):
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = math.atan(forward_travel_per_rev / circumference)
-
-            alpha = f.aoa - twist
           
             polars = f.get_polars(v)
             
@@ -273,7 +265,7 @@ class NACAProp(Prop):
             cd = np.array(polars['CD'])
             alfa = np.radians(polars['alpha'])
                             
-            j = np.argmax(cl)
+            j = np.argmax(cl/cd)
             f.aoa = alfa[j] + twist
             print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
 

@@ -21,6 +21,9 @@ class Foil(object):
         L = self.chord
         return rho*velocity*L/nu
       
+    def Mach(self, velocity, rho=1.225, nu=15.11e-6):
+        return velocity / 330.0
+      
       
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
@@ -56,7 +59,7 @@ class Foil(object):
       
       ''' Use XFOIL to simulate the performance of this get_shape
       '''
-      pl, pu = self.get_shape_points(n=30)
+      pl, pu = self.get_shape_points(n=80)
       
       ''' This contains only the X,Y coordinates, which run from the 
           trailing edge, round the leading edge, back to the trailing edge 
@@ -64,6 +67,12 @@ class Foil(object):
       '''
       xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
       ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
+      
+      #xcoords = np.append(xcoords, pl[0][-1] )
+      #ycoords = np.append(ycoords, pl[1][-1] )
+      end_removal = 10
+      xcoords = xcoords[0:-end_removal]
+      ycoords = ycoords[0:-end_removal]
       
       coordslist = np.array((xcoords, ycoords)).T
       coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
@@ -80,9 +89,9 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      alfa = (-10, 30, 2)
-      results = xfoil.oper_visc_alpha(filename, alfa, Re,
-                                    iterlim=1880, show_seconds=0)
+      alfa = (0, 26, 2)
+      results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
+                                    iterlim=88, show_seconds=2)
       labels = results[1]
       values = results[0]
       
@@ -184,7 +193,6 @@ if __name__ == "__main__":
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
     
-    angles = np.linspace(-10,30, 25)
     
     polars = f.get_polars(10.0)
 
@@ -197,5 +205,5 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.plot(polars['alpha'], polars['CL'], 'x')
     plt.plot(polars['alpha'], polars['CD'], 'o')
-    plt.plot(polars['alpha'], polars['CDp'], 'o')
+    plt.plot(polars['alpha'], polars['CDp'], '.')
     plt.show()

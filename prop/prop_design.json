@@ -1,9 +1,9 @@
 {
     "altitude": 0.0,
-    "forward_airspeed": 10.0,
-    "hub_radius": 0.01,
+    "forward_airspeed": 2.0,
+    "hub_radius": 0.007,
     "motor_power": 100,
     "motor_rpm": 10000.0,
     "motor_torque": 12.0,
-    "radius": 0.125
+    "radius": 0.0625
 }
