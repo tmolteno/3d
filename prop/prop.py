@@ -253,6 +253,7 @@ class NACAProp(Prop):
 
             self.foils.append([r, f])
 
+        optimum_aoa = []
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
             circumference = np.pi * 2 * r
@@ -266,9 +267,19 @@ class NACAProp(Prop):
             alfa = np.radians(polars['alpha'])
                             
             j = np.argmax(cl/cd)
+            
+            optimum_aoa.append(alfa[j])
+            print "Max : %f %f %f" % (cl[j], cd[j], np.degrees(alfa[j]))
             f.aoa = alfa[j] + twist
             print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
 
+        # Now smooth the optimum angles of attack
+        
+        #for i,r,f in enumerate(self.foils):
+            #circumference = np.pi * 2 * r
+            ## Assume a slow velocity forward, and an angle of attack of 8 degrees
+            #twist = math.atan(forward_travel_per_rev / circumference)
+            #f.aoa = twist + optimum_aoa[i]
 
 if __name__ == "__main__":
     import argparse

@@ -70,7 +70,7 @@ class Foil(object):
       
       #xcoords = np.append(xcoords, pl[0][-1] )
       #ycoords = np.append(ycoords, pl[1][-1] )
-      end_removal = 10
+      end_removal = 15
       xcoords = xcoords[0:-end_removal]
       ycoords = ycoords[0:-end_removal]
       

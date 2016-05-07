@@ -160,7 +160,7 @@ class Xfoil():
         self._stderr = self.xfinst.stderr
 
     def cmd(self, cmd, autonewline=True):
-        print cmd
+        #print cmd
         """Give a command. Set newline=False for manual control with '\n'"""
         n = '\n' if autonewline else ''
         self.xfinst.stdin.write(cmd + n)

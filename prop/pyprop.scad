@@ -3,7 +3,7 @@ module blade() {
 }
 
 center_hole = 5;
-hub_diameter = 12.0;
+hub_diameter = 14.0;
 hub_height = 6.0;
 
 $fn=121;
@@ -15,7 +15,7 @@ module prop() {
             rotate(0) blade();
             rotate(120) blade();
             rotate(240) blade();
-            translate([0,0,-hub_height]) cylinder(d=hub_diameter, h=hub_height);
+            translate([0,0,-hub_height]) cylinder(d=hub_diameter+0.1, h=hub_height);
             }
         }
        cylinder(d = center_hole, h=55, center=true);
