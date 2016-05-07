@@ -24,6 +24,11 @@ import re
 from threading import Thread
 from Queue import Queue, Empty
 
+
+'''
+   INSTALL from https://github.com/RobotLocomotion/xfoil.git
+'''
+
 def oper_visc_alpha(*args, **kwargs):
     """Wrapper for _oper_visc"""
     return _oper_visc(["ALFA","ASEQ"], *args, **kwargs)
@@ -63,6 +68,8 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     else:
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
+    xf.cmd("PANE")
+    xf.cmd("PPAR\n\n", autonewline=False)
     # Disable G(raphics) flag in Plotting options
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
@@ -89,14 +96,14 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     # List polar and send recognizable end marker
     xf.cmd("PLIS\nENDD\n\n", autonewline=False)
     
-    print "Xfoil module starting read"
+    #print "Xfoil module starting read"
     # Keep reading until end marker is encountered
     output = ['']
     while not re.search("ENDD", output[-1]):
         line = xf.readline()
         if line:
             output.append(line)
-    print "Xfoil module ending read"
+    #print "Xfoil module ending read"
     if show_seconds:
         sleep(show_seconds)
     #print ''.join(output)
@@ -145,7 +152,7 @@ class Xfoil():
     
     def __init__(self, path="/usr/bin"):
         """Spawn xfoil child process"""
-        xf = "/usr/bin/xfoil"
+        xf = "/home/tim/github/xfoil/build/bin/xfoil"
         self.xfinst = subp.Popen(xf,
                   stdin=subp.PIPE, stdout=subp.PIPE, stderr=subp.PIPE)
         self._stdoutnonblock = NonBlockingStreamReader(self.xfinst.stdout)
@@ -153,6 +160,7 @@ class Xfoil():
         self._stderr = self.xfinst.stderr
 
     def cmd(self, cmd, autonewline=True):
+        #print cmd
         """Give a command. Set newline=False for manual control with '\n'"""
         n = '\n' if autonewline else ''
         self.xfinst.stdin.write(cmd + n)
@@ -219,8 +227,10 @@ class NonBlockingStreamReader:
             return None
 
 
+import foil
+
 if __name__ == "__main__":
-    #print oper_visc_alpha("NACA 2215", [0,35,5], 5E4, Mach=.06,
-                          #gen_naca=True, show_seconds=20)
-    print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
-                        gen_naca=True, show_seconds=20)
+    polar = oper_visc_alpha("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
+    print polar
+    #print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
+                        #gen_naca=True, show_seconds=20)

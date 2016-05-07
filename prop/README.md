@@ -14,7 +14,7 @@ The mesh can be cleaned using meshlab to remove duplicate vertices with:
 
     meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
-## Using OpenSCAD to generate a propeller
+##  Using OpenSCAD to generate a propeller
 
 OpenSCAD imports the blade STL and generates a prop. The file pyprop.scad generates a three bladed prop (the one shown above).
 
@@ -25,6 +25,8 @@ OpenSCAD imports the blade STL and generates a prop. The file pyprop.scad genera
 * Allow JSON input of optimization criterion (like free space, torque, RPM and power)
 
 # Creating Props using JavaProp, FreeCAD and OpenSCAD.
+
+This is an alternative approach, allowing one to generate STL files from javaprop designs.
 
 ## Step 1. Design your prop in JavaProp.
 

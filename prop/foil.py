@@ -1,5 +1,9 @@
 import numpy as np
 
+import xfoil
+from random import choice
+from string import ascii_uppercase
+import os
 
 class Foil(object):
     def __init__(self, chord, angle_of_attack):
@@ -17,6 +21,9 @@ class Foil(object):
         L = self.chord
         return rho*velocity*L/nu
       
+    def Mach(self, velocity, rho=1.225, nu=15.11e-6):
+        return velocity / 330.0
+      
       
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
@@ -25,7 +32,7 @@ class Foil(object):
         self.trailing_edge = t
   
     def get_shape_points(self, n):
-        ''' Return a list of x,y coordinates for the foil
+        ''' Return a list of x,y coordinates for the foil with zero angle of attack
         '''
         x = np.linspace(0, self.chord, n)
         y = 0.001*np.ones(n)
@@ -48,7 +55,58 @@ class Foil(object):
         return [x2,y2]
 
 
+    def get_polars(self, velocity):
+      
+      ''' Use XFOIL to simulate the performance of this get_shape
+      '''
+      pl, pu = self.get_shape_points(n=80)
+      
+      ''' This contains only the X,Y coordinates, which run from the 
+          trailing edge, round the leading edge, back to the trailing edge 
+          in either direction:
+      '''
+      xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
+      ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
+      
+      #xcoords = np.append(xcoords, pl[0][-1] )
+      #ycoords = np.append(ycoords, pl[1][-1] )
+      end_removal = 15
+      xcoords = xcoords[0:-end_removal]
+      ycoords = ycoords[0:-end_removal]
+      
+      coordslist = np.array((xcoords, ycoords)).T
+      coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
+                      for coord in coordslist]
+      # Join with linebreaks in between
+      points = '\n'.join(coordstrlist)
+      
+      Re = self.Reynolds(velocity)
 
+      # Save points to a file
+      randstr = ''.join(choice(ascii_uppercase) for i in range(20))
+      filename = "parsec_{}.dat".format(randstr)
+      with open(filename, 'w') as af:
+        af.write(points)
+        
+      # Let Xfoil do its magic
+      alfa = (0, 26, 2)
+      results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
+                                    iterlim=88, show_seconds=2)
+      labels = results[1]
+      values = results[0]
+      
+      polar = {}
+      for label in labels:
+          polar[label] = []
+      
+      for v in values:
+          for label, value in zip(labels, v):
+            polar[label].append(value)
+      
+      os.remove(filename)
+      return polar
+    
+    
 class NACA4(Foil):
     '''
     Foil generated from the NACA 4 series
@@ -81,14 +139,16 @@ class NACA4(Foil):
         p = self.p
         m = self.m
         
-        x = np.linspace(0, 1.0, n)
+        beta = np.linspace(0, np.pi, n)    # Use cosine spacing of points.
+        x = (1.0 - np.cos(beta))/2
+        
         y_offset = np.linspace(0, self.trailing_edge/2, n)
       
         yt = 5.0*t*(0.2969*np.sqrt(x) + \
             -0.1260*(x) + \
             -0.3516*(x**2) + \
              0.2843*(x**3) + \
-            -0.1015*(x**4)) + y_offset
+            -0.1036*(x**4)) + y_offset
 
         yc = (m / (p**2)) * (2.0*p*x - x**2) 
         yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
@@ -130,7 +190,20 @@ class NACA4(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=np.pi/4)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
-    f.plot()
     
+    
+    polars = f.get_polars(10.0)
+
+    alpha = polars['alpha']
+    for i,a in enumerate(alpha):
+      print "%f %f" % (a, polars['CL'][i] / polars['CD'][i])
+    
+    print polars.keys()
+    
+    import matplotlib.pyplot as plt
+    plt.plot(polars['alpha'], polars['CL'], 'x')
+    plt.plot(polars['alpha'], polars['CD'], 'o')
+    plt.plot(polars['alpha'], polars['CDp'], '.')
+    plt.show()

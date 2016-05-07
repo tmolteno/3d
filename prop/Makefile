@@ -1,14 +1,17 @@
 all:	prop scad
 
 prop:
-	python prop.py --min-edge 0.35 --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
+	python prop.py --min-edge 0.35 --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
-scad:	prop
+scad:
 	openscad -m make -d pyprop.deps -o pyprop.ascii.stl pyprop.scad
 	meshlabserver -i pyprop.ascii.stl -o pyprop.stl -s meshclean.mlx
 	
 
+mesh:
+	python prop.py --min-edge 0.35 --n 10 --param='prop_design.json' --mesh --resolution 10
+	
 sym:
 	python naca_sym.py
 
