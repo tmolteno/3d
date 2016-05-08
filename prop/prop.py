@@ -236,11 +236,12 @@ class NACAProp(Prop):
         print("Revs per second %f" % self.param.rps())
         print("Forward travel per rev %f" % forward_travel_per_rev)
         self.foils = []
-        for r in np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps):
+        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        for r in radial_points:
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             
-            twist = math.atan(forward_travel_per_rev / circumference) + 8.0*np.pi / 180
+            twist = math.atan(forward_travel_per_rev / circumference) + np.radians(8.0)
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
@@ -260,27 +261,42 @@ class NACAProp(Prop):
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = math.atan(forward_travel_per_rev / circumference)
           
-            polars = f.get_polars(v)
-            
-            cl = np.array(polars['CL'])
-            cd = np.array(polars['CD'])
-            alfa = np.radians(polars['alpha'])
-                            
-            j = np.argmax(cl/cd)
-            
-            optimum_aoa.append(alfa[j])
-            print "Max : %f %f %f" % (cl[j], cd[j], np.degrees(alfa[j]))
-            f.aoa = alfa[j] + twist
-            print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
+            if (f.Reynolds(v) < 10000.0):
+              opt_alpha = np.radians(20.0)
+              optimum_aoa.append(opt_alpha)
+              f.aoa = twist + opt_alpha
+              print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
+            else:
+              polars = f.get_polars(v)
+              cl = np.array(polars['CL'])
+              cd = np.array(polars['CD'])
+              top_xtr = np.array(polars['Top_Xtr'])
+              alfa = np.radians(polars['alpha'])
+              
+              optim_target = (cl / (cd + 0.1))*top_xtr
+              
+              coeff = np.polyfit(alfa, optim_target, 4)
+              z = np.poly1d(coeff)
+              a2 = np.radians(np.linspace(0,32.,200))
+              cld = z(a2)
+              j = np.argmax(cld)
+              opt_alpha = a2[j]
+              
+              optimum_aoa.append(opt_alpha)
+              f.aoa = opt_alpha + twist
+              print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), cld[j])
 
         # Now smooth the optimum angles of attack
+        optimum_aoa = np.array(optimum_aoa)
+        coeff = np.polyfit(radial_points, optimum_aoa, 4)
+        angle_of_attack = np.poly1d(coeff)
         
-        #for i,r,f in enumerate(self.foils):
-            #circumference = np.pi * 2 * r
-            ## Assume a slow velocity forward, and an angle of attack of 8 degrees
-            #twist = math.atan(forward_travel_per_rev / circumference)
-            #f.aoa = twist + optimum_aoa[i]
-            #print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
+        for i,r,in enumerate(radial_points):
+            circumference = np.pi * 2 * r
+            # Assume a slow velocity forward, and an angle of attack of 8 degrees
+            twist = math.atan(forward_travel_per_rev / circumference)
+            f.aoa = twist + angle_of_attack(r)
+            print "r=%f, %s" % (r, f)
 
 if __name__ == "__main__":
     import argparse

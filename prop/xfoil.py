@@ -157,6 +157,7 @@ class Xfoil():
     def __init__(self, path="/usr/bin"):
         """Spawn xfoil child process"""
         xf = "/home/tim/github/xfoil/build/bin/xfoil"
+        #xf = "/usr/bin/xfoil"
         self.xfinst = subp.Popen(xf,
                   stdin=subp.PIPE, stdout=subp.PIPE, stderr=subp.PIPE)
         self._stdoutnonblock = NonBlockingStreamReader(self.xfinst.stdout)

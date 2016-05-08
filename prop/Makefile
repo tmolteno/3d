@@ -1,7 +1,7 @@
 all:	prop scad
 
 prop:
-	python prop.py --min-edge 0.35 --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade5x3.ascii.stl'
+	python prop.py --min-edge 0.35 --n 30 --resolution 2.0 --param='prop_design.json' --stl-file 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
 scad:

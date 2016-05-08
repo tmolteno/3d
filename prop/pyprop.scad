@@ -4,6 +4,7 @@ module blade() {
 
 center_hole = 5; // diameter of the prop shaft.
 hub_diameter = 12.0;
+blade_radius = 100;
 hub_height = 6.0;
 
 $fn=121;
@@ -12,14 +13,14 @@ module prop() {
     difference() {
         intersection() {
             union() {
-            for(angle = [0 : 180 : 360]) {
+            for(angle = [0 : 90 : 360]) {
                 rotate(angle) blade();
             }
-            translate([0,0,-hub_height]) cylinder(d=hub_diameter+0.1, h=hub_height);
+            translate([0,0,-hub_height]) cylinder(d=hub_diameter+0.1, h=hub_height+0.1);
             }
         }
        cylinder(d = center_hole, h=55, center=true);
-       //translate([-100,-100,0]) cube([200,200,200]);
+       translate([-blade_radius,-blade_radius,0]) cube([2*blade_radius,2*blade_radius,2*blade_radius]);
     }
 }
 prop();

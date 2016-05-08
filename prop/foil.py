@@ -77,11 +77,11 @@ class Foil(object):
       xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
       ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
       
-      #xcoords = np.append(xcoords, pl[0][-1] )
-      #ycoords = np.append(ycoords, pl[1][-1] )
       #end_removal = 15
       #xcoords = xcoords[0:-end_removal]
       #ycoords = ycoords[0:-end_removal]
+      #xcoords = np.append(xcoords, xcoords[0] )
+      #ycoords = np.append(ycoords, ycoords[0] )
       
       coordslist = np.array((xcoords, ycoords)).T
       coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
@@ -98,9 +98,9 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      alfa = (5, 26, 1.1)
+      alfa = (0, 35, 2.1)
       results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
-                                    iterlim=88, show_seconds=2)
+                                    iterlim=188, show_seconds=2)
       labels = results[1]
       values = results[0]
       
@@ -148,6 +148,7 @@ class NACA4(Foil):
         p = self.p
         m = self.m
         
+        n = n*5
         beta = np.linspace(0, np.pi, n)    # Use cosine spacing of points.
         x = (1.0 - np.cos(beta))/2
         
@@ -188,7 +189,7 @@ class NACA4(Foil):
         yl = yl - max_y
         
         c = self.chord
-        return [[xl*c,yl*c],[xu*c,yu*c]]
+        return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
     
     def plot(self):
         pt, pb = f.get_points(30)
