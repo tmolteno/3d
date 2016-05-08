@@ -68,16 +68,20 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     else:
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
-    xf.cmd("PANE")
-    xf.cmd("PPAR\n\n", autonewline=False)
+    xf.cmd("GDES")
+    xf.cmd("CADD\n\n2\n\n\n", autonewline=False)
+    xf.cmd("PANEL")
     # Disable G(raphics) flag in Plotting options
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
     # Enter OPER menu
     xf.cmd("OPER")
+    xf.cmd("VPAR\nVACC 0.0\n\n", autonewline=False)
     if iterlim:
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))
+    xf.cmd("Re {}".format(Re))
+    xf.cmd("ALFA 10.0")
     if Mach:
         xf.cmd("MACH {:.3f}".format(Mach))
 
@@ -160,9 +164,9 @@ class Xfoil():
         self._stderr = self.xfinst.stderr
 
     def cmd(self, cmd, autonewline=True):
-        #print cmd
         """Give a command. Set newline=False for manual control with '\n'"""
         n = '\n' if autonewline else ''
+        #print (cmd + n),
         self.xfinst.stdin.write(cmd + n)
 
     def readline(self):
@@ -208,6 +212,7 @@ class NonBlockingStreamReader:
                 line = stream.readline()
                 if line:
                     queue.put(line)
+                    #print line
                 else:
                     #print "NonBlockingStreamReader: End of stream"
                     # Make sure to terminate
