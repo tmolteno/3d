@@ -280,6 +280,7 @@ class NACAProp(Prop):
             ## Assume a slow velocity forward, and an angle of attack of 8 degrees
             #twist = math.atan(forward_travel_per_rev / circumference)
             #f.aoa = twist + optimum_aoa[i]
+            #print "r=%f, %s, v=%f, Re=%f, cl/cd=%f" % (r, f, v, f.Reynolds(v), cl[j] / cd[j])
 
 if __name__ == "__main__":
     import argparse

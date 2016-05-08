@@ -23,8 +23,17 @@ class Foil(object):
       
     def Mach(self, velocity, rho=1.225, nu=15.11e-6):
         return velocity / 330.0
-      
-      
+    
+     
+    def polar_aux(self, v):
+        return 0.5*rho*v*v*self.chord
+     
+    def lift(self, v, cl):
+        return self.polar_aux(v) * cl
+
+    def drag(self, v, cd):
+        return self.polar_aux(v) * cd
+        
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
   
@@ -70,9 +79,9 @@ class Foil(object):
       
       #xcoords = np.append(xcoords, pl[0][-1] )
       #ycoords = np.append(ycoords, pl[1][-1] )
-      end_removal = 15
-      xcoords = xcoords[0:-end_removal]
-      ycoords = ycoords[0:-end_removal]
+      #end_removal = 15
+      #xcoords = xcoords[0:-end_removal]
+      #ycoords = ycoords[0:-end_removal]
       
       coordslist = np.array((xcoords, ycoords)).T
       coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
@@ -89,7 +98,7 @@ class Foil(object):
         af.write(points)
         
       # Let Xfoil do its magic
-      alfa = (0, 26, 2)
+      alfa = (5, 26, 1.1)
       results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
                                     iterlim=88, show_seconds=2)
       labels = results[1]
