@@ -57,7 +57,7 @@ class Prop:
         hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
         max_depth = 15.0 / 1000
-        max_r = self.param.radius / 2.0
+        max_r = self.param.radius / 4.0
         end_depth = 3.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
@@ -273,7 +273,7 @@ class NACAProp(Prop):
               top_xtr = np.array(polars['Top_Xtr'])
               alfa = np.radians(polars['alpha'])
               
-              optim_target = (cl / (cd + 0.1))*top_xtr
+              optim_target = (cl / (cd + 0.1))
               
               coeff = np.polyfit(alfa, optim_target, 4)
               z = np.poly1d(coeff)
@@ -283,7 +283,6 @@ class NACAProp(Prop):
               opt_alpha = a2[j]
               
               optimum_aoa.append(opt_alpha)
-              f.aoa = opt_alpha + twist
               print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), cld[j])
 
         # Now smooth the optimum angles of attack
@@ -291,7 +290,7 @@ class NACAProp(Prop):
         coeff = np.polyfit(radial_points, optimum_aoa, 4)
         angle_of_attack = np.poly1d(coeff)
         
-        for i,r,in enumerate(radial_points):
+        for r,f,in self.foils:
             circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = math.atan(forward_travel_per_rev / circumference)

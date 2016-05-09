@@ -100,7 +100,7 @@ class Foil(object):
       # Let Xfoil do its magic
       alfa = (0, 35, 2.1)
       results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
-                                    iterlim=188, show_seconds=2)
+                                    iterlim=188, show_seconds=0)
       labels = results[1]
       values = results[0]
       
