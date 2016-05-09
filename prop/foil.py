@@ -10,6 +10,8 @@ class Foil(object):
         self.chord = chord
         self.aoa = angle_of_attack
         self.trailing_edge = 0.0
+        self.cl = 0.0
+        self.cd = 0.0
 
     ''' Calculate Reynolds number from air density rho
         and kinematic ciscoscity (nu)
@@ -28,10 +30,10 @@ class Foil(object):
     def polar_aux(self, v):
         return 0.5*rho*v*v*self.chord
      
-    def lift(self, v, cl):
+    def lift(self, v, cl=self.cl):
         return self.polar_aux(v) * cl
 
-    def drag(self, v, cd):
+    def drag(self, v, cd=self.cd):
         return self.polar_aux(v) * cd
         
     def __repr__(self):

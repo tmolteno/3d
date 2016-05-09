@@ -112,7 +112,13 @@ class Prop:
             v = self.get_blade_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
     
-    
+    def get_torque(self):
+        torque = 0.0
+        for r,f in self.foils:
+            v = self.get_blade_velocity(r)
+            torque += f.drag(v)*r
+        return torque
+
     def get_foil_points(self, n, r, f):
         pl, pu = f.get_points(n)
         ''' points are in the y - z plane. The x value is set by the radius'''
@@ -282,7 +288,12 @@ class NACAProp(Prop):
               j = np.argmax(cld)
               opt_alpha = a2[j]
               
+              cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
+              cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
+              
               optimum_aoa.append(opt_alpha)
+              f.cl = cl_poly(opt_alpha)
+              f.cd = cd_poly(opt_alpha)
               print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), cld[j])
 
         # Now smooth the optimum angles of attack
