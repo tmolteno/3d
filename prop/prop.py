@@ -31,7 +31,7 @@ class Prop:
 
         hub_c = hub_r
         max_c = self.param.radius / 3
-        end_c = self.param.radius / 8
+        end_c = self.param.radius / 5
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
@@ -46,7 +46,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = 5.0 / 1000
-        thickness_end = 1.0 / 1000
+        thickness_end = 1.75 / 1000
         thickness = thickness_end + (1.0 - r / self.param.radius)*(thickness_root - thickness_end)
         return thickness
 
@@ -282,25 +282,29 @@ class NACAProp(Prop):
               optim_target = (cl / (cd + 0.1))
               
               z = np.poly1d(np.polyfit(alfa, optim_target, 4))
-              a2 = np.radians(np.linspace(np.min(alfa),np.max(alfa),200))
+              a2 = np.linspace(np.min(alfa),np.max(alfa),200)
               cld = z(a2)
               j = np.argmax(cld)
               opt_alpha = a2[j]
               
+              print cld
+              print j
+              print cld[j]
               cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
               cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
               
-              import matplotlib.pyplot as plt
+              if False:
+                import matplotlib.pyplot as plt
 
-              plt.clf()
-              plt.plot(alfa, cl, '.')
-              plt.plot(alfa, cd, '*')
-              plt.plot(alfa, cl/cd, '-.')
-              plt.plot(alfa, cl_poly(alfa))
-              plt.plot(alfa, cd_poly(alfa))
-              plt.plot(alfa, z(alfa),'x')
-              plt.grid(True)
-              plt.show()
+                plt.clf()
+                plt.plot(alfa, cl, '.')
+                plt.plot(alfa, cd, '*')
+                plt.plot(alfa, cl/cd, '-.')
+                plt.plot(alfa, cl_poly(alfa))
+                plt.plot(alfa, cd_poly(alfa))
+                plt.plot(alfa, z(alfa),'x')
+                plt.grid(True)
+                plt.show()
               
               
               optimum_aoa.append(opt_alpha)

@@ -79,9 +79,11 @@ class Foil(object):
       xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
       ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
       
-      #end_removal = 15
-      #xcoords = xcoords[0:-end_removal]
-      #ycoords = ycoords[0:-end_removal]
+      # Chop off overhang.
+      limit = xcoords <= xcoords[0]
+      end_removal = end[0]
+      xcoords = xcoords[limit]
+      ycoords = ycoords[limit]
       #xcoords = np.append(xcoords, xcoords[0] )
       #ycoords = np.append(ycoords, ycoords[0] )
       
@@ -102,7 +104,7 @@ class Foil(object):
       # Let Xfoil do its magic
       alfa = (0, 35, 2.1)
       results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.Mach(velocity),
-                                    iterlim=188, show_seconds=0)
+                                    iterlim=188, show_seconds=3)
       labels = results[1]
       values = results[0]
       

@@ -6,6 +6,7 @@ center_hole = 5; // diameter of the prop shaft.
 hub_diameter = 12.0;
 blade_radius = 100;
 hub_height = 6.0;
+n_blades = 5;
 
 $fn=121;
 
@@ -13,7 +14,7 @@ module prop() {
     difference() {
         intersection() {
             union() {
-            for(angle = [0 : 90 : 360]) {
+            for(angle = [0 : (360/n_blades) : 360]) {
                 rotate(angle) blade();
             }
             translate([0,0,-hub_height]) cylinder(d=hub_diameter+0.1, h=hub_height+0.1);
