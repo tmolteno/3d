@@ -116,7 +116,7 @@ class Prop:
         torque = 0.0
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
-            torque += f.drag(v)*r
+            torque += f.drag(v)*r*np.sin(f.aoa)
         return torque
 
     def get_foil_points(self, n, r, f):
@@ -267,7 +267,7 @@ class NACAProp(Prop):
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = math.atan(forward_travel_per_rev / circumference)
           
-            if (f.Reynolds(v) < 10000.0):
+            if (f.Reynolds(v) < 20000.0):
               opt_alpha = np.radians(20.0)
               optimum_aoa.append(opt_alpha)
               f.aoa = twist + opt_alpha
@@ -281,15 +281,27 @@ class NACAProp(Prop):
               
               optim_target = (cl / (cd + 0.1))
               
-              coeff = np.polyfit(alfa, optim_target, 4)
-              z = np.poly1d(coeff)
-              a2 = np.radians(np.linspace(0,32.,200))
+              z = np.poly1d(np.polyfit(alfa, optim_target, 4))
+              a2 = np.radians(np.linspace(np.min(alfa),np.max(alfa),200))
               cld = z(a2)
               j = np.argmax(cld)
               opt_alpha = a2[j]
               
               cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
               cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
+              
+              import matplotlib.pyplot as plt
+
+              plt.clf()
+              plt.plot(alfa, cl, '.')
+              plt.plot(alfa, cd, '*')
+              plt.plot(alfa, cl/cd, '-.')
+              plt.plot(alfa, cl_poly(alfa))
+              plt.plot(alfa, cd_poly(alfa))
+              plt.plot(alfa, z(alfa),'x')
+              plt.grid(True)
+              plt.show()
+              
               
               optimum_aoa.append(opt_alpha)
               f.cl = cl_poly(opt_alpha)
@@ -308,6 +320,20 @@ class NACAProp(Prop):
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
 
+    def design_torque(self):
+        
+        # Calculate the chord distribution, from geometry and clearence
+        # 
+        
+        # Calculate the thickness distribution
+        
+        # Get foil polars
+        
+        # Allocate the drag as a function of radius. The velocity is proportional to r, the 
+        # drag is proportional to c_d r^2
+        # Integrate the drag int_0^r cd r^2 = 
+        return 3
+        
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop blade.')

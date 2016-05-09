@@ -30,11 +30,11 @@ class Foil(object):
     def polar_aux(self, v):
         return 0.5*rho*v*v*self.chord
      
-    def lift(self, v, cl=self.cl):
-        return self.polar_aux(v) * cl
+    def lift(self, v):
+        return self.polar_aux(v) * self.cl
 
-    def drag(self, v, cd=self.cd):
-        return self.polar_aux(v) * cd
+    def drag(self, v):
+        return self.polar_aux(v) * self.cd
         
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
