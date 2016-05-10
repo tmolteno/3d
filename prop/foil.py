@@ -81,7 +81,6 @@ class Foil(object):
       
       # Chop off overhang.
       limit = xcoords <= xcoords[0]
-      end_removal = end[0]
       xcoords = xcoords[limit]
       ycoords = ycoords[limit]
       #xcoords = np.append(xcoords, xcoords[0] )

@@ -41,6 +41,24 @@ class Prop:
         chord = s(r)
         return chord
 
+    def get_scimitar_offset(self,r):
+        ''' How much forward or aft of the centerline to place the foil
+        '''
+
+        hub_r = self.param.hub_radius
+        max_r = self.param.radius * 0.8
+
+        hub_c = 0.0
+        max_c = self.param.radius * (self.param.scimitar_percent / 100.0)
+        end_c = 0.0
+
+        x = np.array([0,     hub_r,     max_r, self.param.radius] )
+        y = np.array([hub_c, 1.1*hub_c, max_c, end_c] )
+
+        s = PchipInterpolator(x, y)
+
+        return s(r)
+
     def get_foil_thickness(self,r):
         ''' Allowed foil thickness as a function of radius (m) 
             Limited by mechanical strength, or weight issues
@@ -126,13 +144,14 @@ class Prop:
         yu, zu = pu
         x = np.zeros(n) + r
         
+        scimitar_angle = math.atan(self.get_scimitar_offset(r) / r)
         # Transform the profile to lie on a circle of radius r
         c = 2.0*np.pi*r   # Circumference
-        theta_l = 2.0*np.pi*yl / c  # angular coordinate along circumference (fraction)
+        theta_l = 2.0*np.pi*yl / c  + scimitar_angle # angular coordinate along circumference (fraction)
         xl = r*np.cos(theta_l)
         yl = r*np.sin(theta_l)
 
-        theta_u = 2.0*np.pi*yu / c  # angular coordinate along circumference (fraction)
+        theta_u = 2.0*np.pi*yu / c  + scimitar_angle # angular coordinate along circumference (fraction)
         xu = r*np.cos(theta_u)
         yu = r*np.sin(theta_u)
         
@@ -287,9 +306,6 @@ class NACAProp(Prop):
               j = np.argmax(cld)
               opt_alpha = a2[j]
               
-              print cld
-              print j
-              print cld[j]
               cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
               cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
               

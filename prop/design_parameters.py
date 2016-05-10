@@ -14,6 +14,7 @@ class DesignParameters:
         self.motor_torque = 12.0   # N cm
         self.motor_power = 100   # Watts
         self.motor_rpm = 10000.0   #
+        self.scimitar_percent = 0.0   # Percentage scimitar
 
         if filename != 0:
           f = open(filename, 'r')
@@ -31,6 +32,7 @@ class DesignParameters:
         configdict = {}
         configdict['radius'] = self.radius
         configdict['hub_radius'] = self.hub_radius
+        configdict['scimitar_percent'] = self.param.scimitar_percent
         
         configdict['forward_airspeed'] = self.forward_airspeed
         configdict['altitude'] = self.altitude
@@ -46,6 +48,7 @@ class DesignParameters:
         settings = json.loads(data)
         self.radius = settings['radius']
         self.hub_radius = settings['hub_radius']
+        self.scimitar_percent = settings['scimitar_percent']
         
         self.forward_airspeed = float(settings['forward_airspeed'])
         self.altitude = float(settings['altitude'])
