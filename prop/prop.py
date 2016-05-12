@@ -340,18 +340,22 @@ class NACAProp(Prop):
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
 
-    def design_torque(self):
+    def design_torque(self, optimum_torque, optimum_rpm):
         
         # Calculate the chord distribution, from geometry and clearence
         # 
-        
         # Calculate the thickness distribution
         
         # Get foil polars
+        # Assign angle of attack to be optimium
+        # Calculate lift, drag as a function of radius.
+        # Get torque & lift
+        # Modify chord distribution (and/or add blades if chord exceeds r/5)
         
         # Allocate the drag as a function of radius. The velocity is proportional to r, the 
         # drag is proportional to c_d r^2
-        # Integrate the drag int_0^r cd r^2 = 
+        # Integrate the drag int_0^r cd r^2 = Torque
+        # Modify the 
         return 3
         
 if __name__ == "__main__":
