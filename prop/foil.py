@@ -56,7 +56,10 @@ class Foil(object):
         xu, yu = pu
         xl,yl = self.rotate(xl,yl, self.aoa)
         xu,yu = self.rotate(xu,yu, self.aoa)
-        return [[xl,yl],[xu,yu]]
+        
+        max_y = np.max(yu)
+        
+        return [[xl,yl-max_y],[xu,yu-max_y]]
 
         
     def rotate(self, x, y, theta):
