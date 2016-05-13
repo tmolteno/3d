@@ -12,7 +12,6 @@ class SimulatedFoil:
     def get_cl(self, v, alpha):
       return None
     
-    
 class PlateSimulatedFoil(SimulatedFoil):
   
     def get_cl(self, v, alpha):

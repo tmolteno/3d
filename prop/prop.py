@@ -8,9 +8,11 @@ import numpy as np
 import math
 import foil
 import stl_tools
+import motor_model
 
 from design_parameters import DesignParameters
-
+from foil_simulator import XfoilSimulatedFoil as FoilSimulator
+#from foil_simulator import PlateSimulatedFoil as FoilSimulator
 from scipy.interpolate import PchipInterpolator
 
 class Prop:
@@ -27,7 +29,7 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.param.radius / 2
+        max_r = self.param.radius / 1.5
 
         hub_c = hub_r
         max_c = self.param.radius / 3
@@ -64,7 +66,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = 5.0 / 1000
-        thickness_end = 1.75 / 1000
+        thickness_end = 2.0 / 1000
         thickness = thickness_end + (1.0 - r / self.param.radius)*(thickness_root - thickness_end)
         return thickness
 
@@ -76,7 +78,7 @@ class Prop:
         hub_depth = 6.0 / 1000
         max_depth = 15.0 / 1000
         max_r = self.param.radius / 4.0
-        end_depth = 3.0 / 1000
+        end_depth = 5.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
@@ -92,6 +94,12 @@ class Prop:
 
         helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
         return helical_length
+
+    def get_twist(self, r):
+        circumference = np.pi * 2 * r
+        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
+        twist = math.atan(forward_travel_per_rev / circumference)
+        return twist
 
     def get_blade_velocity(self, r):
         v = self.get_helical_length(r) * self.param.rps()
@@ -130,11 +138,18 @@ class Prop:
             v = self.get_blade_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
     
+    
     def get_torque(self):
         torque = 0.0
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
-            torque += f.drag(v)*r*np.sin(f.aoa)
+            twist = self.get_twist(r)
+            fs = FoilSimulator(f)
+            cd = fs.get_cd(v, f.aoa-twist)
+            drag = f.drag_per_unit_length(v, cd)
+            dr = self.radial_resolution
+            
+            torque += dr*drag*r*np.cos(twist)
         return torque
 
     def get_foil_points(self, n, r, f):
@@ -263,10 +278,7 @@ class NACAProp(Prop):
         self.foils = []
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r in radial_points:
-            circumference = np.pi * 2 * r
-            # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            
-            twist = math.atan(forward_travel_per_rev / circumference) + np.radians(8.0)
+            twist = self.get_twist(r) + np.radians(8.0)
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
@@ -282,9 +294,8 @@ class NACAProp(Prop):
         optimum_aoa = []
         for r,f in self.foils:
             v = self.get_blade_velocity(r)
-            circumference = np.pi * 2 * r
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            twist = math.atan(forward_travel_per_rev / circumference)
+            twist = self.get_twist(r)
           
             if (f.Reynolds(v) < 20000.0):
               opt_alpha = np.radians(20.0)
@@ -292,41 +303,19 @@ class NACAProp(Prop):
               f.aoa = twist + opt_alpha
               print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
             else:
-              polars = f.get_polars(v)
-              cl = np.array(polars['CL'])
-              cd = np.array(polars['CD'])
-              top_xtr = np.array(polars['Top_Xtr'])
-              alfa = np.radians(polars['alpha'])
+              fs = XfoilSimulatedFoil(f)
+              alpha = np.radians(np.linspace(0, 30, 100))
               
-              optim_target = (cl / (cd + 0.1))
+              cl = fs.get_cl(v, alpha)
+              cd = fs.get_cd(v, alpha)
               
-              z = np.poly1d(np.polyfit(alfa, optim_target, 4))
-              a2 = np.linspace(np.min(alfa),np.max(alfa),200)
-              cld = z(a2)
-              j = np.argmax(cld)
-              opt_alpha = a2[j]
+              optim_target = (cl / (cd + 0.01))
               
-              cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
-              cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
-              
-              if False:
-                import matplotlib.pyplot as plt
-
-                plt.clf()
-                plt.plot(alfa, cl, '.')
-                plt.plot(alfa, cd, '*')
-                plt.plot(alfa, cl/cd, '-.')
-                plt.plot(alfa, cl_poly(alfa))
-                plt.plot(alfa, cd_poly(alfa))
-                plt.plot(alfa, z(alfa),'x')
-                plt.grid(True)
-                plt.show()
-              
-              
+              j = np.argmax(optim_target)
+              opt_alpha = alpha[j]
+                            
               optimum_aoa.append(opt_alpha)
-              f.cl = cl_poly(opt_alpha)
-              f.cd = cd_poly(opt_alpha)
-              print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), cld[j])
+              print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), optim_target[j])
 
         # Now smooth the optimum angles of attack
         optimum_aoa = np.array(optimum_aoa)
@@ -334,20 +323,35 @@ class NACAProp(Prop):
         angle_of_attack = np.poly1d(coeff)
         
         for r,f,in self.foils:
-            circumference = np.pi * 2 * r
-            # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            twist = math.atan(forward_travel_per_rev / circumference)
+            twist = self.get_twist(r)
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
 
     def design_torque(self, optimum_torque, optimum_rpm):
-        
+        self.foils = []
+        self.param.motor_rpm = optimum_rpm
         # Calculate the chord distribution, from geometry and clearence
+        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
+        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        for r in radial_points:
+            v = self.get_blade_velocity(r)
+            twist = self.get_twist(r)
+
+            depth_max = self.get_max_depth(r)
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
+            
+            f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
+            print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
+            self.foils.append([r, f])
         # 
         # Calculate the thickness distribution
         
         # Get foil polars
         # Assign angle of attack to be optimium
+        torque = self.get_torque()
+        print torque
+        print optimum_torque
+        print optimum_torque / torque
         # Calculate lift, drag as a function of radius.
         # Get torque & lift
         # Modify chord distribution (and/or add blades if chord exceeds r/5)
@@ -364,6 +368,7 @@ if __name__ == "__main__":
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
+    parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
     parser.add_argument('--resolution', type=float, default=2.0, help="The spacing between foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
@@ -371,7 +376,15 @@ if __name__ == "__main__":
     
     param = DesignParameters(args.param)
     p = NACAProp(param, args.resolution / 1000)
-    p.design(args.min_edge / 1000)
+
+    if (args.auto):
+      m = motor_model.Motor(Kv = 980.0, I0 = 0.5, Rm = 0.207)
+      optimum_torque, optimum_rpm = m.get_Qmax(11.0)
+      print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
+      p.design_torque(optimum_torque, optimum_rpm)
+      
+    else:
+      p.design(args.min_edge / 1000)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)
