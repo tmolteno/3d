@@ -11,9 +11,10 @@ import stl_tools
 import motor_model
 
 from design_parameters import DesignParameters
-#from foil_simulator import XfoilSimulatedFoil as FoilSimulator
-from foil_simulator import PlateSimulatedFoil as FoilSimulator
 from scipy.interpolate import PchipInterpolator
+
+from foil_simulator import XfoilSimulatedFoil as FoilSimulator
+#from foil_simulator import PlateSimulatedFoil as FoilSimulator
 
 class Prop:
     
@@ -132,16 +133,17 @@ class Prop:
             chord = self.get_max_chord(r)
             angle_of_attack = math.atan(self.pitch / circumference)
             f = foil.Foil(chord, angle_of_attack)
-            self.foils.append([r, f])
+            fs = FoilSimulator(f)
+            self.foils.append([r, f, fs])
 
-        for r,f in self.foils:
+        for r,f,fs in self.foils:
             v = self.get_blade_velocity(r)
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
     
     
     def get_torque(self):
         torque = 0.0
-        for r,f in self.foils:
+        for r,f,fs in self.foils:
             v = self.get_blade_velocity(r)
             twist = self.get_twist(r)
             fs = FoilSimulator(f)
@@ -187,7 +189,7 @@ class Prop:
         geom = pg.Geometry()
 
         loops = []
-        for r, f in self.foils:
+        for r,f,fs in self.foils:
             car = 0.5/1000
             line_l, line_u = self.get_foil_points(n, r, f)
             loop_points = np.concatenate((line_l, line_u[::-1]), axis=0)
@@ -240,7 +242,7 @@ class Prop:
         
         bottom_edge = []
         top_edge = []
-        for r, f in self.foils:
+        for r,f,fs in self.foils:
             line_l, line_u = self.get_foil_points(n, r, f)
             
             top_lines.append(line_u*scale)
@@ -286,13 +288,14 @@ class NACAProp(Prop):
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
                 m=0.1, p=0.5, angle_of_attack=twist)
+            fs = FoilSimulator(f)
             
             f.set_trailing_edge(trailing_thickness/chord)
 
-            self.foils.append([r, f])
+            self.foils.append([r, f, fs])
 
         optimum_aoa = []
-        for r,f in self.foils:
+        for r,f, fs in self.foils:
             v = self.get_blade_velocity(r)
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = self.get_twist(r)
@@ -303,7 +306,6 @@ class NACAProp(Prop):
               f.aoa = twist + opt_alpha
               print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
             else:
-              fs = XfoilSimulatedFoil(f)
               alpha = np.radians(np.linspace(0, 30, 100))
               
               cl = fs.get_cl(v, alpha)
@@ -322,10 +324,13 @@ class NACAProp(Prop):
         coeff = np.polyfit(radial_points, optimum_aoa, 4)
         angle_of_attack = np.poly1d(coeff)
         
-        for r,f,in self.foils:
+        for r,f,fs in self.foils:
             twist = self.get_twist(r)
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
+            
+        torque = self.get_torque()
+        print torque
 
     def design_torque(self, optimum_torque, optimum_rpm):
         self.foils = []
@@ -342,7 +347,8 @@ class NACAProp(Prop):
             
             f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
-            self.foils.append([r, f])
+            fs = FoilSimulator(f)
+            self.foils.append([r, f, fs])
         # 
         # Calculate the thickness distribution
         
@@ -374,6 +380,8 @@ if __name__ == "__main__":
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
+    trailing_thickness = args.min_edge / 1000
+    
     param = DesignParameters(args.param)
     p = NACAProp(param, args.resolution / 1000)
 
@@ -384,7 +392,7 @@ if __name__ == "__main__":
       p.design_torque(optimum_torque, optimum_rpm)
       
     else:
-      p.design(args.min_edge / 1000)
+      p.design(trailing_thickness)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

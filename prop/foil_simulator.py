@@ -41,70 +41,81 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
     def get_polars(self, velocity):
 
-      if (self.velocity == velocity) and (self.polars != None):
-        return self.polars
-      
-      self.velocity = velocity
-      ''' Use XFOIL to simulate the performance of this get_shape
-      '''
-      pl, pu = self.foil.get_shape_points(n=80)
-      
-      ''' This contains only the X,Y coordinates, which run from the 
-          trailing edge, round the leading edge, back to the trailing edge 
-          in either direction:
-      '''
-      xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
-      ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
-      
-      # Chop off overhang.
-      limit = xcoords <= xcoords[0]
-      xcoords = xcoords[limit]
-      ycoords = ycoords[limit]
-      #xcoords = np.append(xcoords, xcoords[0] )
-      #ycoords = np.append(ycoords, ycoords[0] )
-      
-      coordslist = np.array((xcoords, ycoords)).T
-      coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
-                      for coord in coordslist]
-      # Join with linebreaks in between
-      points = '\n'.join(coordstrlist)
-      
-      Re = self.foil.Reynolds(velocity)
-
-      # Save points to a file
-      randstr = ''.join(choice(ascii_uppercase) for i in range(20))
-      filename = "parsec_{}.dat".format(randstr)
-      with open(filename, 'w') as af:
-        af.write(points)
+        if (self.velocity == velocity) and (self.polars != None):
+            return self.polars
         
-      # Let Xfoil do its magic
-      alfa = (0, 45, 2.1)
-      results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                    iterlim=188, show_seconds=3)
-      labels = results[1]
-      values = results[0]
-      
-      polar = {}
-      for label in labels:
-          polar[label] = []
-      
-      for v in values:
-          for label, value in zip(labels, v):
-            polar[label].append(value)
-      
-      os.remove(filename)
-      
-      self.polars = polar
-      
-      cl = np.array(polar['CL'])
-      cd = np.array(polar['CD'])
-      top_xtr = np.array(polar['Top_Xtr'])
-      alfa = np.radians(polar['alpha'])
+        self.velocity = velocity
 
-      self.cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
-      self.cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
+        if (self.foil.Reynolds(velocity) < 20000.0):
+            self.polars = {}
+            alpha = np.radians(np.linspace(-5, 40, 20))
+            cl = 2.0 * np.pi * alpha
 
-      return polar
+            cd = 1.28 * np.sin(alpha)
+
+            self.cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
+            self.cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+
+        ''' Use XFOIL to simulate the performance of this get_shape
+        '''
+        pl, pu = self.foil.get_shape_points(n=80)
+        
+        ''' This contains only the X,Y coordinates, which run from the 
+            trailing edge, round the leading edge, back to the trailing edge 
+            in either direction:
+        '''
+        xcoords = np.concatenate((pl[0][::-1], pu[0]), axis=0)
+        ycoords = np.concatenate((pl[1][::-1], pu[1]), axis=0)
+        
+        # Chop off overhang.
+        limit = xcoords <= xcoords[0]
+        xcoords = xcoords[limit]
+        ycoords = ycoords[limit]
+        #xcoords = np.append(xcoords, xcoords[0] )
+        #ycoords = np.append(ycoords, ycoords[0] )
+        
+        coordslist = np.array((xcoords, ycoords)).T
+        coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
+                        for coord in coordslist]
+        # Join with linebreaks in between
+        points = '\n'.join(coordstrlist)
+        
+        Re = self.foil.Reynolds(velocity)
+
+        # Save points to a file
+        randstr = ''.join(choice(ascii_uppercase) for i in range(20))
+        filename = "parsec_{}.dat".format(randstr)
+        with open(filename, 'w') as af:
+            af.write(points)
+            
+        # Let Xfoil do its magic
+        alfa = (0, 45, 2.1)
+        results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
+                                        iterlim=188, show_seconds=3)
+        labels = results[1]
+        values = results[0]
+        
+        polar = {}
+        for label in labels:
+            polar[label] = []
+        
+        for v in values:
+            for label, value in zip(labels, v):
+                polar[label].append(value)
+        
+        os.remove(filename)
+        
+        self.polars = polar
+        
+        cl = np.array(polar['CL'])
+        cd = np.array(polar['CD'])
+        top_xtr = np.array(polar['Top_Xtr'])
+        alfa = np.radians(polar['alpha'])
+
+        self.cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
+        self.cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
+
+        return polar
 
 if __name__ == "__main__":
     from foil import NACA4
