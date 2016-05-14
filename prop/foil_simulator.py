@@ -28,33 +28,36 @@ class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
-        self.polars = None
-        self.velocity = None
+        print "Creating Sumulator %s" % foil
+        self.polars = {}
         
     def get_cl(self, v, alpha):
-        self.get_polars(v)
-        return self.cl_poly(alpha)
+        cl, cd = self.get_polars(v)
+        print self.polars.keys()
+        return cl(alpha)
 
     def get_cd(self, v, alpha):
-        self.get_polars(v)
-        return self.cd_poly(alpha)
+        cl, cd = self.get_polars(v)
+        print self.polars.keys()
+        return cd(alpha)
 
     def get_polars(self, velocity):
-
-        if (self.velocity == velocity) and (self.polars != None):
-            return self.polars
+        key = "%5.2f" % velocity
+        if (key in self.polars):
+            return self.polars[key]
         
-        self.velocity = velocity
-
+        print "get_polars(%s)" % key
+        
         if (self.foil.Reynolds(velocity) < 20000.0):
-            self.polars = {}
             alpha = np.radians(np.linspace(-5, 40, 20))
             cl = 2.0 * np.pi * alpha
 
             cd = 1.28 * np.sin(alpha)
 
-            self.cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
-            self.cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+            self.polars[key] = [cl_poly, cd_poly]
+            return self.polars[key]
 
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
@@ -91,7 +94,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = (0, 45, 2.1)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=188, show_seconds=3)
+                                        iterlim=88, show_seconds=3)
         labels = results[1]
         values = results[0]
         
@@ -104,18 +107,17 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 polar[label].append(value)
         
         os.remove(filename)
-        
-        self.polars = polar
-        
+                
         cl = np.array(polar['CL'])
         cd = np.array(polar['CD'])
         top_xtr = np.array(polar['Top_Xtr'])
         alfa = np.radians(polar['alpha'])
 
-        self.cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
-        self.cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
+        cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
+        cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
 
-        return polar
+        self.polars[key] = [cl_poly, cd_poly]
+        return self.polars[key]
 
 if __name__ == "__main__":
     from foil import NACA4

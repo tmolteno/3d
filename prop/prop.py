@@ -146,7 +146,6 @@ class Prop:
         for r,f,fs in self.foils:
             v = self.get_blade_velocity(r)
             twist = self.get_twist(r)
-            fs = FoilSimulator(f)
             cd = fs.get_cd(v, f.aoa-twist)
             drag = f.drag_per_unit_length(v, cd)
             dr = self.radial_resolution
