@@ -28,7 +28,12 @@ class Foil(object):
 
     def drag_per_unit_length(self, v, cd):
         return self.polar_aux(v) * cd
-        
+    
+    def hash(self):
+        ''' Generate a unique hash for this foil'''
+        pl, lu = self.get_shape_points(10)
+        return np.sum(pl[0]) + np.sum(pl[1])
+    
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
   
@@ -39,7 +44,7 @@ class Foil(object):
         ''' Return a list of x,y coordinates for the foil with zero angle of attack
         '''
         x = np.linspace(0, self.chord, n)
-        y = 0.001*np.ones(n)
+        y = 0.05*self.chord*np.ones(n)
         return [[x,-y],[x,y]]
     
     
@@ -158,5 +163,6 @@ if __name__ == "__main__":
     
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
-    
+    print f.hash()
     f.plot()
+    

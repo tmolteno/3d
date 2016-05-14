@@ -6,6 +6,6 @@
     "motor_rpm": 10000.0,
     "motor_torque": 0.042,
     "radius": 0.0625,
-    "scimitar_percent": -12.0,
+    "scimitar_percent": 0.0,
     "trailing_edge": 0.5
 }

@@ -42,6 +42,7 @@ class Prop:
         s = PchipInterpolator(x, y)
 
         chord = s(r)
+        
         return chord
 
     def get_scimitar_offset(self,r):
@@ -286,7 +287,7 @@ class NACAProp(Prop):
             thickness = self.get_foil_thickness(r)
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
-                m=0.1, p=0.5, angle_of_attack=twist)
+                m=0.15, p=0.4, angle_of_attack=twist)
             fs = FoilSimulator(f)
             
             f.set_trailing_edge(trailing_thickness/chord)

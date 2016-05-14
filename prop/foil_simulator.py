@@ -29,16 +29,15 @@ class XfoilSimulatedFoil(SimulatedFoil):
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
         print "Creating Sumulator %s" % foil
+        hash = foil.hash()
         self.polars = {}
         
     def get_cl(self, v, alpha):
         cl, cd = self.get_polars(v)
-        print self.polars.keys()
         return cl(alpha)
 
     def get_cd(self, v, alpha):
         cl, cd = self.get_polars(v)
-        print self.polars.keys()
         return cd(alpha)
 
     def get_polars(self, velocity):
