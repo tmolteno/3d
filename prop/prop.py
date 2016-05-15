@@ -30,11 +30,11 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.param.radius / 1.5
+        max_r = self.param.radius / 2
 
         hub_c = hub_r
         max_c = self.param.radius / 3
-        end_c = self.param.radius / 5
+        end_c = self.param.radius / 4
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
@@ -80,7 +80,7 @@ class Prop:
         hub_depth = 6.0 / 1000
         max_depth = 15.0 / 1000
         max_r = self.param.radius / 4.0
-        end_depth = 5.0 / 1000
+        end_depth = 6.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
