@@ -13,8 +13,8 @@ import motor_model
 from design_parameters import DesignParameters
 from scipy.interpolate import PchipInterpolator
 
-from foil_simulator import XfoilSimulatedFoil as FoilSimulator
-#from foil_simulator import PlateSimulatedFoil as FoilSimulator
+#from foil_simulator import XfoilSimulatedFoil as FoilSimulator
+from foil_simulator import PlateSimulatedFoil as FoilSimulator
 
 class Prop:
     
@@ -27,21 +27,15 @@ class Prop:
     def get_max_chord(self,r):
         ''' Allowed chord as a function of radius (m) 
             Limited by mechanical strength, or weight issues
+            
+            k/r = end_c
+            c = k / r
+            
         '''
+        end_c = self.param.radius / 6
+        k = end_c * self.param.radius
 
-        hub_r = self.param.hub_radius
-        max_r = self.param.radius / 2
-
-        hub_c = hub_r
-        max_c = self.param.radius / 3
-        end_c = self.param.radius / 4
-
-        x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
-        y = np.array([hub_c, 1.1*hub_c, max_c, 1.2*end_c, end_c] )
-
-        s = PchipInterpolator(x, y)
-
-        chord = s(r)
+        chord = k / r
         
         return chord
 
@@ -79,7 +73,7 @@ class Prop:
         hub_r = self.param.hub_radius
         hub_depth = 6.0 / 1000
         max_depth = 15.0 / 1000
-        max_r = self.param.radius / 4.0
+        max_r = self.param.radius / 3.0
         end_depth = 6.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
@@ -280,10 +274,10 @@ class NACAProp(Prop):
         self.foils = []
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r in radial_points:
-            twist = self.get_twist(r) + np.radians(8.0)
+            twist = self.get_twist(r)
 
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(30)))
             thickness = self.get_foil_thickness(r)
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
@@ -343,9 +337,13 @@ class NACAProp(Prop):
             twist = self.get_twist(r)
 
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist))
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(30)))
             
-            f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
+            #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
+            f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
+                m=0.1, p=0.4, angle_of_attack=twist + np.radians(15.0))
+            f.set_trailing_edge(0.0005/chord)
+
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
             fs = FoilSimulator(f)
             self.foils.append([r, f, fs])
@@ -376,7 +374,7 @@ if __name__ == "__main__":
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
-    parser.add_argument('--resolution', type=float, default=2.0, help="The spacing between foil (mm).")
+    parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     

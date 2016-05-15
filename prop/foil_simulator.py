@@ -28,7 +28,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
-        print "Creating Sumulator %s" % foil
+        print "Creating XFOIL Sumulator %s" % foil
         hash = foil.hash()
         self.polars = {}
         
@@ -45,7 +45,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if (key in self.polars):
             return self.polars[key]
         
-        print "get_polars(%s)" % key
+        #print "get_polars(%s)" % key
         
         if (self.foil.Reynolds(velocity) < 20000.0):
             alpha = np.radians(np.linspace(-5, 40, 20))
