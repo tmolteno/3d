@@ -28,21 +28,23 @@ class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
-        print "Creating XFOIL Sumulator %s" % foil
+        print "Creating XFOIL Simulator %s" % foil
         hash = foil.hash()
         self.polars = {}
         
     def get_cl(self, v, alpha):
         try:
-          cl, cd = self.get_polars(v)
-        except:
-          return  2.0 * np.pi * alpha
+            cl, cd = self.get_polars(v)
+        except ValueError:
+            print "Failure"
+            return  2.0 * np.pi * alpha
         return cl(alpha)
 
     def get_cd(self, v, alpha):
         try:
             cl, cd = self.get_polars(v)
-        except:
+        except ValueError:
+            print "Failure"
             return 0.5
         return cd(alpha)
 
@@ -67,7 +69,6 @@ class XfoilSimulatedFoil(SimulatedFoil):
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         pl, pu = self.foil.get_shape_points(n=80)
-        
         ''' This contains only the X,Y coordinates, which run from the 
             trailing edge, round the leading edge, back to the trailing edge 
             in either direction:
@@ -87,7 +88,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
                         for coord in coordslist]
         # Join with linebreaks in between
         points = '\n'.join(coordstrlist)
-        
+
         Re = self.foil.Reynolds(velocity)
 
         # Save points to a file

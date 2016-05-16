@@ -76,7 +76,7 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
         xf.cmd("PLOP\nG\n\n", autonewline=False)
     # Enter OPER menu
     xf.cmd("OPER")
-    xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
+    xf.cmd("VPAR\nVACC 0.0\nN 8\n\n", autonewline=False)
     if iterlim:
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))

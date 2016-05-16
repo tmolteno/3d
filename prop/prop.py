@@ -287,7 +287,7 @@ class NACAProp(Prop):
                 m=0.15, p=0.4, angle_of_attack=twist)
             fs = FoilSimulator(f)
             
-            f.set_trailing_edge(self.param.trailing_edge/chord)
+            f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             self.foils.append([r, f, fs])
 
@@ -344,8 +344,8 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.1, p=0.4, angle_of_attack=twist + aoa)
-            f.set_trailing_edge(self.param.trailing_edge/chord)
+                m=0.15, p=0.4, angle_of_attack=twist + aoa)
+            f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
             fs = FoilSimulator(f)
