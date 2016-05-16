@@ -76,26 +76,28 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
         xf.cmd("PLOP\nG\n\n", autonewline=False)
     # Enter OPER menu
     xf.cmd("OPER")
-    xf.cmd("VPAR\nVACC 0.0\nN 8\n\n", autonewline=False)
+    xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
     if iterlim:
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))
-    xf.cmd("Re {}".format(Re))
-    xf.cmd("ALFA 10.0")
+    xf.cmd("ALFA 3.0")
     if Mach:
         xf.cmd("MACH {:.3f}".format(Mach))
 
     # Turn polar accumulation on, double enter for no savefile or dumpfile
     xf.cmd("PACC\n\n\n", autonewline=False)
     # Calculate polar
-    try:
-        if len(operating_point) != 3:
-            raise Warning("oper pt is single value or [start, stop, interval]")
-        # * unpacks, same as (alpha[0], alpha[1],...)
-        xf.cmd("{:s} {:.3f} {:.3f} {:.3f}".format(pcmd[1], *operating_point))
-    except TypeError:
-        # If iterating doesn't work, assume it's a single digit
-        xf.cmd("{:s} {:.3f}".format(pcmd[0], operating_point))
+    alfa = np.arange(*operating_point)
+    for a in alfa:
+        xf.cmd("{:s} {:.3f}".format(pcmd[0], a))
+    #try:
+        #if len(operating_point) != 3:
+            #raise Warning("oper pt is single value or [start, stop, interval]")
+        ## * unpacks, same as (alpha[0], alpha[1],...)
+        #xf.cmd("{:s} {:.3f} {:.3f} {:.3f}".format(pcmd[1], *operating_point))
+    #except TypeError:
+        ## If iterating doesn't work, assume it's a single digit
+        #xf.cmd("{:s} {:.3f}".format(pcmd[0], operating_point))
 
     # List polar and send recognizable end marker
     xf.cmd("PLIS\nENDD\n\n", autonewline=False)
