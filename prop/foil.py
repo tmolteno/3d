@@ -32,7 +32,7 @@ class Foil(object):
     def hash(self):
         ''' Generate a unique hash for this foil'''
         pl, pu = self.get_shape_points(10)
-        return np.sum(pu[1]) + np.sum(pl[1])
+        return "%s" % (np.sum(pu[1]) + np.sum(pl[1]))
     
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
