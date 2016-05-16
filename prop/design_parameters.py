@@ -7,6 +7,7 @@ class DesignParameters:
     def __init__(self, filename=0):
         self.radius = 0.0625    # m
         self.hub_radius = 5.0 / 1000
+        self.trailing_edge = 0.5 / 1000
         
         self.forward_airspeed = 1.0  # m/s
         self.altitude = 0.0  # MAS
@@ -33,6 +34,7 @@ class DesignParameters:
         configdict['radius'] = self.radius
         configdict['hub_radius'] = self.hub_radius
         configdict['scimitar_percent'] = self.param.scimitar_percent
+        configdict['trailing_edge'] = self.param.trailing_edge
         
         configdict['forward_airspeed'] = self.forward_airspeed
         configdict['altitude'] = self.altitude
@@ -49,6 +51,7 @@ class DesignParameters:
         self.radius = settings['radius']
         self.hub_radius = settings['hub_radius']
         self.scimitar_percent = settings['scimitar_percent']
+        self.trailing_edge = settings['trailing_edge']
         
         self.forward_airspeed = float(settings['forward_airspeed'])
         self.altitude = float(settings['altitude'])

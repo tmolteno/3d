@@ -47,7 +47,7 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.param.radius * 0.8
+        max_r = self.param.radius * 0.85
 
         hub_c = 0.0
         max_c = self.param.radius * (self.param.scimitar_percent / 100.0)
@@ -77,7 +77,7 @@ class Prop:
         hub_depth = 5.0 / 1000
         max_depth = 15.0 / 1000
         max_r = self.param.radius / 2.0
-        end_depth = 5.0 / 1000
+        end_depth = 4.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
@@ -270,7 +270,7 @@ class Prop:
 class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
-    def design(self, trailing_thickness):
+    def design(self):
         forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
         print("Revs per second %f" % self.param.rps())
         print("Forward travel per rev %f" % forward_travel_per_rev)
@@ -287,7 +287,7 @@ class NACAProp(Prop):
                 m=0.15, p=0.4, angle_of_attack=twist)
             fs = FoilSimulator(f)
             
-            f.set_trailing_edge(trailing_thickness/chord)
+            f.set_trailing_edge(self.param.trailing_edge/chord)
 
             self.foils.append([r, f, fs])
 
@@ -345,7 +345,7 @@ class NACAProp(Prop):
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
                 m=0.1, p=0.4, angle_of_attack=twist + aoa)
-            f.set_trailing_edge(0.0005/chord)
+            f.set_trailing_edge(self.param.trailing_edge/chord)
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
             fs = FoilSimulator(f)
@@ -382,12 +382,10 @@ if __name__ == "__main__":
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
-    parser.add_argument('--min-edge', type=float, default=0.5, help="The minimum thickness of the foil (mm).")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
-    trailing_thickness = args.min_edge / 1000
     
     param = DesignParameters(args.param)
     p = NACAProp(param, args.resolution / 1000)
@@ -396,7 +394,7 @@ if __name__ == "__main__":
       m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
       optimum_torque, optimum_rpm = m.get_Qmax(11.0)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
-      n_blades = 3
+      n_blades = 2
       aoa = np.radians(5.0)
       torque = p.design_torque(optimum_torque, optimum_rpm, aoa)*n_blades
       dt = (optimum_torque - torque) / optimum_torque
@@ -409,7 +407,7 @@ if __name__ == "__main__":
         print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       
     else:
-      p.design(trailing_thickness)
+      p.design()
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

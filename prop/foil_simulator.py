@@ -33,11 +33,17 @@ class XfoilSimulatedFoil(SimulatedFoil):
         self.polars = {}
         
     def get_cl(self, v, alpha):
-        cl, cd = self.get_polars(v)
+        try:
+          cl, cd = self.get_polars(v)
+        except:
+          return  2.0 * np.pi * alpha
         return cl(alpha)
 
     def get_cd(self, v, alpha):
-        cl, cd = self.get_polars(v)
+        try:
+            cl, cd = self.get_polars(v)
+        except:
+            return 0.5
         return cd(alpha)
 
     def get_polars(self, velocity):
