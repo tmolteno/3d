@@ -34,29 +34,19 @@ class XfoilSimulatedFoil(SimulatedFoil):
         self.hash = foil.hash()
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
-        self.db_id = c.execute("SELECT f.id FROM foil f WHERE (f.hash=?)", (self.hash,)).fetchone()[0]
-        if self.db_id == None:
+        result = c.execute("SELECT f.id FROM foil f WHERE (f.hash=?)", (self.hash,)).fetchone()
+        if result == None:
             c.execute("INSERT INTO foil(hash) VALUES (?)", (self.hash,))
-            c.execute("SELEC id FROM foil WHERE (hash=?)", (self.hash,))
-            self.db_id = c.fetchone()[0]
-            print self.db_id
+            c.execute("SELECT id FROM foil WHERE (hash=?)", (self.hash,))
+            self.foil_id = c.fetchone()[0]
+            print self.foil_id
         else:
-            print "Already in table with id %s" % self.db_id
+            self.foil_id = result[0]
+            print "Already in table with id %s" % self.foil_id
         conn.commit()
         conn.close()
         self.polars = {}
         
-    def read_from_db(self):
-        conn = sqlite3.connect('foil_simulator.db')
-        c = conn.cursor()
-        for fow in c.execute("SELECT s.re, s.id FROM foil f, simulation s WHERE (f.hash=?) AND (f.id = s.foil_id)", (self.hash,)):
-            polars = []
-            key = "%5.2f" % row['re']
-            for pol in c.execute("SELECT s.re FROM polar p WHERE (p.sim_id=?) AND (f.id = s.foil_id)", (row['id'],)):
-                polars.append()
-            self.polars[key] = polars
-        conn.commit()
-        conn.close()
 
     def get_cl(self, v, alpha):
         try:
@@ -80,11 +70,11 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
-        print self.db_id
-        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.re = ?)", (self.db_id, re, ))
+        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?)", (self.foil_id, re, ))
         result = c.fetchone()
         if (result != None):
             # Read from database
+            print "retrieving from database"
             sim_id = result[0]
             alpha = []
             cl = []
@@ -165,14 +155,15 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Insert into database
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
-        c.execute("INSERT INTO simulation(foil_id, re) VALUES (?,?)", (self.db_id, re, ))
-        c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (re=?)", (self.db_id, re, ))
+        c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, re, self.foil.Mach(velocity)))
+        c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, re, ))
         sim_id = c.fetchone()[0]
 
         for i, a in enumerate(alfa):
             c.execute("INSERT INTO polar(sim_id, alpha, cl, cd) VALUES (?,?,?,?)", (sim_id, a, cl[i], cd[i]))
         conn.commit()
         conn.close()
+        
         return self.get_polars(velocity)
 
 if __name__ == "__main__":

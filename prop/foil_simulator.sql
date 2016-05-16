@@ -1,6 +1,7 @@
 PRAGMA foreign_keys = ON;
 
-
+drop table polar;
+drop table simulation;
 drop table foil;
 
 create table foil (
@@ -8,14 +9,13 @@ create table foil (
    hash varchar(255)
 );
 
-drop table simulation;
 create table simulation (
    id integer primary key,
    foil_id integer references foil(id),
-   re float
+   reynolds float,
+   mach float
 );
 
-drop table polar;
 create table polar (
    id integer primary key,
    sim_id integer references simulation(id),

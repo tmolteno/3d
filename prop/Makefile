@@ -5,7 +5,7 @@ prop:
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
 auto:
-	python prop.py --auto --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade_auto.ascii.stl'
+	python prop.py --auto --n 40 --resolution 5.0 --param='prop_design.json' --stl-file 'blade_auto.ascii.stl'
 	meshlabserver -i blade_auto.ascii.stl -o blade_auto.stl -s meshclean.mlx
 
 scad:
