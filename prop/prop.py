@@ -66,7 +66,12 @@ class Prop:
         '''
         thickness_root = 5.0 / 1000
         thickness_end = 1.25 / 1000
-        thickness = thickness_end + (1.0 - r / self.param.radius)*(thickness_root - thickness_end)
+        # Solve s + kr^2 = end && s + kh^2 = start
+        # Subtract kr^2 - k h^2 = (end - start) => k = (end - start) / (r^2 - h^2)
+        # s = end - kr^2
+        k = (thickness_end - thickness_root) / (self.param.radius**2 - self.param.hub_radius**2)
+        s = thickness_end - k*self.param.radius**2
+        thickness = s + k*r**2
         return thickness
 
     def get_max_depth(self,r):
@@ -400,7 +405,7 @@ if __name__ == "__main__":
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.01):
-        aoa *= 1.0 + dt
+        aoa *= 1.0 + dt/5
         print "Angle of Attack %f" % np.degrees(aoa)
         torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades
         dt = (optimum_torque - torque) / optimum_torque

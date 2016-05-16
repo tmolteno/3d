@@ -45,7 +45,6 @@ class XfoilSimulatedFoil(SimulatedFoil):
             print "Already in table with id %s" % self.foil_id
         conn.commit()
         conn.close()
-        self.polars = {}
         
 
     def get_cl(self, v, alpha):
@@ -65,7 +64,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return cd(alpha)
 
     def get_polars(self, velocity):
-        re = self.foil.Reynolds(velocity)
+        re = np.round(self.foil.Reynolds(velocity))
         
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
@@ -85,11 +84,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 cd.append(pol[2])
             cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
             cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
-            key = "%5.2f" % re
-            self.polars[key] = [cl_poly, cd_poly]
             conn.commit()
             conn.close()
-            return self.polars[key]
+            return [cl_poly, cd_poly]
         
         if (self.foil.Reynolds(velocity) < 20000.0):
             alpha = np.radians(np.linspace(-5, 40, 20))
@@ -131,7 +128,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (0, 45, 2.1)
+        alfa = (-1, 45, 2.1)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
                                         iterlim=88, show_seconds=3)
         labels = results[1]
@@ -151,18 +148,27 @@ class XfoilSimulatedFoil(SimulatedFoil):
         cd = np.array(polar['CD'])
         top_xtr = np.array(polar['Top_Xtr'])
         alfa = np.radians(polar['alpha'])
-    
-        # Insert into database
-        conn = sqlite3.connect('foil_simulator.db')
-        c = conn.cursor()
-        c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, re, self.foil.Mach(velocity)))
-        c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, re, ))
-        sim_id = c.fetchone()[0]
+        if len(alfa) < 5:
+            # Problem here, foil didn't simulate.
+            # Try modifying things.
+            alpha = np.radians(np.linspace(-5, 40, 20))
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+            return [cl_poly, cd_poly]
 
-        for i, a in enumerate(alfa):
-            c.execute("INSERT INTO polar(sim_id, alpha, cl, cd) VALUES (?,?,?,?)", (sim_id, a, cl[i], cd[i]))
-        conn.commit()
-        conn.close()
+            cd = 1.28 * np.sin(alpha)
+        else:
+            # Insert into database
+            conn = sqlite3.connect('foil_simulator.db')
+            c = conn.cursor()
+            c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, re, self.foil.Mach(velocity)))
+            c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, re, ))
+            sim_id = c.fetchone()[0]
+
+            for i, a in enumerate(alfa):
+                c.execute("INSERT INTO polar(sim_id, alpha, cl, cd) VALUES (?,?,?,?)", (sim_id, a, cl[i], cd[i]))
+            conn.commit()
+            conn.close()
         
         return self.get_polars(velocity)
 
