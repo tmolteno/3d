@@ -24,14 +24,40 @@ from random import choice
 from string import ascii_uppercase
 import os
 
+import sqlite3
+
 class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
         print "Creating XFOIL Simulator %s" % foil
-        hash = foil.hash()
+        self.hash = foil.hash()
+        conn = sqlite3.connect('foil_simulator.db')
+        c = conn.cursor()
+        self.db_id = c.execute("SELECT f.id FROM foil f WHERE (f.hash=?)", (self.hash,)).fetchone()[0]
+        if self.db_id == None:
+            c.execute("INSERT INTO foil(hash) VALUES (?)", (self.hash,))
+            c.execute("SELEC id FROM foil WHERE (hash=?)", (self.hash,))
+            self.db_id = c.fetchone()[0]
+            print self.db_id
+        else:
+            print "Already in table with id %s" % self.db_id
+        conn.commit()
+        conn.close()
         self.polars = {}
         
+    def read_from_db(self):
+        conn = sqlite3.connect('foil_simulator.db')
+        c = conn.cursor()
+        for fow in c.execute("SELECT s.re, s.id FROM foil f, simulation s WHERE (f.hash=?) AND (f.id = s.foil_id)", (self.hash,)):
+            polars = []
+            key = "%5.2f" % row['re']
+            for pol in c.execute("SELECT s.re FROM polar p WHERE (p.sim_id=?) AND (f.id = s.foil_id)", (row['id'],)):
+                polars.append()
+            self.polars[key] = polars
+        conn.commit()
+        conn.close()
+
     def get_cl(self, v, alpha):
         try:
             cl, cd = self.get_polars(v)
@@ -49,22 +75,39 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return cd(alpha)
 
     def get_polars(self, velocity):
-        key = "%5.2f" % velocity
-        if (key in self.polars):
-            return self.polars[key]
+        re = self.foil.Reynolds(velocity)
         
-        #print "get_polars(%s)" % key
+        # Check if we're in the databse
+        conn = sqlite3.connect('foil_simulator.db')
+        c = conn.cursor()
+        print self.db_id
+        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.re = ?)", (self.db_id, re, ))
+        result = c.fetchone()
+        if (result != None):
+            # Read from database
+            sim_id = result[0]
+            alpha = []
+            cl = []
+            cd = []
+            for pol in c.execute("SELECT p.alpha, p.cl, p.cd FROM polar p WHERE (p.sim_id=?)", (sim_id,)):
+                alpha.append(pol[0])
+                cl.append(pol[1])
+                cd.append(pol[2])
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+            key = "%5.2f" % re
+            self.polars[key] = [cl_poly, cd_poly]
+            conn.commit()
+            conn.close()
+            return self.polars[key]
         
         if (self.foil.Reynolds(velocity) < 20000.0):
             alpha = np.radians(np.linspace(-5, 40, 20))
             cl = 2.0 * np.pi * alpha
 
             cd = 1.28 * np.sin(alpha)
+           
 
-            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
-            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
-            self.polars[key] = [cl_poly, cd_poly]
-            return self.polars[key]
 
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
@@ -118,12 +161,19 @@ class XfoilSimulatedFoil(SimulatedFoil):
         cd = np.array(polar['CD'])
         top_xtr = np.array(polar['Top_Xtr'])
         alfa = np.radians(polar['alpha'])
+    
+        # Insert into database
+        conn = sqlite3.connect('foil_simulator.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO simulation(foil_id, re) VALUES (?,?)", (self.db_id, re, ))
+        c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (re=?)", (self.db_id, re, ))
+        sim_id = c.fetchone()[0]
 
-        cl_poly = np.poly1d(np.polyfit(alfa, cl, 4))
-        cd_poly = np.poly1d(np.polyfit(alfa, cd, 4))
-
-        self.polars[key] = [cl_poly, cd_poly]
-        return self.polars[key]
+        for i, a in enumerate(alfa):
+            c.execute("INSERT INTO polar(sim_id, alpha, cl, cd) VALUES (?,?,?,?)", (sim_id, a, cl[i], cd[i]))
+        conn.commit()
+        conn.close()
+        return self.get_polars(velocity)
 
 if __name__ == "__main__":
     from foil import NACA4
