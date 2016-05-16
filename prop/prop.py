@@ -13,8 +13,8 @@ import motor_model
 from design_parameters import DesignParameters
 from scipy.interpolate import PchipInterpolator
 
-#from foil_simulator import XfoilSimulatedFoil as FoilSimulator
-from foil_simulator import PlateSimulatedFoil as FoilSimulator
+from foil_simulator import XfoilSimulatedFoil as FoilSimulator
+#from foil_simulator import PlateSimulatedFoil as FoilSimulator
 
 class Prop:
     
@@ -22,6 +22,7 @@ class Prop:
         self.param = param
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
+        self.chord_fraction = 7.0
         
         
     def get_max_chord(self,r):
@@ -32,12 +33,14 @@ class Prop:
             c = k / r
             
         '''
-        end_c = self.param.radius / 6
+        circumference = 2.0*np.pi*r
+        
+        end_c = self.param.radius / self.chord_fraction
         k = end_c * self.param.radius
 
         chord = k / r
         
-        return chord
+        return min(chord, circumference / 5)
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -62,7 +65,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = 5.0 / 1000
-        thickness_end = 2.0 / 1000
+        thickness_end = 1.25 / 1000
         thickness = thickness_end + (1.0 - r / self.param.radius)*(thickness_root - thickness_end)
         return thickness
 
@@ -71,10 +74,10 @@ class Prop:
             This is a property of the environment that the prop operates in.
         '''
         hub_r = self.param.hub_radius
-        hub_depth = 6.0 / 1000
+        hub_depth = 5.0 / 1000
         max_depth = 15.0 / 1000
-        max_r = self.param.radius / 3.0
-        end_depth = 6.0 / 1000
+        max_r = self.param.radius / 2.0
+        end_depth = 5.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
@@ -326,7 +329,7 @@ class NACAProp(Prop):
         torque = self.get_torque()
         print torque
 
-    def design_torque(self, optimum_torque, optimum_rpm):
+    def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.foils = []
         self.param.motor_rpm = optimum_rpm
         # Calculate the chord distribution, from geometry and clearence
@@ -337,11 +340,11 @@ class NACAProp(Prop):
             twist = self.get_twist(r)
 
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(30)))
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.1, p=0.4, angle_of_attack=twist + np.radians(15.0))
+                m=0.1, p=0.4, angle_of_attack=twist + aoa)
             f.set_trailing_edge(0.0005/chord)
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
@@ -353,18 +356,24 @@ class NACAProp(Prop):
         # Get foil polars
         # Assign angle of attack to be optimium
         torque = self.get_torque()
-        print torque
-        print optimum_torque
-        print optimum_torque / torque
-        # Calculate lift, drag as a function of radius.
-        # Get torque & lift
-        # Modify chord distribution (and/or add blades if chord exceeds r/5)
+        return torque
         
-        # Allocate the drag as a function of radius. The velocity is proportional to r, the 
-        # drag is proportional to c_d r^2
-        # Integrate the drag int_0^r cd r^2 = Torque
-        # Modify the 
-        return 3
+    def torque_modify(self, optimum_torque, optimum_rpm, aoa):
+
+        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
+        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        for r, f, fs in self.foils:
+            v = self.get_blade_velocity(r)
+            twist = self.get_twist(r)
+
+            depth_max = self.get_max_depth(r)
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
+            f.chord = chord
+            f.aoa = twist + aoa
+            print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
+
+        torque = self.get_torque()
+        return torque
         
 if __name__ == "__main__":
     import argparse
@@ -384,10 +393,20 @@ if __name__ == "__main__":
     p = NACAProp(param, args.resolution / 1000)
 
     if (args.auto):
-      m = motor_model.Motor(Kv = 980.0, I0 = 0.5, Rm = 0.207)
+      m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
       optimum_torque, optimum_rpm = m.get_Qmax(11.0)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
-      p.design_torque(optimum_torque, optimum_rpm)
+      n_blades = 3
+      aoa = np.radians(5.0)
+      torque = p.design_torque(optimum_torque, optimum_rpm, aoa)*n_blades
+      dt = (optimum_torque - torque) / optimum_torque
+      print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
+      while (abs(dt)  > 0.01):
+        aoa *= 1.0 + dt
+        print "Angle of Attack %f" % np.degrees(aoa)
+        torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades
+        dt = (optimum_torque - torque) / optimum_torque
+        print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       
     else:
       p.design(trailing_thickness)

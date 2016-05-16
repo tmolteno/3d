@@ -4,6 +4,10 @@ prop:
 	python prop.py --min-edge 0.5 --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade5x3.ascii.stl'
 	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
 
+auto:
+	python prop.py --auto --min-edge 0.5 --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade_auto.ascii.stl'
+	meshlabserver -i blade_auto.ascii.stl -o blade_auto.stl -s meshclean.mlx
+
 scad:
 	openscad -m make -d pyprop.deps -o pyprop.ascii.stl pyprop.scad
 	meshlabserver -i pyprop.ascii.stl -o pyprop.stl -s meshclean.mlx
