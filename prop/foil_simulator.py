@@ -152,6 +152,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
             # Problem here, foil didn't simulate.
             # Try modifying things.
             alpha = np.radians(np.linspace(-5, 40, 20))
+            cl = 2.0 * np.pi * alpha
+            cd = 1.28 * np.sin(alpha)
             cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
             cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
             return [cl_poly, cd_poly]
