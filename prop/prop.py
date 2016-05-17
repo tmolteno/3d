@@ -92,21 +92,21 @@ class Prop:
         depth = s(r)
         return depth
 
-    def get_helical_length(self, r):
+    def get_helical_length(self, r, rpm):
         circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
+        forward_travel_per_rev = self.get_forward_windspeed(r) / (rpm/60.0)
 
         helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
         return helical_length
 
-    def get_twist(self, r):
+    def get_twist(self, r, rpm):
         circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.get_forward_windspeed(r) / (self.param.rps())
+        forward_travel_per_rev = self.get_forward_windspeed(r) / (rpm/60.0)
         twist = math.atan(forward_travel_per_rev / circumference)
         return twist
 
-    def get_blade_velocity(self, r):
-        v = self.get_helical_length(r) * self.param.rps()
+    def get_blade_velocity(self, r, rpm):
+        v = self.get_helical_length(r, rpm) * (rpm/60.0)
         return v
       
     def get_forward_windspeed(self, r):
@@ -144,11 +144,11 @@ class Prop:
             #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
     
     
-    def get_torque(self):
+    def get_torque(self, rpm):
         torque = 0.0
         for r,f,fs in self.foils:
-            v = self.get_blade_velocity(r)
-            twist = self.get_twist(r)
+            v = self.get_blade_velocity(r, rpm)
+            twist = self.get_twist(r, rpm)
             cd = fs.get_cd(v, f.aoa-twist)
             drag = f.drag_per_unit_length(v, cd)
             dr = self.radial_resolution
@@ -275,14 +275,14 @@ class Prop:
 class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
-    def design(self):
-        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
-        print("Revs per second %f" % self.param.rps())
+    def design(self, optimum_rpm):
+        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
+        print("Revs per second %f" % (optimum_rpm/60.0))
         print("Forward travel per rev %f" % forward_travel_per_rev)
         self.foils = []
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r in radial_points:
-            twist = self.get_twist(r)
+            twist = self.get_twist(r, optimum_rpm)
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(30)))
@@ -298,9 +298,9 @@ class NACAProp(Prop):
 
         optimum_aoa = []
         for r,f, fs in self.foils:
-            v = self.get_blade_velocity(r)
+            v = self.get_blade_velocity(r, optimum_rpm)
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            twist = self.get_twist(r)
+            twist = self.get_twist(r, optimum_rpm)
           
             if (f.Reynolds(v) < 20000.0):
               opt_alpha = np.radians(20.0)
@@ -336,13 +336,12 @@ class NACAProp(Prop):
 
     def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.foils = []
-        self.param.motor_rpm = optimum_rpm
         # Calculate the chord distribution, from geometry and clearence
-        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
+        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm / 60.0)
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r in radial_points:
-            v = self.get_blade_velocity(r)
-            twist = self.get_twist(r)
+            v = self.get_blade_velocity(r, optimum_rpm)
+            twist = self.get_twist(r, optimum_rpm)
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
@@ -360,16 +359,16 @@ class NACAProp(Prop):
         
         # Get foil polars
         # Assign angle of attack to be optimium
-        torque = self.get_torque()
+        torque = self.get_torque(optimum_rpm)
         return torque
         
     def torque_modify(self, optimum_torque, optimum_rpm, aoa):
 
-        forward_travel_per_rev = self.param.forward_airspeed / (self.param.rps())
+        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r, f, fs in self.foils:
-            v = self.get_blade_velocity(r)
-            twist = self.get_twist(r)
+            v = self.get_blade_velocity(r, optimum_rpm)
+            twist = self.get_twist(r, optimum_rpm)
 
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
@@ -377,7 +376,7 @@ class NACAProp(Prop):
             f.aoa = twist + aoa
             #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
 
-        torque = self.get_torque()
+        torque = self.get_torque(optimum_rpm)
         return torque
         
 if __name__ == "__main__":
@@ -418,7 +417,8 @@ if __name__ == "__main__":
         print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       
     else:
-      p.design()
+      
+      p.design(12000)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

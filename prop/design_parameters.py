@@ -12,9 +12,11 @@ class DesignParameters:
         self.forward_airspeed = 1.0  # m/s
         self.altitude = 0.0  # MAS
         
-        self.motor_torque = 12.0   # N cm
-        self.motor_power = 100   # Watts
-        self.motor_rpm = 10000.0   #
+        self.motor_volts = 11.0 
+        self.motor_Kv = 1200   # Watts
+        self.motor_winding_resistance = 0.206
+        self.motor_no_load_current = 0.5
+        
         self.scimitar_percent = 0.0   # Percentage scimitar
 
         if filename != 0:
@@ -26,9 +28,6 @@ class DesignParameters:
     def area(self):
         return 3.1415*self.radius*self.radius
       
-    def rps(self):
-        return self.motor_rpm / 60.0
-    
     def to_json(self):
         configdict = {}
         configdict['radius'] = self.radius
