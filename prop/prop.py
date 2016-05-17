@@ -375,7 +375,7 @@ class NACAProp(Prop):
             chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
             f.chord = chord
             f.aoa = twist + aoa
-            print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
+            #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
 
         torque = self.get_torque()
         return torque
@@ -396,12 +396,18 @@ if __name__ == "__main__":
     p = NACAProp(param, args.resolution / 1000)
 
     if (args.auto):
-      m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
+      #m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
+      m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
       optimum_torque, optimum_rpm = m.get_Qmax(11.0)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
       n_blades = 2
-      aoa = np.radians(5.0)
-      torque = p.design_torque(optimum_torque, optimum_rpm, aoa)*n_blades
+      aoa = np.radians(15.0)
+      single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
+      n_blades = np.round(optimum_torque/single_blade_torque)
+      if (n_blades < 2):
+        n_blades = 2
+      print "Number of Blades: %d" % n_blades
+      torque = single_blade_torque*n_blades
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.06):

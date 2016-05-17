@@ -25,12 +25,12 @@ from string import ascii_uppercase
 import os
 
 import sqlite3
+import logging
 
 class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
-        print "Creating XFOIL Simulator %s" % foil
         self.hash = foil.hash()
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
@@ -39,10 +39,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
             c.execute("INSERT INTO foil(hash) VALUES (?)", (self.hash,))
             c.execute("SELECT id FROM foil WHERE (hash=?)", (self.hash,))
             self.foil_id = c.fetchone()[0]
-            print self.foil_id
+            logging.info("Creating Foil In Database, %s, id=%d" % (foil, self.foil_id))
         else:
             self.foil_id = result[0]
-            print "Already in table with id %s" % self.foil_id
         conn.commit()
         conn.close()
         
@@ -51,7 +50,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         try:
             cl, cd = self.get_polars(v)
         except ValueError:
-            print "Failure"
+            logging.info("Failure to get foil polars")
             return  2.0 * np.pi * alpha
         return cl(alpha)
 
@@ -59,12 +58,12 @@ class XfoilSimulatedFoil(SimulatedFoil):
         try:
             cl, cd = self.get_polars(v)
         except ValueError:
-            print "Failure"
+            logging.info("Failure to get foil polars")
             return 0.5
         return cd(alpha)
 
     def get_polars(self, velocity):
-        re = np.round(self.foil.Reynolds(velocity))
+        re = np.round(self.foil.Reynolds(velocity), -3)  # Round to nearest 1000
         
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
@@ -73,8 +72,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
         result = c.fetchone()
         if (result != None):
             # Read from database
-            print "retrieving from database"
             sim_id = result[0]
+            logging.info("retrieving from database sim_id=%d, %f" % (sim_id, re))
             alpha = []
             cl = []
             cd = []
@@ -149,7 +148,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         top_xtr = np.array(polar['Top_Xtr'])
         alfa = np.radians(polar['alpha'])
         if len(alfa) < 5:
-            # Problem here, foil didn't simulate.
+            logging.warning("Foil didn't simulate.")
             # Try modifying things.
             alpha = np.radians(np.linspace(-5, 40, 20))
             cl = 2.0 * np.pi * alpha
