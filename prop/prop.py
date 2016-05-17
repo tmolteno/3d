@@ -100,12 +100,17 @@ class Prop:
         return helical_length
 
     def get_twist(self, r, rpm):
+        '''This is the angle that the prop makes to the air moving past at the design wind speed
+        '''
         circumference = np.pi * 2 * r
         forward_travel_per_rev = self.get_forward_windspeed(r) / (rpm/60.0)
         twist = math.atan(forward_travel_per_rev / circumference)
         return twist
 
     def get_blade_velocity(self, r, rpm):
+        '''The speed of the blade through the air
+           The direction of travel is given by the twist angle
+        '''
         v = self.get_helical_length(r, rpm) * (rpm/60.0)
         return v
       
