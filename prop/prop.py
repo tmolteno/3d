@@ -405,7 +405,8 @@ if __name__ == "__main__":
       m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
       #m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
-      print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
+      power = m.get_Pmax(param.motor_volts)
+      print("Optimum Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
       n_blades = 2
       aoa = np.radians(20.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)

@@ -20,6 +20,12 @@ class Motor:
     RPMmax = self.Kv*( V - Imax*self.Rm)
     return (Qmax, RPMmax)
 
+  def get_Pmax(self, V):
+    ''' Power at Max Efficiency '''
+    Qmax, RPMmax = self.get_Qmax(V)
+    power = 2.0*np.pi*Qmax * (RPMmax / 60)
+    return power
+
 def symbolic_stuff():
   from sympy import Symbol, pi, sqrt
 

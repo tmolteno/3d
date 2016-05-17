@@ -9,7 +9,10 @@ from sympy import *
 '''
 torque = Symbol('tau')  # motor torque in N.m = kg m^2 s^-2
 rps = Symbol('rps')     # Revolutions per second
-Pt0 = torque*rps
+r = Symbol('r')         # Radius
+
+Pt0 = (torque / r) * (rps * r * 2 * pi)
+pprint(Pt0)
 
 A = Symbol('A')    # Prop Area
 rho = Symbol('rho') # Air Density
