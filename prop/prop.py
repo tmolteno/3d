@@ -156,6 +156,18 @@ class Prop:
             torque += dr*drag*r*np.cos(twist)
         return torque
 
+    def get_lift(self, rpm):
+        lift = 0.0
+        for r,f,fs in self.foils:
+            v = self.get_blade_velocity(r, rpm)
+            twist = self.get_twist(r, rpm)
+            cl = fs.get_cl(v, f.aoa-twist)
+            section_lift = f.lift_per_unit_length(v, cl)
+            dr = self.radial_resolution
+            
+            lift += dr*section_lift*r*np.cos(twist)
+        return lift
+
     def get_foil_points(self, n, r, f):
         pl, pu = f.get_points(n)
         ''' points are in the y - z plane. The x value is set by the radius'''
@@ -321,12 +333,14 @@ class NACAProp(Prop):
         angle_of_attack = np.poly1d(coeff)
         
         for r,f,fs in self.foils:
-            twist = self.get_twist(r)
+            twist = self.get_twist(r, optimum_rpm)
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
             
-        torque = self.get_torque()
-        print torque
+        torque = self.get_torque(optimum_rpm)
+        lift = self.get_lift(optimum_rpm)
+        
+        print torque, lift
 
     def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.foils = []
@@ -342,7 +356,7 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.10, p=0.4, angle_of_attack=twist + aoa)
+                m=0.15, p=0.4, angle_of_attack=twist + aoa)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
@@ -407,12 +421,15 @@ if __name__ == "__main__":
         aoa *= 1.0 + dt/4
         print "Angle of Attack %f" % np.degrees(aoa)
         torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades
+        lift = p.get_lift(optimum_rpm)*n_blades
+
         dt = (optimum_torque - torque) / optimum_torque
-        print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
+        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque, lift, optimum_torque, dt )
       
     else:
-      
-      p.design(12000)
+      m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
+      optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
+      p.design(optimum_rpm)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)
