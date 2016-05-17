@@ -404,8 +404,8 @@ if __name__ == "__main__":
       torque = p.design_torque(optimum_torque, optimum_rpm, aoa)*n_blades
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
-      while (abs(dt)  > 0.01):
-        aoa *= 1.0 + dt/5
+      while (abs(dt)  > 0.06):
+        aoa *= 1.0 + dt/4
         print "Angle of Attack %f" % np.degrees(aoa)
         torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades
         dt = (optimum_torque - torque) / optimum_torque

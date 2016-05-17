@@ -128,9 +128,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (-1, 45, 2.1)
+        alfa = (-10, 45, 1.1)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=88, show_seconds=3)
+                                        iterlim=288, show_seconds=3)
         labels = results[1]
         values = results[0]
         
