@@ -1,0 +1,15 @@
+{
+    "altitude": 0.0,
+    "forward_airspeed": 2.0,
+    
+    "motor_Kv": 1900,
+    "motor_volts": 11.0,
+    "motor_no_load_current": 0.5,
+    "motor_winding_resistance": 0.405,
+    
+    "radius": 0.055,
+    "scimitar_percent": 7.0,
+    "trailing_edge": 0.5,
+    "hub_radius": 0.005,
+    "hub_depth": 0.005
+}
