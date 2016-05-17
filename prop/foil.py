@@ -96,7 +96,7 @@ class NACA4(Foil):
     def hash(self):
         ''' Generate a unique hash for this foil'''
         
-        return "%5.2f,%5.2f,%5.2f" % (self.m, self.p, self.thickness)
+        return "%5.2f,%5.2f,%5.2f, %5.2f" % (self.m, self.p, self.thickness, self.trailing_edge)
 
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)

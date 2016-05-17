@@ -41,9 +41,11 @@ class DesignParameters:
         configdict['forward_airspeed'] = self.forward_airspeed
         configdict['altitude'] = self.altitude
         
-        configdict['motor_rpm'] = self.motor_rpm
-        configdict['motor_power'] = self.motor_power
-        configdict['motor_torque'] = self.motor_torque
+        configdict['motor_Kv'] = self.motor_Kv
+        configdict['motor_volts'] = self.motor_volts
+        configdict['motor_winding_resistance'] = self.motor_winding_resistance
+        configdict['motor_no_load_current'] = self.motor_no_load_current
+        
         
         json_str = json.dumps(configdict, sort_keys=True, indent=4, separators=(',', ': '))
         return json_str
@@ -60,9 +62,10 @@ class DesignParameters:
         self.forward_airspeed = float(settings['forward_airspeed'])
         self.altitude = float(settings['altitude'])
         
-        self.motor_rpm = float(settings['motor_rpm'])
-        self.motor_power = settings['motor_power']
-        self.motor_torque = settings['motor_torque']
+        self.motor_Kv = float(settings['motor_Kv'])
+        self.motor_volts = settings['motor_volts']
+        self.motor_winding_resistance = settings['motor_winding_resistance']
+        self.motor_no_load_current = settings['motor_no_load_current']
         
     def save(self, fname):
         f=open(fname,"w")

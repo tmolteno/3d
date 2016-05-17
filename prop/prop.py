@@ -396,9 +396,9 @@ if __name__ == "__main__":
     p = NACAProp(param, args.resolution / 1000)
 
     if (args.auto):
-      m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
+      m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
       #m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
-      optimum_torque, optimum_rpm = m.get_Qmax(11.0)
+      optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
       n_blades = 2
       aoa = np.radians(15.0)

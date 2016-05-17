@@ -94,7 +94,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cd = 1.28 * np.sin(alpha)
            
 
-
+        print "Simulating Foil %s, at Re=%f" % (self.foil, re)
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         pl, pu = self.foil.get_shape_points(n=80)
@@ -129,7 +129,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = (-10, 45, 1.1)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=288, show_seconds=3)
+                                        iterlim=288, show_seconds=0)
         labels = results[1]
         values = results[0]
         
