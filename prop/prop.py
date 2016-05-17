@@ -384,7 +384,7 @@ class NACAProp(Prop):
             #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
 
         torque, lift = self.get_torque(optimum_rpm)
-        return torque
+        return torque, lift
         
 if __name__ == "__main__":
     import argparse
@@ -419,11 +419,10 @@ if __name__ == "__main__":
       while (abs(dt)  > 0.03):
         aoa *= 1.0 + dt/4
         print "Angle of Attack %f" % np.degrees(aoa)
-        torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades
-        lift = p.get_lift(optimum_rpm)*n_blades
+        torque,lift = p.torque_modify(optimum_torque, optimum_rpm, aoa)
 
-        dt = (optimum_torque - torque) / optimum_torque
-        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque, lift, optimum_torque, dt )
+        dt = (optimum_torque - torque*n_blades) / optimum_torque
+        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque*n_blades, lift*n_blades, optimum_torque, dt )
       
     else:
       m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
