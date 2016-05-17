@@ -1,12 +1,13 @@
-module blade() {
-     import("blade5x3.stl");
-}
-
 center_hole = 5; // diameter of the prop shaft.
 hub_diameter = 13.0;
 blade_radius = 100;
 hub_height = 6.0;
 n_blades = 2;
+blade_name = "blade_auto.stl";
+
+module blade() {
+     import(blade_name);
+}
 
 $fn=121;
 

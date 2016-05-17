@@ -64,7 +64,7 @@ class Prop:
         ''' Allowed foil thickness as a function of radius (m) 
             Limited by mechanical strength, or weight issues
         '''
-        thickness_root = 5.0 / 1000
+        thickness_root = self.param.hub_depth*0.9
         thickness_end = 1.25 / 1000
         # Solve s + kr^2 = end && s + kh^2 = start
         # Subtract kr^2 - k h^2 = (end - start) => k = (end - start) / (r^2 - h^2)
@@ -79,7 +79,7 @@ class Prop:
             This is a property of the environment that the prop operates in.
         '''
         hub_r = self.param.hub_radius
-        hub_depth = 5.0 / 1000
+        hub_depth = self.param.hub_depth
         max_depth = 15.0 / 1000
         max_r = self.param.radius / 2.0
         end_depth = 4.0 / 1000
@@ -396,8 +396,8 @@ if __name__ == "__main__":
     p = NACAProp(param, args.resolution / 1000)
 
     if (args.auto):
-      #m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
-      m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
+      m = motor_model.Motor(Kv = 1900.0, I0 = 0.5, Rm = 0.405)
+      #m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
       optimum_torque, optimum_rpm = m.get_Qmax(11.0)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
       n_blades = 2
@@ -410,7 +410,7 @@ if __name__ == "__main__":
       torque = single_blade_torque*n_blades
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
-      while (abs(dt)  > 0.06):
+      while (abs(dt)  > 0.03):
         aoa *= 1.0 + dt/4
         print "Angle of Attack %f" % np.degrees(aoa)
         torque = p.torque_modify(optimum_torque, optimum_rpm, aoa)*n_blades

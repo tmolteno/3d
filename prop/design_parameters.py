@@ -33,6 +33,8 @@ class DesignParameters:
         configdict = {}
         configdict['radius'] = self.radius
         configdict['hub_radius'] = self.hub_radius
+        configdict['hub_depth'] = self.hub_depth
+        
         configdict['scimitar_percent'] = self.param.scimitar_percent
         configdict['trailing_edge'] = self.param.trailing_edge
         
@@ -50,6 +52,8 @@ class DesignParameters:
         settings = json.loads(data)
         self.radius = settings['radius']
         self.hub_radius = settings['hub_radius']
+        self.hub_depth = settings['hub_depth']
+        
         self.scimitar_percent = settings['scimitar_percent']
         self.trailing_edge = settings['trailing_edge']
         
