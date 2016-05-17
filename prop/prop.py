@@ -151,27 +151,21 @@ class Prop:
     
     def get_torque(self, rpm):
         torque = 0.0
+        lift = 0.0
         for r,f,fs in self.foils:
             v = self.get_blade_velocity(r, rpm)
             twist = self.get_twist(r, rpm)
             cd = fs.get_cd(v, f.aoa-twist)
             drag = f.drag_per_unit_length(v, cd)
-            dr = self.radial_resolution
-            
-            torque += dr*drag*r*np.cos(twist)
-        return torque
-
-    def get_lift(self, rpm):
-        lift = 0.0
-        for r,f,fs in self.foils:
-            v = self.get_blade_velocity(r, rpm)
-            twist = self.get_twist(r, rpm)
             cl = fs.get_cl(v, f.aoa-twist)
             section_lift = f.lift_per_unit_length(v, cl)
             dr = self.radial_resolution
             
+            torque += dr*r*(drag*np.cos(twist) + lift*np.sin(twist))
             lift += dr*section_lift*r*np.cos(twist)
-        return lift
+
+        return torque, lift
+
 
     def get_foil_points(self, n, r, f):
         pl, pu = f.get_points(n)
@@ -343,8 +337,7 @@ class NACAProp(Prop):
             f.aoa = twist + angle_of_attack(r)
             print "r=%f, %s" % (r, f)
             
-        torque = self.get_torque(optimum_rpm)
-        lift = self.get_lift(optimum_rpm)
+        torque, lift = self.get_torque(optimum_rpm)
         
         print("Torque: %f, Lift %f" % (torque, lift))
 
@@ -373,7 +366,7 @@ class NACAProp(Prop):
         
         # Get foil polars
         # Assign angle of attack to be optimium
-        torque = self.get_torque(optimum_rpm)
+        torque, lift = self.get_torque(optimum_rpm)
         return torque
         
     def torque_modify(self, optimum_torque, optimum_rpm, aoa):
@@ -390,7 +383,7 @@ class NACAProp(Prop):
             f.aoa = angle
             #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
 
-        torque = self.get_torque(optimum_rpm)
+        torque, lift = self.get_torque(optimum_rpm)
         return torque
         
 if __name__ == "__main__":
