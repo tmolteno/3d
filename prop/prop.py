@@ -285,7 +285,7 @@ class NACAProp(Prop):
             twist = self.get_twist(r, optimum_rpm)
 
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(30)))
+            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(20)))
             thickness = self.get_foil_thickness(r)
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
@@ -302,24 +302,18 @@ class NACAProp(Prop):
             # Assume a slow velocity forward, and an angle of attack of 8 degrees
             twist = self.get_twist(r, optimum_rpm)
           
-            if (f.Reynolds(v) < 20000.0):
-              opt_alpha = np.radians(20.0)
-              optimum_aoa.append(opt_alpha)
-              f.aoa = twist + opt_alpha
-              print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
-            else:
-              alpha = np.radians(np.linspace(0, 30, 100))
-              
-              cl = fs.get_cl(v, alpha)
-              cd = fs.get_cd(v, alpha)
-              
-              optim_target = (cl / (cd + 0.01))
-              
-              j = np.argmax(optim_target)
-              opt_alpha = alpha[j]
-                            
-              optimum_aoa.append(opt_alpha)
-              print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), optim_target[j])
+            alpha = np.radians(np.linspace(0, 30, 100))
+            
+            cl = fs.get_cl(v, alpha)
+            cd = fs.get_cd(v, alpha)
+            
+            optim_target = (cl / (cd + 0.01))
+            
+            j = np.argmax(optim_target)
+            opt_alpha = alpha[j]
+                          
+            optimum_aoa.append(opt_alpha)
+            print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), optim_target[j])
 
         # Now smooth the optimum angles of attack
         optimum_aoa = np.array(optimum_aoa)
@@ -400,7 +394,7 @@ if __name__ == "__main__":
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
       print("Optimum Torque %f at %f RPM" % (optimum_torque, optimum_rpm))
       n_blades = 2
-      aoa = np.radians(15.0)
+      aoa = np.radians(20.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
       n_blades = np.round(optimum_torque/single_blade_torque)
       if (n_blades < 2):
