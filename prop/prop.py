@@ -25,7 +25,7 @@ class Prop:
         self.chord_fraction = 7.0
         
         
-    def get_max_chord(self,r):
+    def get_max_chord(self,r, twist):
         ''' Allowed chord as a function of radius (m) 
             Limited by mechanical strength, or weight issues
             
@@ -40,7 +40,7 @@ class Prop:
 
         chord = k / r
         
-        return min(chord, circumference / 5)
+        return min(chord, (circumference / 5)/np.cos(twist))
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -81,7 +81,7 @@ class Prop:
         hub_r = self.param.hub_radius
         hub_depth = self.param.hub_depth
         max_depth = 15.0 / 1000
-        max_r = self.param.radius / 2.0
+        max_r = self.param.radius / 3.0
         end_depth = 4.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
@@ -138,9 +138,9 @@ class Prop:
         self.foils = []
         for r in np.linspace(1e-6, self.param.radius, self.radial_steps):
             circumference = np.pi * 2 * r
-            chord = self.get_max_chord(r)
-            angle_of_attack = math.atan(self.pitch / circumference)
-            f = foil.Foil(chord, angle_of_attack)
+            twist = math.atan(self.pitch / circumference)
+            chord = self.get_max_chord(r, twist)
+            f = foil.Foil(chord, twist)
             fs = FoilSimulator(f)
             self.foils.append([r, f, fs])
 
@@ -300,9 +300,10 @@ class NACAProp(Prop):
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         for r in radial_points:
             twist = self.get_twist(r, optimum_rpm)
-
+            nominal_alpha = np.radians(20)
+            angle = min(np.pi/2, twist + nominal_alpha)
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + np.radians(20)))
+            chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
             thickness = self.get_foil_thickness(r)
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, \
@@ -345,7 +346,7 @@ class NACAProp(Prop):
         torque = self.get_torque(optimum_rpm)
         lift = self.get_lift(optimum_rpm)
         
-        print torque, lift
+        print("Torque: %f, Lift %f" % (torque, lift))
 
     def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.foils = []
@@ -355,13 +356,13 @@ class NACAProp(Prop):
         for r in radial_points:
             v = self.get_blade_velocity(r, optimum_rpm)
             twist = self.get_twist(r, optimum_rpm)
-
+            angle = min(np.pi/2, twist + aoa)
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
+            chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.15, p=0.4, angle_of_attack=twist + aoa)
+                m=0.15, p=0.4, angle_of_attack=angle)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
@@ -382,11 +383,11 @@ class NACAProp(Prop):
         for r, f, fs in self.foils:
             v = self.get_blade_velocity(r, optimum_rpm)
             twist = self.get_twist(r, optimum_rpm)
-
+            angle = min(np.pi/2, twist + aoa)
             depth_max = self.get_max_depth(r)
-            chord = min(self.get_max_chord(r), depth_max / np.sin(twist + aoa))
+            chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
             f.chord = chord
-            f.aoa = twist + aoa
+            f.aoa = angle
             #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
 
         torque = self.get_torque(optimum_rpm)

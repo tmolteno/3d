@@ -1,12 +1,5 @@
 from sympy import *
 
-#m = Symbol('m')
-#p = Symbol('p')
-#x = Symbol('x')
-#c = Symbol('c')
-#t = Symbol('t')
-#xc = x / c
-
 '''
     Static Thrust.
     
