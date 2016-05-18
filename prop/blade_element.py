@@ -1,3 +1,4 @@
+import numpy as np
 from foil_simulator import XfoilSimulatedFoil as FoilSimulator
 #from foil_simulator import PlateSimulatedFoil as FoilSimulator
 
@@ -11,18 +12,18 @@ class BladeElement:
       self.fs = FoilSimulator(self.foil)
       
     
-      def get_forces(self, v):
-          torque = 0.0
-          lift = 0.0
-          cd = self.fs.get_cd(v, self.alpha)
-          drag = self.foil.drag_per_unit_length(v, cd)
-          cl = self.fs.get_cl(v, self.alpha)
-          section_lift = self.foil.lift_per_unit_length(v, cl)
-          
-          torque += self.dr*self.r*(drag*np.cos(self.twist) + lift*np.sin(self.twist))
-          lift += self.dr*section_lift*self.r*np.cos(self.twist)
+    def get_forces(self, v):
+        torque = 0.0
+        lift = 0.0
+        cd = self.fs.get_cd(v, self.alpha)
+        drag = self.foil.drag_per_unit_length(v, cd)
+        cl = self.fs.get_cl(v, self.alpha)
+        section_lift = self.foil.lift_per_unit_length(v, cl)
+        
+        torque += self.dr*self.r*(drag*np.cos(self.twist) + lift*np.sin(self.twist))
+        lift += self.dr*section_lift*self.r*np.cos(self.twist)
 
-          return torque, lift
+        return torque, lift
 
 if __name__ == "__main__":
     

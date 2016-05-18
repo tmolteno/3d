@@ -152,7 +152,7 @@ class Prop:
         torque = 0.0
         thrust = 0.0
         for be in self.blade_elements:
-            v = self.get_blade_velocity(r, rpm)
+            v = self.get_blade_velocity(be.r, rpm)
             drag, lift = be.get_forces(v)
             
             torque += drag
@@ -161,8 +161,9 @@ class Prop:
         return torque, lift
 
 
-    def get_foil_points(self, n, r, f):
-        pl, pu = f.get_points(n)
+    def get_foil_points(self, n, be):
+        pl, pu = be.foil.get_points(n, be.alpha)
+        r = be.r
         ''' points are in the y - z plane. The x value is set by the radius'''
         yl, zl = pl
         yu, zu = pu
@@ -198,7 +199,7 @@ class Prop:
         loops = []
         for be in self.blade_elements:
             car = 0.5/1000
-            line_l, line_u = self.get_foil_points(n, be.r, be.foil)
+            line_l, line_u = self.get_foil_points(n, be)
             loop_points = np.concatenate((line_l, line_u[::-1]), axis=0)
             g_pts = []
             for p in loop_points[0:-2]:
@@ -250,7 +251,7 @@ class Prop:
         bottom_edge = []
         top_edge = []
         for be in self.blade_elements:
-            line_l, line_u = self.get_foil_points(n, be.r, be.foil)
+            line_l, line_u = self.get_foil_points(n, be)
             
             top_lines.append(line_u*scale)
             top_edge.append(line_u[-1,:]*scale)

@@ -97,7 +97,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         print "Simulating Foil %s, at Re=%f" % (self.foil, re)
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
-        pl, pu = self.foil.get_shape_points(n=80)
+        pl, pu = self.foil.get_shape_points(n=120)
         ''' This contains only the X,Y coordinates, which run from the 
             trailing edge, round the leading edge, back to the trailing edge 
             in either direction:
@@ -129,7 +129,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = (-10, 45, 0.5)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=288, show_seconds=1)
+                                        iterlim=288, show_seconds=None)
         labels = results[1]
         values = results[0]
         
