@@ -129,7 +129,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = (-10, 45, 0.5)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=288, show_seconds=None)
+                                        iterlim=288, normalize=True, show_seconds=None)
         labels = results[1]
         values = results[0]
         
