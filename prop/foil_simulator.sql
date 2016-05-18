@@ -16,10 +16,17 @@ create table simulation (
    mach float
 );
 
+-- ['CM', 'CL', 'Top_Xtr', 'CD', 'CDp', 'alpha', 'Bot_Xtr']
+
 create table polar (
    id integer primary key,
    sim_id integer references simulation(id),
    alpha float,
-   cl float,
-   cd float 
+   cl float,  -- Lift Coefficient
+   cd float,  -- Drag Coefficient
+   cdp float,
+   cm float,
+   Top_Xtr float,
+   Bot_Xtr float
 );
+

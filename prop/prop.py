@@ -1,8 +1,6 @@
 # Super simple prop design by Tim Molteno
-# tim@molteno.net
+# Copyright (c) 2016. Tim Molteno tim@molteno.net
 #
-
-# Basic idea is to generate an STL file from a description
 
 import numpy as np
 import math
@@ -17,6 +15,9 @@ from scipy.interpolate import PchipInterpolator
 
 
 class Prop:
+    '''
+      A prop is a collection of BladeElement objects. 
+    '''
     
     def __init__(self, param, resolution):
         self.param = param

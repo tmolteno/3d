@@ -141,11 +141,15 @@ class XfoilSimulatedFoil(SimulatedFoil):
             for label, value in zip(labels, v):
                 polar[label].append(value)
         
+        print polar.keys()
         os.remove(filename)
                 
         cl = np.array(polar['CL'])
         cd = np.array(polar['CD'])
+        cdp = np.array(polar['CDp'])
+        cm = np.array(polar['CM'])
         top_xtr = np.array(polar['Top_Xtr'])
+        bot_xtr = np.array(polar['Bot_Xtr'])
         alfa = np.radians(polar['alpha'])
         if len(alfa) < 5:
             logging.warning("Foil didn't simulate.")
@@ -167,7 +171,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
             sim_id = c.fetchone()[0]
 
             for i, a in enumerate(alfa):
-                c.execute("INSERT INTO polar(sim_id, alpha, cl, cd) VALUES (?,?,?,?)", (sim_id, a, cl[i], cd[i]))
+                c.execute("INSERT INTO polar(sim_id, alpha, cl, cd, cdp, cm, Top_Xtr, Bot_Xtr) VALUES (?,?,?,?,?,?,?,?)", 
+                          (sim_id, a, cl[i], cd[i], cdp[i], cm[i], top_xtr[i], bot_xtr[i]))
             conn.commit()
             conn.close()
         
