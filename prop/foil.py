@@ -2,9 +2,8 @@ import numpy as np
 
 
 class Foil(object):
-    def __init__(self, chord, angle_of_attack):
+    def __init__(self, chord):
         self.chord = chord
-        self.aoa = angle_of_attack
         self.trailing_edge = 0.0
 
     ''' Calculate Reynolds number from air density rho
@@ -35,7 +34,7 @@ class Foil(object):
         return "%s" % (np.sum(pu[1]) + np.sum(pl[1]))
     
     def __repr__(self):
-      return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
+      return "ch=%f, a=%f" % (self.chord)
   
     def set_trailing_edge(self, t):
         self.trailing_edge = t
@@ -48,12 +47,12 @@ class Foil(object):
         return [[x,-y],[x,y]]
     
     
-    def get_points(self, n):
+    def get_points(self, n, alpha):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl
         xu, yu = pu
-        xl,yl = self.rotate(xl,yl, self.aoa)
-        xu,yu = self.rotate(xu,yu, self.aoa)
+        xl,yl = self.rotate(xl,yl, alpha)
+        xu,yu = self.rotate(xu,yu, alpha)
         
         max_y = np.max(yu)
         
@@ -72,8 +71,8 @@ class Foil(object):
 '''
 class FlatPlate(Foil):
   
-    def __init__(self, chord, angle_of_attack=0.0):
-        Foil.__init__(self,chord, angle_of_attack)
+    def __init__(self, chord):
+        Foil.__init__(self,chord)
 
   
 
@@ -82,13 +81,13 @@ class NACA4(Foil):
     Foil generated from the NACA 4 series
     '''
     
-    def __init__(self, chord, thickness, m=0.0, p=0.4, angle_of_attack=0.0):
+    def __init__(self, chord, thickness, m=0.0, p=0.4):
         ''' 
             Parameters:
               m - maximum camber as a percentage of the chord.
               p - location of maximum camber as a percentage of chord line from leading edge
         '''
-        Foil.__init__(self,chord, angle_of_attack)
+        Foil.__init__(self,chord)
         self.thickness = thickness
         self.m = m
         self.p = p
@@ -99,7 +98,7 @@ class NACA4(Foil):
         return "%5.2f,%5.2f,%5.2f, %5.2f" % (self.m, self.p, self.thickness, self.trailing_edge)
 
     def __repr__(self):
-      return "ch=%f, a=%f" % (self.chord, self.aoa *180 / np.pi)
+      return "ch=%f, NACA%d%d%2d" % (self.chord, (self.m*100), (self.p*10) , (self.thickness*100))
   
   
     def get_shape_points(self, n):
@@ -157,7 +156,7 @@ class NACA4(Foil):
         return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
     
     def plot(self):
-        pt, pb = f.get_points(30)
+        pt, pb = f.get_points(30, alpha=0.0)
         import matplotlib.pyplot as plt
         plt.plot(pt[0], pt[1], 'x')
         plt.plot(pb[0], pb[1], 'o')
@@ -165,8 +164,9 @@ class NACA4(Foil):
         
 if __name__ == "__main__":
     
-    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
     f.set_trailing_edge(0.01)
+    print f
     print f.hash()
     f.plot()
     
