@@ -1,8 +1,11 @@
+-- SQL for foil database
+-- Author Tim Molteno (c) 2016 tim@molteno.net
+--
 PRAGMA foreign_keys = ON;
 
-drop table polar;
-drop table simulation;
-drop table foil;
+drop table if exists polar;
+drop table if exists simulation;
+drop table if exists foil;
 
 create table foil (
    id integer primary key,
@@ -16,17 +19,16 @@ create table simulation (
    mach float
 );
 
--- ['CM', 'CL', 'Top_Xtr', 'CD', 'CDp', 'alpha', 'Bot_Xtr']
 
 create table polar (
    id integer primary key,
    sim_id integer references simulation(id),
-   alpha float,
-   cl float,  -- Lift Coefficient
-   cd float,  -- Drag Coefficient
-   cdp float,
-   cm float,
-   Top_Xtr float,
+   alpha float,     -- Angle of Attack
+   cl float,        -- Lift Coefficient
+   cd float,        -- Drag Coefficient
+   cdp float,       -- Pressure Drag portion of cd
+   cm float,        -- Moment Coefficient
+   Top_Xtr float,   -- Top Transistion (Detachment of top flow from foil) x coordinate'
    Bot_Xtr float
 );
 
