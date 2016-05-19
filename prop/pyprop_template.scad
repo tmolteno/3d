@@ -1,5 +1,5 @@
 /*
- * The parameters for the prop are written into the file 'prop_parameters.scad' by the design programme.
+ * The parameters for the prop are added to this template by the design programme.
  * This file should contain the following definitions.
  * 
 center_hole = 5; // diameter of the prop shaft.

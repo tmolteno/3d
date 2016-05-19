@@ -24,6 +24,7 @@ class Prop:
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
         self.chord_fraction = 7.0
+        self.n_blades = 2
         
         
     def get_max_chord(self,r, twist):
@@ -41,7 +42,7 @@ class Prop:
 
         chord = k / r
         
-        return min(chord, (circumference / 5)/np.cos(twist))
+        return min(chord, (circumference / self.n_blades)/np.cos(twist))
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
