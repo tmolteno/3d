@@ -278,7 +278,24 @@ class Prop:
         
         stl.gen_stl(filename)
 
-
+    def gen_scad(self, filename):
+        ''' Create an OpenSCAD file for the propeller
+        '''
+        blade_stl_filename = self.param.name + '_blade.stl'
+        f=open(filename,"w")
+        f.write("center_hole = 5;\n \
+hub_diameter = %f;\n \
+hub_height = %f;\n \
+n_blades = %d;\n \
+blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, blade_stl_filename))
+        
+        template_file = open('pyprop_template.scad', 'r')
+        template = template_file.read()
+        template_file.close()
+        
+        f.write(template)
+        f.close()
+    
 class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
@@ -399,14 +416,14 @@ if __name__ == "__main__":
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
       power = m.get_Pmax(param.motor_volts)
       print("Optimum Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
-      n_blades = 2
+      p.n_blades = 2
       aoa = np.radians(20.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
-      n_blades = np.round(optimum_torque/single_blade_torque)
-      if (n_blades < 2):
-        n_blades = 2
-      print "Number of Blades: %d" % n_blades
-      torque = single_blade_torque*n_blades
+      p.n_blades = np.round(optimum_torque/single_blade_torque)
+      if (p.n_blades < 2):
+        p.n_blades = 2
+      print "Number of Blades: %d" % p.n_blades
+      torque = single_blade_torque*p.n_blades
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.03):
@@ -414,15 +431,20 @@ if __name__ == "__main__":
         print "Angle of Attack %f" % np.degrees(aoa)
         torque,lift = p.torque_modify(optimum_torque, optimum_rpm, aoa)
 
-        dt = (optimum_torque - torque*n_blades) / optimum_torque
-        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque*n_blades, lift*n_blades, optimum_torque, dt )
+        dt = (optimum_torque - torque*p.n_blades) / optimum_torque
+        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque*p.n_blades, lift*p.n_blades, optimum_torque, dt )
       
     else:
       m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
+      p.n_blades = 2
       p.design(optimum_rpm)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)
       
-    p.gen_stl(args.stl_file, args.n)
+    blade_stl_filename = param.name + "_blade.stl"
+    p.gen_stl(blade_stl_filename, args.n)
+    
+    scad_filename = param.name + ".scad"
+    p.gen_scad(scad_filename)

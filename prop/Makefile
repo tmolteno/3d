@@ -1,16 +1,16 @@
 all:	prop scad
 
 prop:
-	python prop.py --n 40 --resolution 2.0 --param='prop_design.json' --stl-file 'blade5x3.ascii.stl'
-	meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
+	python prop.py --n 40 --resolution 2.0 --param='prop_design.json'
+	meshlabserver -i test_prop_blade.stl -o test_prop_blade.stl -s meshclean.mlx
 
 auto:
 	python prop.py --auto --n 40 --resolution 3.0 --param='prop_design.json' --stl-file 'blade_auto.ascii.stl'
 	meshlabserver -i blade_auto.ascii.stl -o blade_auto.stl -s meshclean.mlx
 
 scad:
-	openscad -m make -d pyprop.deps -o pyprop.ascii.stl pyprop.scad
-	meshlabserver -i pyprop.ascii.stl -o pyprop.stl -s meshclean.mlx
+	openscad -m make -d pyprop.deps -o test_prop.ascii.stl test_prop.scad
+	meshlabserver -i test_prop.ascii.stl -o test_prop.stl -s meshclean.mlx
 	
 
 mesh:

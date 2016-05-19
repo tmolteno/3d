@@ -13,7 +13,7 @@ class Motor:
     
     
   def get_Qmax(self, V):
-    ''' Torque at Max Efficiency '''
+    ''' Torque at Max Efficiency (Newton meters)'''
     pi = 3.1415926
     Imax = np.sqrt(V*self.I0 / self.Rm)
     Qmax = self.Kq*(Imax - self.I0)
@@ -21,7 +21,7 @@ class Motor:
     return (Qmax, RPMmax)
 
   def get_Pmax(self, V):
-    ''' Power at Max Efficiency '''
+    ''' Power at Max Efficiency (Watts)'''
     Qmax, RPMmax = self.get_Qmax(V)
     power = 2.0*np.pi*Qmax * (RPMmax / 60)
     return power

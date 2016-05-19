@@ -5,6 +5,7 @@ class DesignParameters:
     
     '''
     def __init__(self, filename=0):
+        self.name = "hello world"
         self.radius = 0.0625    # m
         self.hub_radius = 5.0 / 1000
         self.trailing_edge = 0.5 / 1000
@@ -30,6 +31,8 @@ class DesignParameters:
       
     def to_json(self):
         configdict = {}
+        configdict['name'] = self.name
+        
         configdict['radius'] = self.radius
         configdict['hub_radius'] = self.hub_radius
         configdict['hub_depth'] = self.hub_depth
@@ -51,6 +54,8 @@ class DesignParameters:
       
     def from_json(self, data):
         settings = json.loads(data)
+        self.name = settings['name']
+
         self.radius = settings['radius']
         self.hub_radius = settings['hub_radius']
         self.hub_depth = settings['hub_depth']

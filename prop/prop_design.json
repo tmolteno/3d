@@ -1,4 +1,6 @@
 {
+    "name": "test_prop",
+    
     "altitude": 0.0,
     "forward_airspeed": 10.0,
     
