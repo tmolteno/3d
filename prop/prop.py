@@ -75,7 +75,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = self.param.hub_depth*0.9
-        thickness_end = 1.25 / 1000
+        thickness_end = 1.0 / 1000
         # Solve s + kr^2 = end && s + kh^2 = start
         # Subtract kr^2 - k h^2 = (end - start) => k = (end - start) / (r^2 - h^2)
         # s = end - kr^2
@@ -374,7 +374,7 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.15, p=0.4)
+                m=0.07, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
@@ -424,13 +424,13 @@ if __name__ == "__main__":
       #m = motor_model.Motor(Kv = 1200.0, I0 = 0.5, Rm = 0.205)
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
       power = m.get_Pmax(param.motor_volts)
-      print("Optimum Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
+      print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
       v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)
       print("Airspeed at propellers: %f" % (v))
       param.forward_airspeed = v
 
       p.n_blades = 2
-      aoa = np.radians(20.0)
+      aoa = np.radians(10.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
       p.n_blades = np.round(optimum_torque/single_blade_torque)
       if (p.n_blades < 2):
@@ -440,8 +440,8 @@ if __name__ == "__main__":
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.03):
-        aoa *= 1.0 + dt/4
-        print "Angle of Attack %f" % np.degrees(aoa)
+        p.chord_fraction *= 1.0 + dt/3
+        print "Chord Fraction %f" % p.chord_fraction
         torque,lift = p.torque_modify(optimum_torque, optimum_rpm, aoa)
 
         dt = (optimum_torque - torque*p.n_blades) / optimum_torque

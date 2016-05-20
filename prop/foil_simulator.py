@@ -63,7 +63,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return cd(alpha)
 
     def get_polars(self, velocity):
-        re = np.round(self.foil.Reynolds(velocity), -3)  # Round to nearest 1000
+        re = np.round(self.foil.Reynolds(velocity), -4)  # Round to nearest 1000
         
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
