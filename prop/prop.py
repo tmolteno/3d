@@ -26,7 +26,15 @@ class Prop:
         self.chord_fraction = 7.0
         self.n_blades = 2
         
-        
+    
+    def get_air_velocity_at_prop(self, torque, rpm, rho=1.225):
+        r = self.param.radius
+        tau=torque
+        rps = rpm / 60.0
+        return np.sqrt((r**2*rho)**(1/3)*(rps*tau)**(2/3)/(r**2*rho))
+
+
+    
     def get_max_chord(self,r, twist):
         ''' Allowed chord as a function of radius (m) 
             Limited by mechanical strength, or weight issues
@@ -42,7 +50,7 @@ class Prop:
 
         chord = k / r
         
-        return min(chord, (circumference / self.n_blades)/np.cos(twist))
+        return min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -417,6 +425,10 @@ if __name__ == "__main__":
       optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
       power = m.get_Pmax(param.motor_volts)
       print("Optimum Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
+      v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)
+      print("Airspeed at propellers: %f" % (v))
+      param.forward_airspeed = v
+
       p.n_blades = 2
       aoa = np.radians(20.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)

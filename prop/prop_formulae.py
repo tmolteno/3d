@@ -14,8 +14,9 @@ r = Symbol('r')         # Radius
 Pt0 = (torque / r) * (rps * r * 2 * pi)
 pprint(Pt0)
 
-A = Symbol('A')    # Prop Area
+A = pi*r**2
 rho = Symbol('rho') # Air Density
+v = Symbol('v') # velocity of air at prop
 
 
 '''
@@ -28,3 +29,9 @@ rho = Symbol('rho') # Air Density
 '''
 thrust = (Pt0**Rational(2,3))*(2*rho*A)**Rational(1,3)
 pprint(thrust)
+print thrust
+
+t2 = 2*rho*A*v**2 
+
+v = sqrt(thrust / (2*rho*A))
+print simplify(v)

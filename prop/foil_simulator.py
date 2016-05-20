@@ -141,7 +141,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             for label, value in zip(labels, v):
                 polar[label].append(value)
         
-        print polar.keys()
+        #print polar.keys()
         os.remove(filename)
                 
         cl = np.array(polar['CL'])

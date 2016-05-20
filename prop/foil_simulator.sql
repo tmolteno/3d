@@ -27,7 +27,7 @@ create table polar (
    cl float,        -- Lift Coefficient
    cd float,        -- Drag Coefficient
    cdp float,       -- Pressure Drag portion of cd
-   cm float,        -- Moment Coefficient
+   cm float,        -- Pitching Moment Coefficient about the quarter chord point (measured back from leading edge)
    Top_Xtr float,   -- Top Transistion (Detachment of top flow from foil) x coordinate'
    Bot_Xtr float
 );
