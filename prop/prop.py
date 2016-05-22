@@ -430,7 +430,7 @@ if __name__ == "__main__":
       param.forward_airspeed = v
 
       p.n_blades = 2
-      aoa = np.radians(10.0)
+      aoa = np.radians(15.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
       p.n_blades = np.round(optimum_torque/single_blade_torque)
       if (p.n_blades < 2):
@@ -440,7 +440,7 @@ if __name__ == "__main__":
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.03):
-        p.chord_fraction *= 1.0 + dt/3
+        p.chord_fraction *= 1.0 - dt/3
         print "Chord Fraction %f" % p.chord_fraction
         torque,lift = p.torque_modify(optimum_torque, optimum_rpm, aoa)
 

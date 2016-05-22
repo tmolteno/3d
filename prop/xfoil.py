@@ -215,6 +215,7 @@ class NonBlockingStreamReader:
             '''
             while True:
                 line = stream.readline()
+                #sleep(0.1)
                 if line:
                     queue.put(line)
                     #print line
