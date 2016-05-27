@@ -6,18 +6,18 @@
 */
 
 strutWidth = 5;
-clipLength = 25;
+clipLength = 35;
 holeDi = 2;
 holeSpacing = (clipLength*0.8) + strutWidth/4 + strutWidth;
 holeSpacing2 = (clipLength*0.8) + strutWidth/4;
-inbetweenLength = strutWidth/2;
-height = 1.5;
+inbetweenLength = strutWidth/1.5;
+height = 1.0;
 pillarHeight = 4.0;
 ballDiameter = holeDi * 1.2;
 $fn=31;
 
 module inbetween() {
-	translate([0,0,height/3])cube([strutWidth,inbetweenLength,height/5]);
+	translate([0,0,0])cube([strutWidth,inbetweenLength,height/5]);
 }
 cube([strutWidth,strutWidth,height]);
 translate([0,strutWidth,0])inbetween();
