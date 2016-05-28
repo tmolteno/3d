@@ -1,11 +1,9 @@
 {
-    "name": "multistar_2209_980Kv",
-    
     "altitude": 0.0,
-    "forward_airspeed": 20.0,
+    "forward_airspeed": 2.0,
     
-    "motor_Kv": 980,
-    "motor_volts": 11.0,
+    "motor_Kv": 1200,
+    "motor_volts": 12.0,
     "motor_no_load_current": 0.5,
     "motor_winding_resistance": 0.207,
     

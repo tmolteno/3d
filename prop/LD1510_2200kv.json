@@ -1,12 +1,11 @@
 {
-    "name": "multistar_2209_980Kv",
-    
+    "name": "LD1510 Micro",
     "altitude": 0.0,
     "forward_airspeed": 20.0,
     
-    "motor_Kv": 980,
-    "motor_volts": 11.0,
-    "motor_no_load_current": 0.5,
+    "motor_Kv": 2200,
+    "motor_volts": 7.4,
+    "motor_no_load_current": 0.2,
     "motor_winding_resistance": 0.207,
     
     "radius": 0.0625,

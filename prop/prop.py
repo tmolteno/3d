@@ -57,7 +57,7 @@ class Prop:
         '''
 
         hub_r = self.param.hub_radius
-        max_r = self.param.radius * 0.85
+        max_r = self.param.radius * 0.8
 
         hub_c = 0.0
         max_c = self.param.radius * (self.param.scimitar_percent / 100.0)
@@ -168,7 +168,7 @@ class Prop:
             torque += drag
             thrust += lift
 
-        return torque, lift
+        return 0.25*torque, lift
 
 
     def get_foil_points(self, n, be):
