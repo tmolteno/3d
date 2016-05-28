@@ -1,15 +1,19 @@
+##
+##
+## To build another prop, just type make TARGET=multistar_1704_1900kv
+##
+TARGET=test_prop
+
 all:	prop scad
 
 prop:
-	python prop.py --n 40 --resolution 2.0 --param='test_prop.json'
+	python prop.py --n 40 --resolution 2.0 --param='${TARGET}.json'
 
 auto:
-	python prop.py --auto --n 40 --resolution 3.0 --param='test_prop.json'
+	python prop.py --auto --n 40 --resolution 1.0 --param='${TARGET}.json'
+	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
-scad:
-	meshlabserver -i test_prop_blade.stl -o test_prop_blade.stl -s meshclean.mlx
-	openscad -m make -d pyprop.deps -o test_prop.ascii.stl test_prop.scad
-	meshlabserver -i test_prop.ascii.stl -o test_prop.stl -s meshclean.mlx
+scad:	${TARGET}.stl
 	
 
 mesh:
