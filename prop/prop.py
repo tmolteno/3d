@@ -374,7 +374,7 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.07, p=0.4)
+                m=0.17, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
@@ -426,7 +426,7 @@ if __name__ == "__main__":
       power = m.get_Pmax(param.motor_volts)
       print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
       v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)
-      print("Airspeed at propellers: %f" % (v))
+      print("Airspeed at propellers (hovering): %f" % (v))
       param.forward_airspeed = v
 
       p.n_blades = 2

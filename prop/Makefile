@@ -10,7 +10,7 @@ prop:
 	python prop.py --n 40 --resolution 2.0 --param='${TARGET}.json'
 
 auto:
-	python prop.py --auto --n 40 --resolution 1.0 --param='${TARGET}.json'
+	python prop.py --auto --n 40 --resolution 2.0 --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
