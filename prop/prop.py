@@ -374,7 +374,7 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.17, p=0.4)
+                m=0.06, p=0.3)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))

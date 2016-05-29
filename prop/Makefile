@@ -4,7 +4,7 @@
 ##
 TARGET=test_prop
 
-all:	prop scad
+all:	auto scad
 
 prop:
 	python prop.py --n 40 --resolution 2.0 --param='${TARGET}.json'
@@ -18,10 +18,11 @@ scad:	${TARGET}.stl
 
 mesh:
 	python prop.py --min-edge 0.35 --n 10 --param='prop_design.json' --mesh --resolution 10
-	
+
 sym:
 	python naca_sym.py
 
+# Erases the database, so don't do this by mistake.
 db:
 	sqlite3 foil_simulator.db < foil_simulator.sql
 
