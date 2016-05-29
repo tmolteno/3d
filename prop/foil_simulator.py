@@ -44,6 +44,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
             self.foil_id = result[0]
         conn.commit()
         conn.close()
+
+    def get_zero_cl_angle(self, v):
+        cl, cd = self.get_polars(v)
         
 
     def get_cl(self, v, alpha):
@@ -81,8 +84,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 alpha.append(pol[0])
                 cl.append(pol[1])
                 cd.append(pol[2])
-            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
-            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 5))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 5))
             conn.commit()
             conn.close()
             return [cl_poly, cd_poly]
@@ -180,11 +183,11 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
 if __name__ == "__main__":
     from foil import NACA4
-    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
+    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
     f.set_trailing_edge(0.01)
     fs = XfoilSimulatedFoil(f)
     
-    alpha = np.radians(np.linspace(0, 40, 20))
+    alpha = np.radians(np.linspace(-10, 40, 20))
     v = 3
     cl = []
     cd = []
@@ -193,6 +196,9 @@ if __name__ == "__main__":
      cl.append(fs.get_cl(v, a))
 
     import matplotlib.pyplot as plt
-    plt.plot(alpha, cl)
-    plt.plot(alpha, cd)
+    plt.plot(np.degrees(alpha), cl, label='Cl')
+    plt.plot(np.degrees(alpha), cd, label='Cd')
+    plt.legend()
+    plt.grid(True)
+    plt.xlabel('Angle of Attack')
     plt.show()
