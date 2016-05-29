@@ -143,21 +143,7 @@ class Prop:
         s = PchipInterpolator(x, y)
 
         return s(r)
-      
-    def design(self, trailing_thickness):
-        self.blade_elements = []
-        for r in np.linspace(1e-6, self.param.radius, self.radial_steps):
-            circumference = np.pi * 2 * r
-            twist = math.atan(self.pitch / circumference)
-            chord = self.get_max_chord(r, twist)
-            f = foil.Foil(chord, twist)
-            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=0.0))
 
-        for be in self.blade_elements:
-            v = self.get_blade_velocity(r)
-            #print "r=%f, %s, v=%f, Re=%f" % (r, f, v, f.Reynolds(v))
-    
-    
     def get_torque(self, rpm):
         torque = 0.0
         thrust = 0.0
@@ -324,8 +310,9 @@ class NACAProp(Prop):
             
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.15, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+            v = self.get_blade_velocity(be.r, optimum_rpm)
 
-            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=nominal_alpha))
+            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=nominal_alpha, velocity=v))
 
         optimum_aoa = []
         for be in self.blade_elements:
@@ -378,7 +365,7 @@ class NACAProp(Prop):
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
-            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=aoa))
+            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=aoa, velocity=v))
         # 
         # Calculate the thickness distribution
         

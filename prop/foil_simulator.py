@@ -1,5 +1,6 @@
 import xfoil 
 import numpy as np
+from scipy.optimize import brentq
 
 class SimulatedFoil:
     def __init__(self, foil):
@@ -47,6 +48,11 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
     def get_zero_cl_angle(self, v):
         cl, cd = self.get_polars(v)
+        try:
+            zero = brentq(cl, np.radians(-30.0), np.radians(20.0))
+        except:
+            zero = 0.0
+        return zero
         
 
     def get_cl(self, v, alpha):
@@ -84,14 +90,14 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 alpha.append(pol[0])
                 cl.append(pol[1])
                 cd.append(pol[2])
-            cl_poly = np.poly1d(np.polyfit(alpha, cl, 5))
-            cd_poly = np.poly1d(np.polyfit(alpha, cd, 5))
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
             conn.commit()
             conn.close()
             return [cl_poly, cd_poly]
         
         if (self.foil.Reynolds(velocity) < 20000.0):
-            alpha = np.radians(np.linspace(-5, 40, 20))
+            alpha = np.radians(np.linspace(-30, 40, 20))
             cl = 2.0 * np.pi * alpha
 
             cd = 1.28 * np.sin(alpha)
@@ -130,7 +136,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (-10, 45, 1.5)
+        alfa = (-40, 40, 1.5)
         results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
                                         iterlim=288, normalize=True, show_seconds=None)
         labels = results[1]
@@ -187,7 +193,7 @@ if __name__ == "__main__":
     f.set_trailing_edge(0.01)
     fs = XfoilSimulatedFoil(f)
     
-    alpha = np.radians(np.linspace(-10, 40, 20))
+    alpha = np.radians(np.linspace(-30, 40, 40))
     v = 3
     cl = []
     cd = []
@@ -195,9 +201,13 @@ if __name__ == "__main__":
      cd.append(fs.get_cd(v, a))
      cl.append(fs.get_cl(v, a))
 
+    z = fs.get_zero_cl_angle(v)
+    print "Zero angle %f " % np.degrees(z)
+    
     import matplotlib.pyplot as plt
     plt.plot(np.degrees(alpha), cl, label='Cl')
     plt.plot(np.degrees(alpha), cd, label='Cd')
+    plt.plot([np.degrees(z)], [fs.get_cl(v, z)], 'x', label='Zero CL')
     plt.legend()
     plt.grid(True)
     plt.xlabel('Angle of Attack')
