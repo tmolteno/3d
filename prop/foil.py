@@ -47,12 +47,12 @@ class Foil(object):
         return [[x,-y],[x,y]]
     
     
-    def get_points(self, n, alpha):
+    def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl
         xu, yu = pu
-        xl,yl = self.rotate(xl,yl, alpha)
-        xu,yu = self.rotate(xu,yu, alpha)
+        xl,yl = self.rotate(xl,yl, rotation_angle)
+        xu,yu = self.rotate(xu,yu, rotation_angle)
         
         max_y = np.max(yu)
         
@@ -98,7 +98,7 @@ class NACA4(Foil):
         return "%5.2f,%5.2f,%5.2f, %5.2f" % (self.m, self.p, self.thickness, self.trailing_edge)
 
     def __repr__(self):
-      return "ch=%f, %f, NACA%d%d%2d" % (self.chord, self.trailing_edge, (self.m*100), (self.p*10) , (self.thickness*100))
+      return "ch=%f, te=%4.3f, NACA%d%d%2d" % (self.chord, self.trailing_edge, (self.m*100), (self.p*10) , (self.thickness*100))
   
   
     def get_shape_points(self, n):

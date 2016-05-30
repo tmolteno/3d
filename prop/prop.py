@@ -157,36 +157,6 @@ class Prop:
         return 0.25*torque, lift
 
 
-    def get_foil_points(self, n, be):
-        pl, pu = be.foil.get_points(n, be.alpha)
-        r = be.r
-        ''' points are in the y - z plane. The x value is set by the radius'''
-        yl, zl = pl
-        yu, zu = pu
-        x = np.zeros(n) + r
-        
-        scimitar_angle = math.atan(self.get_scimitar_offset(r) / r)
-        # Transform the profile to lie on a circle of radius r
-        c = 2.0*np.pi*r   # Circumference
-        theta_l = 2.0*np.pi*yl / c  + scimitar_angle # angular coordinate along circumference (fraction)
-        xl = r*np.cos(theta_l)
-        yl = r*np.sin(theta_l)
-
-        theta_u = 2.0*np.pi*yu / c  + scimitar_angle # angular coordinate along circumference (fraction)
-        xu = r*np.cos(theta_u)
-        yu = r*np.sin(theta_u)
-        
-        upper_line = np.zeros([n,3])
-        upper_line[:,0] = xu
-        upper_line[:,1] = yu
-        upper_line[:,2] = zu
-        
-        lower_line = np.zeros([n,3])
-        lower_line[:,0] = xl
-        lower_line[:,1] = yl
-        lower_line[:,2] = zl
-        
-        return lower_line, upper_line
 
     def gen_mesh(self, filename, n):
         import pygmsh as pg
@@ -195,7 +165,7 @@ class Prop:
         loops = []
         for be in self.blade_elements:
             car = 0.5/1000
-            line_l, line_u = self.get_foil_points(n, be)
+            line_l, line_u = be.get_foil_points(n, self.get_scimitar_offset(be.r))
             loop_points = np.concatenate((line_l, line_u[::-1]), axis=0)
             g_pts = []
             for p in loop_points[0:-2]:
@@ -247,7 +217,7 @@ class Prop:
         bottom_edge = []
         top_edge = []
         for be in self.blade_elements:
-            line_l, line_u = self.get_foil_points(n, be)
+            line_l, line_u = be.get_foil_points(n,  self.get_scimitar_offset(be.r))
             
             top_lines.append(line_u*scale)
             top_edge.append(line_u[-1,:]*scale)
@@ -310,8 +280,8 @@ class NACAProp(Prop):
 
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.15, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
-            v = self.get_blade_velocity(be.r, optimum_rpm)
-
+            
+            v = self.get_blade_velocity(r, optimum_rpm)
             be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=nominal_alpha, velocity=v)
             print be
             self.blade_elements.append(be)
@@ -331,7 +301,7 @@ class NACAProp(Prop):
             
             j = np.argmax(optim_target)
             opt_alpha = alpha[j]
-                          
+            print np.degrees(opt_alpha)
             optimum_aoa.append(opt_alpha)
 
         # Now smooth the optimum angles of attack
@@ -340,8 +310,8 @@ class NACAProp(Prop):
         angle_of_attack = np.poly1d(coeff)
         
         for be in self.blade_elements:
-            twist = self.get_twist(be.r, optimum_rpm)
-            be.set_alpha(angle_of_attack(r))
+            a = angle_of_attack(be.r)
+            be.set_alpha(a)
             print be
             
         torque, lift = self.get_torque(optimum_rpm)
