@@ -23,6 +23,7 @@ class BladeElement:
     def get_forces(self, v):
         torque = 0.0
         lift = 0.0
+        # Twist angle is the angle the incoming flow arrives at.
         cd = self.fs.get_cd(v, self._alpha)
         drag = self.foil.drag_per_unit_length(v, cd)
         cl = self.fs.get_cl(v, self._alpha)
