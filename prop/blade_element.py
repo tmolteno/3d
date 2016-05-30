@@ -8,15 +8,16 @@ class BladeElement:
         self.dr = dr
         self.foil = foil
         self.twist = twist
-        self.alpha = alpha
+        self.velocity = velocity
         self.fs = FoilSimulator(self.foil)
-        z = self.get_twist_offset(velocity)
-        self.twist = twist - z
-        print "Twist offset : %f " % z
+        self.set_alpha(alpha)
 
-    def get_twist_offset(self, v):
-        return self.fs.get_zero_cl_angle(v)
 
+    def set_alpha(self, alpha):
+        z = self.fs.get_zero_cl_angle(self.velocity)
+        print "Twist offset: %5.2f degrees" % np.degrees(z)
+        self.alpha = alpha - z
+        
     def get_forces(self, v):
         torque = 0.0
         lift = 0.0
@@ -29,6 +30,9 @@ class BladeElement:
         lift += self.dr*section_lift*self.r*np.cos(self.twist)
 
         return torque, lift
+
+    def __repr__(self):
+        return "BladeElement(r=%5.3f, twist=%5.2f, foil[%s], v=%5.1f, Re=%f)" % (self.r, np.degrees(self.twist), self.foil, self.velocity, self.foil.Reynolds(self.velocity))
 
 if __name__ == "__main__":
 

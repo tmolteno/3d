@@ -307,12 +307,14 @@ class NACAProp(Prop):
             depth_max = self.get_max_depth(r)
             chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
             thickness = self.get_foil_thickness(r)
-            
+
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.15, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
             v = self.get_blade_velocity(be.r, optimum_rpm)
 
-            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=nominal_alpha, velocity=v))
+            be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=nominal_alpha, velocity=v)
+            print be
+            self.blade_elements.append(be)
 
         optimum_aoa = []
         for be in self.blade_elements:
@@ -331,7 +333,6 @@ class NACAProp(Prop):
             opt_alpha = alpha[j]
                           
             optimum_aoa.append(opt_alpha)
-            print "r=%f, twist=%f, alfa=%f,  %s, v=%f, Re=%f, cl/cd=%f" % (r, np.degrees(twist), np.degrees(opt_alpha), f, v, f.Reynolds(v), optim_target[j])
 
         # Now smooth the optimum angles of attack
         optimum_aoa = np.array(optimum_aoa)
@@ -340,8 +341,8 @@ class NACAProp(Prop):
         
         for be in self.blade_elements:
             twist = self.get_twist(be.r, optimum_rpm)
-            be.alpha = twist + angle_of_attack(r)
-            print "r=%f, %s" % (r, f)
+            be.set_alpha(angle_of_attack(r))
+            print be
             
         torque, lift = self.get_torque(optimum_rpm)
         
@@ -364,8 +365,9 @@ class NACAProp(Prop):
                 m=0.06, p=0.3)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
-            print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
-            self.blade_elements.append(BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=aoa, velocity=v))
+            be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=aoa, velocity=v)
+            print be
+            self.blade_elements.append(be)
         # 
         # Calculate the thickness distribution
         
@@ -385,8 +387,8 @@ class NACAProp(Prop):
             depth_max = self.get_max_depth(be.r)
             chord = min(self.get_max_chord(be.r, angle), depth_max / np.sin(angle))
             be.foil.chord = chord
-            be.alpha = aoa
-            #print "r=%f, twist=%f, %s, v=%f, Re=%f" % (r, np.degrees(twist), f, v, f.Reynolds(v))
+            be.set_alpha(aoa)
+            print be
 
         torque, lift = self.get_torque(optimum_rpm)
         return torque, lift

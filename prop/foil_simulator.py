@@ -106,7 +106,12 @@ class XfoilSimulatedFoil(SimulatedFoil):
         print "Simulating Foil %s, at Re=%f" % (self.foil, re)
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
-        pl, pu = self.foil.get_shape_points(n=50)
+        
+        n_points = int(500.0*self.foil.chord / self.foil.trailing_edge)
+        n_points = min(151, n_points)
+        print n_points
+        
+        pl, pu = self.foil.get_shape_points(n=n_points)
         ''' This contains only the X,Y coordinates, which run from the 
             trailing edge, round the leading edge, back to the trailing edge 
             in either direction:

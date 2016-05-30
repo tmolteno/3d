@@ -98,7 +98,7 @@ class NACA4(Foil):
         return "%5.2f,%5.2f,%5.2f, %5.2f" % (self.m, self.p, self.thickness, self.trailing_edge)
 
     def __repr__(self):
-      return "ch=%f, NACA%d%d%2d" % (self.chord, (self.m*100), (self.p*10) , (self.thickness*100))
+      return "ch=%f, %f, NACA%d%d%2d" % (self.chord, self.trailing_edge, (self.m*100), (self.p*10) , (self.thickness*100))
   
   
     def get_shape_points(self, n):
