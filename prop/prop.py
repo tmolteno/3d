@@ -90,7 +90,7 @@ class Prop:
         '''
         hub_r = self.param.hub_radius
         hub_depth = self.param.hub_depth
-        max_depth = 15.0 / 1000
+        max_depth = 12.0 / 1000
         max_r = self.param.radius / 3.0
         end_depth = 4.0 / 1000
 
@@ -154,7 +154,7 @@ class Prop:
             torque += drag
             thrust += lift
 
-        return 0.25*torque, lift
+        return 0.75*torque, lift
 
 
 
@@ -332,7 +332,7 @@ class NACAProp(Prop):
             
             #f = foil.FlatPlate(chord=chord, angle_of_attack=twist + np.radians(15.0))
             f = foil.NACA4(chord=chord, thickness=self.get_foil_thickness(r) / chord, \
-                m=0.06, p=0.3)
+                m=0.13, p=0.4)
             f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
 
             be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=aoa, velocity=v)
@@ -389,7 +389,7 @@ if __name__ == "__main__":
       param.forward_airspeed = v
 
       p.n_blades = 2
-      aoa = np.radians(15.0)
+      aoa = np.radians(6.0)
       single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
       p.n_blades = np.round(optimum_torque/single_blade_torque)
       if (p.n_blades < 2):

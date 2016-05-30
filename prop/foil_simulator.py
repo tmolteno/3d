@@ -107,7 +107,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         
-        n_points = int(500.0*self.foil.chord / self.foil.trailing_edge)
+        n_points = int(445.0*self.foil.chord / self.foil.trailing_edge)
         n_points = min(151, n_points)
         print n_points
         
