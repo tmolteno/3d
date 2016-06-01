@@ -49,7 +49,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
     def get_zero_cl_angle(self, v):
         cl, cd = self.get_polars(v)
         try:
-            zero = brentq(cl, np.radians(-30.0), np.radians(20.0))
+            zero = brentq(cl, np.radians(-30.0), np.radians(15.0))
         except:
             zero = 0.0
         return zero
@@ -72,17 +72,17 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return cd(alpha)
 
     def get_polars(self, velocity):
-        re = np.round(self.foil.Reynolds(velocity), -4)  # Round to nearest 1000
+        reynolds = np.round(self.foil.Reynolds(velocity), -4)  # Round to nearest 1000
         
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
-        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?)", (self.foil_id, re, ))
+        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?)", (self.foil_id, reynolds, ))
         result = c.fetchone()
         if (result != None):
             # Read from database
             sim_id = result[0]
-            logging.info("retrieving from database sim_id=%d, %f" % (sim_id, re))
+            logging.info("retrieving from database sim_id=%d, %f" % (sim_id, reynolds))
             alpha = []
             cl = []
             cd = []
@@ -103,13 +103,13 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cd = 1.28 * np.sin(alpha)
            
 
-        print "Simulating Foil %s, at Re=%f" % (self.foil, re)
+        print "Simulating Foil %s, at Re=%f" % (self.foil, reynolds)
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         
-        n_points = int(445.0*self.foil.chord / self.foil.trailing_edge)
-        n_points = min(151, n_points)
-        print n_points
+        n_points = int(91.0*self.foil.chord / self.foil.trailing_edge) + 30
+        n_points = min(91, n_points)
+        print "N Points = %d" % n_points
         
         pl, pu = self.foil.get_shape_points(n=n_points)
         ''' This contains only the X,Y coordinates, which run from the 
@@ -123,16 +123,14 @@ class XfoilSimulatedFoil(SimulatedFoil):
         limit = xcoords <= xcoords[0]
         xcoords = xcoords[limit]
         ycoords = ycoords[limit]
-        #xcoords = np.append(xcoords, xcoords[0] )
-        #ycoords = np.append(ycoords, ycoords[0] )
+        xcoords = np.append(xcoords, xcoords[0] )
+        ycoords = np.append(ycoords, ycoords[-1] )
         
         coordslist = np.array((xcoords, ycoords)).T
         coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])
                         for coord in coordslist]
         # Join with linebreaks in between
         points = '\n'.join(coordstrlist)
-
-        Re = self.foil.Reynolds(velocity)
 
         # Save points to a file
         randstr = ''.join(choice(ascii_uppercase) for i in range(20))
@@ -141,9 +139,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (-40, 40, 1.5)
-        results = xfoil.oper_visc_alpha(filename, alfa, Re, Mach=self.foil.Mach(velocity),
-                                        iterlim=288, normalize=True, show_seconds=None)
+        alfa = (-40, 40, 0.5)
+        results = xfoil.oper_visc_alpha(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
+                                        iterlim=n_points*4, normalize=True, show_seconds=1)
         labels = results[1]
         values = results[0]
         
@@ -180,8 +178,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
             # Insert into database
             conn = sqlite3.connect('foil_simulator.db')
             c = conn.cursor()
-            c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, re, self.foil.Mach(velocity)))
-            c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, re, ))
+            c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, reynolds, self.foil.Mach(velocity)))
+            c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, reynolds, ))
             sim_id = c.fetchone()[0]
 
             for i, a in enumerate(alfa):

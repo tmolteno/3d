@@ -71,7 +71,7 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
     xf.cmd("GDES")
-    xf.cmd("CADD\n\n2\n\n\n", autonewline=False)
+    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PANEL")
     # Disable G(raphics) flag in Plotting options
     if not show_seconds:
@@ -83,34 +83,55 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))
     xf.cmd("ALFA 3.0")
+    xf.cmd("INIT")
     if Mach:
         xf.cmd("MACH {:.3f}".format(Mach))
 
+    output = ['']
     # Turn polar accumulation on, double enter for no savefile or dumpfile
     xf.cmd("PACC\n\n\n", autonewline=False)
     # Calculate polar
-    alfa = np.arange(*operating_point)
-    for a in alfa:
-        xf.cmd("{:s} {:.3f}".format(pcmd[0], a))
-    #try:
-        #if len(operating_point) != 3:
-            #raise Warning("oper pt is single value or [start, stop, interval]")
-        ## * unpacks, same as (alpha[0], alpha[1],...)
-        #xf.cmd("{:s} {:.3f} {:.3f} {:.3f}".format(pcmd[1], *operating_point))
-    #except TypeError:
-        ## If iterating doesn't work, assume it's a single digit
-        #xf.cmd("{:s} {:.3f}".format(pcmd[0], operating_point))
+    if True:
+        alfa = np.arange(*operating_point)
+        for a in alfa:
+            xf.cmd("{:s} {:.3f}".format(pcmd[0], a))
+            test = True
+            while test:
+                line = xf.readline()
+                if line:
+                    output.append(line)
+                    #print line
+                    if re.search("Point added to stored polar", line):
+                        test = False
+                    if re.search("VISCAL:  Convergence failed", line):
+                        xf.cmd("INIT")
+                        #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
+                        test = False
+                    #if (re.search("CPCALC: Local speed too large.", line)):
+                        #print "CPCALC: Local speed too large" % a
+                        #test = False
+    else:
+        try:
+            if len(operating_point) != 3:
+                raise Warning("oper pt is single value or [start, stop, interval]")
+            # * unpacks, same as (alpha[0], alpha[1],...)
+            xf.cmd("{:s} {:.3f} {:.3f} {:.3f}".format(pcmd[1], *operating_point))
+        except TypeError:
+            # If iterating doesn't work, assume it's a single digit
+            xf.cmd("{:s} {:.3f}".format(pcmd[0], operating_point))
 
     # List polar and send recognizable end marker
     xf.cmd("PLIS\nENDD\n\n", autonewline=False)
     
     #print "Xfoil module starting read"
     # Keep reading until end marker is encountered
-    output = ['']
     while not re.search("ENDD", output[-1]):
         line = xf.readline()
         if line:
+            #print "End Search %s" % line
             output.append(line)
+            #if (re.search("CPCALC: Local speed too large.", line)):
+                #break
     #print "Xfoil module ending read"
     if show_seconds:
         sleep(show_seconds)
