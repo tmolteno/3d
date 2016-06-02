@@ -49,7 +49,7 @@ module cooling_zone() {
 module cooling_shroud() {
    for(angle = [20 : step : 160]) {
       hull() {
-         translate([duct_x, 0,fan_z + h])  
+         translate([duct_x-0.1, 0,fan_z + h])  
             rotate([0,90,0]) rotate(angle - 90) 
                 translate([r,0,0]) 
                     cylinder(d=12, h=0.1,center=true);
@@ -82,13 +82,13 @@ module cooler() {
         cooling_zone();
         keep_out();
         
-        h = 30;
+        h = 14;
         translate([duct_x-0.5,0,20+fan_z]) rotate([0,90,0]) 
             for(angle = [0 : 90 : 360]) {
-                rotate(angle+45) translate([0,22.75,-3.1])
+                rotate(angle+45) translate([0,22.75,-2.1])
                     cylinder(d=4,h=12);
-                rotate(angle+45) translate([0,26.5,-3-h])
-                    cylinder(d1=5,d2=10,h=h);
+                rotate(angle+45) translate([0,26.0,-2-h])
+                    cylinder(d1=1,d2=11,h=h);
             }
     }
 }
