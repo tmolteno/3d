@@ -109,6 +109,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         
         n_points = int(91.0*self.foil.chord / self.foil.trailing_edge) + 30
         n_points = min(91, n_points)
+        n_points = max(41, n_points)
         print "N Points = %d" % n_points
         
         pl, pu = self.foil.get_shape_points(n=n_points)
@@ -123,8 +124,12 @@ class XfoilSimulatedFoil(SimulatedFoil):
         limit = xcoords <= xcoords[0]
         xcoords = xcoords[limit]
         ycoords = ycoords[limit]
-        xcoords = np.append(xcoords, xcoords[0] )
-        ycoords = np.append(ycoords, ycoords[-1] )
+        #if (True):
+            #xcoords = np.append(xcoords, xcoords[0] )
+            #ycoords = np.append(ycoords, ycoords[0] )
+        #if (False):
+            #xcoords = np.append(xcoords, xcoords[0] )
+            #ycoords = np.append(ycoords, ycoords[-1] )
         
         coordslist = np.array((xcoords, ycoords)).T
         coordstrlist = ["{:.6f} {:.6f}".format(coord[0], coord[1])

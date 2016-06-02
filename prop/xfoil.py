@@ -72,7 +72,7 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
         xf.cmd("PLOP\nG\n\n", autonewline=False)
     xf.cmd("GDES")
     xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
-    xf.cmd("PANEL")
+    xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
