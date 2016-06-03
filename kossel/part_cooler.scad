@@ -1,8 +1,9 @@
 use <MCAD/boxes.scad>
 $fn =51;
+step = 2;
 
 module extruder() {
-    translate([0,0,15.5]) cylinder(d=25, h=30);
+    translate([0,0,15.5]) cylinder(d=25, h=32);
     translate([4,0,10]) cube([16,16,8], center=true);
     cylinder(d1=1, d2=7, h=6);
 }
@@ -31,7 +32,6 @@ module top_duct() {
 }
 
 
-step = 2;
 h = 20;
 r = 14;
 module cooling_zone() {
@@ -64,7 +64,7 @@ module keep_out() {
     union() {
         translate([0,0,10]) cylinder(d=15,h=100);
         translate([0,0,9]) cylinder(d1 = 22, d2=23, h=16);
-        translate([-23,0,39]) cube([40,40,80], center=true);
+        translate([-25,0,39]) cube([40,40,80], center=true);
         rotate(180) extruder();
     }
 }
