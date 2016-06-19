@@ -1,4 +1,4 @@
-goodKKWid = 51;
+goodKKWid = 37;
 holdWid = goodKKWid + 5;
 kkWid = 50.5;
 motorBoltSpace = 14;
@@ -26,7 +26,7 @@ module main() {
 	kkHold();
 	translate([0,holdWid/2-7.5,0])attach(15,5);
 	translate([holdWid/2+7.5,-15,0])attach(15,5);
-	translate([holdWid+15,55.5/2-7.5,0])attach(15,5);
+	translate([holdWid+15,holdWid/2-7.5,0])attach(15,5);
 	translate([holdWid/2+7.5,holdWid,0])attach(15,5);
 }
 
@@ -74,4 +74,4 @@ module motor_mount() {
 }
 
 translate([-25,holdWid/2-12.5,0])arm();
-//main();
+main();
