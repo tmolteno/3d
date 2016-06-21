@@ -1,17 +1,21 @@
 goodKKWid = 37;
 holdWid = goodKKWid + 5;
-kkWid = 50.5;
+rPiLen = 66;
+rPiWid = 31;
+holdLen = rPiLen +5;
+kkWid = 36;
 motorBoltSpace = 14;
 armWid = 25;
 armLength = 110-armWid/2;   // Distance to center of motor mount
-
+height = 15;
 module kk() {
 	cube([goodKKWid,goodKKWid,12]);
 }
 module kkHold() {
 	difference() {
-		cube([holdWid,holdWid,12]);
+		translate([0,0,-(height - 12)])cube([holdWid,holdLen,height]);
 		translate([2.5,2.5,2.5])kk();
+        translate([rPiWid/2+(rPiWid+holdWid)/13,rPiLen/2+2.5,-3])cube([rPiWid,rPiLen,5], center=true);
 	}
 }
 
@@ -24,10 +28,10 @@ module attach(width,height) {
 
 module main() {
 	kkHold();
-	translate([0,holdWid/2-7.5,0])attach(15,5);
+	translate([0,holdLen/2-7.5,0])attach(15,5);
 	translate([holdWid/2+7.5,-15,0])attach(15,5);
-	translate([holdWid+15,holdWid/2-7.5,0])attach(15,5);
-	translate([holdWid/2+7.5,holdWid,0])attach(15,5);
+	translate([holdWid+15,holdLen/2-7.5,0])attach(15,5);
+	translate([holdWid/2+7.5,holdLen,0])attach(15,5);
 }
 
 armH = 10;
@@ -73,5 +77,5 @@ module motor_mount() {
     }
 }
 
-translate([-25,holdWid/2-12.5,0])arm();
+translate([-25,holdLen/2-12.5,0])arm();
 main();
