@@ -94,32 +94,44 @@ module motor_mount() {
 module newMain() {
     difference() {
         cube([130,130,height], center=true);
+        //corners that are cut
         rotate([0,0,45])translate([-110,0,-1])cube([100,100,20],center = true);
         rotate([0,0,45])translate([110,0,-1])cube([100,100,20],center=true);
         rotate([0,0,90])union() {
             rotate([0,0,45])translate([-110,0,-1])cube([100,100,20],center = true);
             rotate([0,0,45])translate([110,0,-1])cube([100,100,20],center=true);
          }
-        
+        //KK mini holder
        rotate([0,0,45])translate([-holdWid/2,-holdLen/2,0])kkHold();
+//         Holes for 2.75mm bolts
        rotate([0,0,45])translate([34,34,-50])cylinder(d=2.8,h=100);
-    rotate([0,0,135])translate([34,34,-50])cylinder(d=2.8,h=100);
-    rotate([0,0,225])translate([34,34,-50])cylinder(d=2.8,h=100);
-    rotate([0,0,-45])translate([34,34,-50])cylinder(d=2.8,h=100);
+        rotate([0,0,135])translate([34,34,-50])cylinder(d=2.8,h=100);
+        rotate([0,0,225])translate([34,34,-50])cylinder(d=2.8,h=100);
+        rotate([0,0,-45])translate([34,34,-50])cylinder(d=2.8,h=100);
          translate([0,0,6]) cylinder(r= motorR, h=7);
-     translate([0,0,6]) cylinder(r= motorR, h=7);
-     translate([0,0,6]) cylinder(r= motorR, h=7);
-     rotate([0,0,-45])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
+        translate([0,0,6]) cylinder(r= motorR, h=7);
+        translate([0,0,6]) cylinder(r= motorR, h=7);
+         // Extra motor holes
+        rotate([0,0,-45])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
+         rotate([0,0,45])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
+         rotate([0,0,135])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
+         rotate([0,0,225])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
      }
-     
-    rotate([0,0,45])translate([-75,0,-7.5])motor_mount();
+     //motor mounts
+    rotate([0,0,45])translate([-70,0,-7.5])motor_mount();
         rotate([0,0,225,])translate([-70,0,-7.5])motor_mount();
         rotate([0,0,90])union() {
-            rotate([0,0,45])translate([-80,0,-7.5])motor_mount();
-            rotate([0,0,225])translate([-80,0,-7.5])motor_mount();
+            rotate([0,0,45])translate([-70,0,-7.5])motor_mount();
+            rotate([0,0,225])translate([-70,0,-7.5])motor_mount();
          }
      PiServo();
+         difference() {
+            translate([0,0,-50])cylinder(d=57,h=50);
+             translate([0,0,-51])cylinder(d=54,h=50);
+         }
 }
 newMain();
+//prop size
 rotate([0,0,45])translate([70,0,0])cube([62.5,10,10]);
+//Boundry cylinder
 //#cylinder(d=270,h=270);
