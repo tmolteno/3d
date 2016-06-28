@@ -271,7 +271,10 @@ class NACAProp(Prop):
         chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
 
         
-        f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
+        if (r < 0.01):
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
+        else:
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
         f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
         
         v = self.get_blade_velocity(r, rpm)
