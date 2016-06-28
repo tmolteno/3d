@@ -17,8 +17,7 @@ module kkHold() {
 	//difference() {
 		//translate([0,0,-(height - 12)])cube([holdWid,holdLen,height]);
 		translate([-2.5+(goodKKWid*1.5),-1+(goodKKWid/2),2])rotate([0,0,90])kk();
-        translate([rPiWid/2.5+(rPiWid+holdWid)/13,rPiLen/2+2.5,-7])cube([rPiWid,rPiLen,5], center=true);
-        translate([rPiWid*1.05+(rPiWid+holdWid)/15,4.25,-10])cube([servoWid,servoLen,5]);
+        
 	//}
 }
 
@@ -28,7 +27,17 @@ module attach(width,height) {
 		translate([-(width/4)*3,width/4,-0.5])cube([width/2,width/2,height+1]);
 	}
 }
-
+module PiServo() {
+    difference() {
+        translate([0,0,100])cube([75,75,5],center=true);
+        translate([-15,0,103])cube([rPiWid,rPiLen,5], center=true);
+        translate([15,0,103])cube([servoWid,servoLen,5], center=true);
+        #translate([34,34,50])cylinder(d=2.8,h=100);
+        #rotate([0,0,90])translate([34,34,50])cylinder(d=2.8,h=100);
+        #rotate([0,0,180])translate([34,34,50])cylinder(d=2.8,h=100);
+        #rotate([0,0,-90])translate([34,34,50])cylinder(d=2.8,h=100);
+    }
+}
 module main() {
 	kkHold();
 	translate([0,holdLen/2-7.5,0])attach(15,5);
@@ -66,18 +75,18 @@ module slot() {
 module motor_base() {
    hull() {
        cylinder(r = motorR+1.5, h=armH);
-       //translate([motorR+1, -armWid/2,0]) cube([1,armWid,armH]);
+       translate([motorR+1, -armWid/2,0]) cube([1,armWid,armH]);
    }
 }
 
 module motor_mount() {
-    //You could put a difference here 
+    difference() {
         motor_base();
         translate([0,0,6]) cylinder(r= motorR, h=7);
         for(angle = [0 : (360/4) : 360]) {
             rotate(angle) translate([5.5,0,0]) slot();
         }
-  
+    }
 }
 
 //translate([-25,holdLen/2-12.5,0])arm();
@@ -85,19 +94,32 @@ module motor_mount() {
 module newMain() {
     difference() {
         cube([130,130,height], center=true);
-        rotate([0,0,45])translate([-125,0,-1])cube([100,100,20],center = true);
-        rotate([0,0,45])translate([125,0,-1])cube([100,100,20],center=true);
+        rotate([0,0,45])translate([-110,0,-1])cube([100,100,20],center = true);
+        rotate([0,0,45])translate([110,0,-1])cube([100,100,20],center=true);
         rotate([0,0,90])union() {
-            rotate([0,0,45])translate([-125,0,-1])cube([100,100,20],center = true);
-            rotate([0,0,45])translate([125,0,-1])cube([100,100,20],center=true);
+            rotate([0,0,45])translate([-110,0,-1])cube([100,100,20],center = true);
+            rotate([0,0,45])translate([110,0,-1])cube([100,100,20],center=true);
          }
-        rotate([0,0,45])translate([-60,0,-1])motor_mount();
-        rotate([0,0,225,])translate([-60,0,-1])motor_mount();
-        rotate([0,0,90])union() {
-            rotate([0,0,45])translate([-60,0,-1])motor_mount();
-            rotate([0,0,225])translate([-60,0,-1])motor_mount();
-         }
-       translate([-holdWid/2,-holdLen/2,0])kkHold();
+        
+       rotate([0,0,45])translate([-holdWid/2,-holdLen/2,0])kkHold();
+       rotate([0,0,45])translate([34,34,-50])cylinder(d=2.8,h=100);
+    rotate([0,0,135])translate([34,34,-50])cylinder(d=2.8,h=100);
+    rotate([0,0,225])translate([34,34,-50])cylinder(d=2.8,h=100);
+    rotate([0,0,-45])translate([34,34,-50])cylinder(d=2.8,h=100);
+         translate([0,0,6]) cylinder(r= motorR, h=7);
+     translate([0,0,6]) cylinder(r= motorR, h=7);
+     translate([0,0,6]) cylinder(r= motorR, h=7);
+     rotate([0,0,-45])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
      }
+     
+    rotate([0,0,45])translate([-75,0,-7.5])motor_mount();
+        rotate([0,0,225,])translate([-70,0,-7.5])motor_mount();
+        rotate([0,0,90])union() {
+            rotate([0,0,45])translate([-80,0,-7.5])motor_mount();
+            rotate([0,0,225])translate([-80,0,-7.5])motor_mount();
+         }
+     PiServo();
 }
 newMain();
+rotate([0,0,45])translate([70,0,0])cube([62.5,10,10]);
+//#cylinder(d=270,h=270);
