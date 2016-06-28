@@ -1,3 +1,4 @@
+
 servoWid = 26;
 goodKKWid = 37;
 holdWid = goodKKWid + 5 + servoWid;
@@ -32,10 +33,10 @@ module PiServo() {
         translate([0,0,100])cube([75,75,5],center=true);
         translate([-15,0,103])cube([rPiWid,rPiLen,5], center=true);
         translate([15,0,103])cube([servoWid,servoLen,5], center=true);
-        #translate([34,34,50])cylinder(d=2.8,h=100);
-        #rotate([0,0,90])translate([34,34,50])cylinder(d=2.8,h=100);
-        #rotate([0,0,180])translate([34,34,50])cylinder(d=2.8,h=100);
-        #rotate([0,0,-90])translate([34,34,50])cylinder(d=2.8,h=100);
+        translate([34,34,50])cylinder(d=2.8,h=100);
+        rotate([0,0,90])translate([34,34,50])cylinder(d=2.8,h=100);
+        rotate([0,0,180])translate([34,34,50])cylinder(d=2.8,h=100);
+       rotate([0,0,-90])translate([34,34,50])cylinder(d=2.8,h=100);
     }
 }
 module main() {
@@ -88,7 +89,11 @@ module motor_mount() {
         }
     }
 }
-
+UltraWid = 50;
+UltraLen = 20;
+module ultraBottom() {
+    rotate([0,0,45])translate([10,-UltraWid/2,-15])cube([UltraLen,UltraWid,10]);
+}
 //translate([-25,holdLen/2-12.5,0])arm();
 //main();
 module newMain() {
@@ -116,6 +121,8 @@ module newMain() {
          rotate([0,0,45])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
          rotate([0,0,135])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
          rotate([0,0,225])translate([0,69.5,-1.5]) cylinder(r= motorR, h=10);
+          ultraBottom();
+         //Difference ending
      }
      //motor mounts
     rotate([0,0,45])translate([-70,0,-7.5])motor_mount();
@@ -124,14 +131,17 @@ module newMain() {
             rotate([0,0,45])translate([-70,0,-7.5])motor_mount();
             rotate([0,0,225])translate([-70,0,-7.5])motor_mount();
          }
-     PiServo();
-         difference() {
-            translate([0,0,-50])cylinder(d=57,h=50);
-             translate([0,0,-51])cylinder(d=54,h=50);
-         }
+         //Can pick up thing
+//         difference() {
+//            translate([0,0,-50])cylinder(d=57,h=50);
+//             translate([0,0,-51])cylinder(d=54,h=50);
+//         }
 }
+
+
 newMain();
+PiServo();
 //prop size
-rotate([0,0,45])translate([70,0,0])cube([62.5,10,10]);
+//rotate([0,0,45])translate([70,0,0])cube([62.5,10,10]);
 //Boundry cylinder
 //#cylinder(d=270,h=270);
