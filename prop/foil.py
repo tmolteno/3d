@@ -54,8 +54,9 @@ class Foil(object):
         xl,yl = self.rotate(xl,yl, rotation_angle)
         xu,yu = self.rotate(xu,yu, rotation_angle)
         
-        max_y = np.max(yu)
-        mean_x = np.mean(xu)
+        max_y = 0.0 #np.max(yu)
+        mean_x = 0.0 # np.mean(xl)
+        print np.mean(xu), " ", np.mean(xl)
         
         return [[xl-mean_x,yl-max_y],[xu-mean_x,yu-max_y]]
 
