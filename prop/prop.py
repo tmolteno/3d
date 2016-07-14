@@ -347,10 +347,13 @@ class NACAProp(Prop):
 
         forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        
+        # if dt < 0, we must reduce drag
+        p.chord_fraction *= 1.0 - dt/3
+
         for be in self.blade_elements:
-            # if dt < 0, we must reduce drag
             aoa = be.get_alpha()
-            print "New Angle of Attack %f" % np.degrees(aoa)
+            print "Current Angle of Attack %f" % np.degrees(aoa)
             v = self.get_blade_velocity(be.r, optimum_rpm)
             twist = self.get_twist(be.r, optimum_rpm)
             angle = min(np.pi/2, twist + aoa)

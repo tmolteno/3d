@@ -33,5 +33,8 @@ print thrust
 
 t2 = 2*rho*A*v**2 
 
+'''
+    The Air velocity depends on the thrust.
+'''
 v = sqrt(thrust / (2*rho*A))
 print simplify(v)
