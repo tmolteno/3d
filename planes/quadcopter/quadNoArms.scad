@@ -140,12 +140,18 @@ module newMain() {
 }
 
 module newNewMain() {
+	//Motor Mounts
 	for(angle = [0 : (360/2) : 360]) {
        rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
    }
 	for(angle = [0 : (360/2) : 360]) {
        rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
    }
+	//KK Mini Holder
+	difference() {
+		cube([goodKKWid + 5, goodKKWid+5,10], center = true);
+		translate([0,0,3])cube([goodKKWid,goodKKWid,10], center=true);
+	}
 }
 newNewMain();
 //newMain();
