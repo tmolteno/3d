@@ -15,11 +15,11 @@ module kk() {
 	cube([goodKKWid,goodKKWid,12]);
 }
 module kkHold() {
-	//difference() {
-		//translate([0,0,-(height - 12)])cube([holdWid,holdLen,height]);
+	difference() {
+		translate([0,0,-(height - 12)])cube([holdWid,holdLen,height]);
 		translate([-2.5+(goodKKWid*1.5),-1+(goodKKWid/2),2])rotate([0,0,90])kk();
         
-	//}
+	}
 }
 
 module attach(width,height) {
@@ -88,6 +88,7 @@ module motor_mount() {
             rotate(angle) translate([5.5,0,0]) slot();
         }
     }
+	#translate([0,0,10])cylinder(d=127.5, h=10);
 }
 UltraWid = 50;
 UltraLen = 20;
@@ -138,10 +139,20 @@ module newMain() {
 //         }
 }
 
-
-newMain();
-PiServo();
+module newNewMain() {
+	for(angle = [0 : (360/2) : 360]) {
+       rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
+   }
+	for(angle = [0 : (360/2) : 360]) {
+       rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
+   }
+}
+newNewMain();
+//newMain();
+//PiServo();
 //prop size
-//rotate([0,0,45])translate([70,0,0])cube([62.5,10,10]);
+//for(angle = [0 : (360/4) : 360]) {
+//   #rotate(angle)translate([70,0,10])cylinder(d=127.5, h=10);
+//}
 //Boundry cylinder
 //#cylinder(d=270,h=270);
