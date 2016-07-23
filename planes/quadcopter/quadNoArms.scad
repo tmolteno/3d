@@ -88,7 +88,7 @@ module motor_mount() {
             rotate(angle) translate([5.5,0,0]) slot();
         }
     }
-	#translate([0,0,10])cylinder(d=127.5, h=10);
+	#translate([0,0,10])cylinder(d=100, h=10);
 }
 UltraWid = 50;
 UltraLen = 20;
@@ -142,11 +142,38 @@ module newMain() {
 module newNewMain() {
 	//Motor Mounts
 	for(angle = [0 : (360/2) : 360]) {
+		//Forward and back
        rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
+		difference() {
+		 	rotate(angle)translate([20,-armWid/2,-14])rotate([0,-55,0])cube([80,armWid,10]);
+			//Arm Cutouts
+			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
+			translate([-30,-30,-17])cube([60,60,12]);
+			rotate(angle)translate([70,0,50])rotate([0,0,180])union() {
+	         motor_base();
+   		     translate([0,0,6]) cylinder(r= motorR, h=7);
+      		  for(angle = [0 : (360/4) : 360]) {
+        	  	  rotate(angle) translate([5.5,0,45 ]) slot();
+		  	  }
+			}	
+		}
    }
 	for(angle = [0 : (360/2) : 360]) {
        rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
-   }
+   		 difference() {
+		 	rotate(angle+360/4)translate([20,-armWid/2,-14])rotate([0,-65,0])cube([100,armWid,10]);
+			//Arm Cutouts
+			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
+			translate([-30,-30,-17])cube([60,60,12]);
+			rotate(angle+360/4)translate([70,0,50])rotate([0,0,180])union() {
+	        motor_base();
+   		     translate([0,0,24]) cylinder(r= motorR, h=7);
+      		  for(angle = [0 : (360/4) : 360]) {
+        	  	  rotate(angle) translate([5.5,0,45 ]) slot();
+		  	  }
+			}	
+		}
+	}
 	//KK Mini Holder
 	difference() {
 		cube([goodKKWid + 5, goodKKWid+5,10], center = true);
