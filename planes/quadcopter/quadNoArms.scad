@@ -76,7 +76,7 @@ module slot() {
 module motor_base() {
    hull() {
        cylinder(r = motorR+1.5, h=armH);
-       translate([motorR+1, -armWid/2,0]) cube([1,armWid,armH]);
+       translate([motorR+1, -armWid/2,0])cube([1,armWid,armH]);
    }
 }
 
@@ -88,7 +88,7 @@ module motor_mount() {
             rotate(angle) translate([5.5,0,0]) slot();
         }
     }
-	#translate([0,0,10])cylinder(d=100, h=10);
+	 //#translate([0,0,10])cylinder(r=127/2, h=10);
 }
 UltraWid = 50;
 UltraLen = 20;
@@ -188,4 +188,4 @@ newNewMain();
 //   #rotate(angle)translate([70,0,10])cylinder(d=127.5, h=10);
 //}
 //Boundry cylinder
-//#cylinder(d=270,h=270);
+//#cylinder(r=135,h=270);
