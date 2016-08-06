@@ -144,8 +144,10 @@ module newNewMain() {
 	for(angle = [0 : (360/2) : 360]) {
 		//Forward and back
        rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
+        rotate(angle)translate([52,-armWid/2,-5])cube([5,armWid,56]);
+        rotate(angle)translate([37/2,-armWid/2,-5])cube([52-(37/2),armWid,5]);
 		difference() {
-		 	rotate(angle)translate([20,-armWid/2,-14])rotate([0,-55,0])cube([80,armWid,10]);
+		 	rotate(angle)translate([20,-armWid/2,-14])rotate([0,-60,0])cube([80,armWid,10]);
 			//Arm Cutouts
 			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 			translate([-30,-30,-17])cube([60,60,12]);
@@ -165,7 +167,8 @@ module newNewMain() {
 			//Arm Cutouts
 			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 			translate([-30,-30,-17])cube([60,60,12]);
-			rotate(angle+360/4)translate([70,0,50])rotate([0,0,180])union() {
+            rotate(angle)translate([0,])
+			rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])union() {
 	        motor_base();
    		     translate([0,0,24]) cylinder(r= motorR, h=7);
       		  for(angle = [0 : (360/4) : 360]) {
