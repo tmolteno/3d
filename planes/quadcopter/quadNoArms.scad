@@ -152,8 +152,8 @@ module newNewMain() {
 			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 			translate([-30,-30,-17])cube([60,60,12]);
 			rotate(angle)translate([70,0,50])rotate([0,0,180])union() {
-	         motor_base();
-   		     translate([0,0,6]) cylinder(r= motorR, h=7);
+	         rotate(angle)motor_base();
+   		     rotate(angle)translate([0,0,6]) cylinder(r= motorR, h=7);
       		  for(angle = [0 : (360/4) : 360]) {
         	  	  rotate(angle) translate([5.5,0,45 ]) slot();
 		  	  }
@@ -161,19 +161,19 @@ module newNewMain() {
 		}
    }
 	for(angle = [0 : (360/2) : 360]) {
-       rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
+       #rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
    		 difference() {
-		 	rotate(angle+360/4)translate([20,-armWid/2,-14])rotate([0,-65,0])cube([100,armWid,10]);
-			//Arm Cutouts
-			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
-			translate([-30,-30,-17])cube([60,60,12]);
-            rotate(angle)translate([0,])
-			rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])union() {
-	        motor_base();
-   		     translate([0,0,24]) cylinder(r= motorR, h=7);
-      		  for(angle = [0 : (360/4) : 360]) {
-        	  	  rotate(angle) translate([5.5,0,45 ]) slot();
-		  	  }
+		 		rotate(angle+360/4)translate([20,-armWid/2,-14])rotate([0,-65,0])cube([100,armWid,10]);
+				//Arm Cutouts
+				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
+				translate([-30,-30,-17])cube([60,60,12]);
+				rotate(angle/2-90)translate([70,0,75]) cylinder(r= motorR, h=7);
+				rotate(angle/2-90)translate([70,0,70])rotate([0,0,180])union() {
+	        		motor_base();
+   		     	translate([0,0,]) cylinder(r= motorR, h=7);
+      		  	for(angle = [0 : (360/4) : 360]) {
+        	  	  		rotate(angle) translate([5.5,0,45 ]) slot();
+		  	  		}
 			}	
 		}
 	}
