@@ -1,4 +1,4 @@
-
+use <quadcopterV2.scad>;
 servoWid = 26;
 goodKKWid = 37;
 holdWid = goodKKWid + 5 + servoWid;
@@ -8,7 +8,7 @@ servoLen = 63;
 holdLen = rPiLen +5;
 kkWid = 36;
 motorBoltSpace = 14;
-armWid = 25;
+armWid = rPiWid;
 armLength = 110-armWid/2;   // Distance to center of motor mount
 height = 15;
 module kk() {
@@ -138,7 +138,12 @@ module newMain() {
 //             translate([0,0,-51])cylinder(d=54,h=50);
 //         }
 }
-
+module KKMiniHold() {
+	difference() {
+		cube([goodKKWid + 5, goodKKWid+5,10], center = true);
+		translate([0,0,3])cube([goodKKWid,goodKKWid,10], center=true);
+	}
+}
 module newNewMain() {
 	//Motor Mounts
 	for(angle = [0 : (360/2) : 360]) {
@@ -162,15 +167,17 @@ module newNewMain() {
    }
 	for(angle = [0 : (360/2) : 360]) {
        #rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
+
    		 difference() {
 		 		rotate(angle+360/4)translate([20,-armWid/2,-14])rotate([0,-65,0])cube([100,armWid,10]);
 				//Arm Cutouts
 				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 				translate([-30,-30,-17])cube([60,60,12]);
-				rotate(angle/2-90)translate([70,0,75]) cylinder(r= motorR, h=7);
+				rotate(90)translate([70,0,50])cylinder(r= 28/2, h=100);
+				rotate(270)translate([70,0,50])cylinder(r=motorR,h=100)
 				rotate(angle/2-90)translate([70,0,70])rotate([0,0,180])union() {
-	        		motor_base();
-   		     	translate([0,0,]) cylinder(r= motorR, h=7);
+	        		//motor_base();
+   		     	translate([0,0,50])cylinder(r= motorR, h=100);
       		  	for(angle = [0 : (360/4) : 360]) {
         	  	  		rotate(angle) translate([5.5,0,45 ]) slot();
 		  	  		}
@@ -178,10 +185,7 @@ module newNewMain() {
 		}
 	}
 	//KK Mini Holder
-	difference() {
-		cube([goodKKWid + 5, goodKKWid+5,10], center = true);
-		translate([0,0,3])cube([goodKKWid,goodKKWid,10], center=true);
-	}
+	KKMiniHold();
 }
 newNewMain();
 //newMain();
@@ -190,5 +194,6 @@ newNewMain();
 //for(angle = [0 : (360/4) : 360]) {
 //   #rotate(angle)translate([70,0,10])cylinder(d=127.5, h=10);
 //}
+translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);

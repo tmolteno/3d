@@ -1,11 +1,14 @@
-use <quadNoArms.scad>;
-canR = 52;
+canD = 67;
 canH = 124;
 wall = 3;
-intersection() {
-	difference() {
-		cylinder(r = canR,h = canH/2, center = true);
-		translate([0,0,-wall])cylinder(r = canR-wall, h = canH/2, center=true);
+module can() {
+	intersection() {
+		difference() {
+			cylinder(d = canD,h = canH/2, center = true);
+			translate([0,0,-wall])cylinder(d = canD-wall, h = canH/2, center=true);
+		}
+		cube([canD*0.85,canD*0.85,canH], center=true);
 	}
-	cube([1.76*canR,1.76*canR,canH], center=true);
 }
+can();
+//translate([0,0,-wall])cylinder(d = canD-wall, h = canH, center=true);
