@@ -187,7 +187,11 @@ module newNewMain() {
 	//KK Mini Holder
 	KKMiniHold();
 }
-newNewMain();
+
+difference() {
+	newNewMain();
+	translate([0,0,-10])cylinder(r=1, h=10);
+}
 //newMain();
 //PiServo();
 //prop size

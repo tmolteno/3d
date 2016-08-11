@@ -1,0 +1,2 @@
+use <quadNoArms.scad>
+newNewMain();
