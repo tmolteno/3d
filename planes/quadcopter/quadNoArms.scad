@@ -190,7 +190,10 @@ module newNewMain() {
 
 difference() {
 	newNewMain();
-	translate([0,0,-10])cylinder(r=1, h=10);
+	/*translate([45,-21/2,-7]) cylinder(r=1, h=10);
+translate([45, 21/2, -7]) cylinder(r=1,h=10);
+translate([32.5,21/2, -7]) cylinder(r=1, h=10);
+translate([32.5,-21/2,-7]) cylinder(r=1, h=10);*/
 }
 //newMain();
 //PiServo();
@@ -198,6 +201,6 @@ difference() {
 //for(angle = [0 : (360/4) : 360]) {
 //   #rotate(angle)translate([70,0,10])cylinder(d=127.5, h=10);
 //}
-translate([0,0,-124/4-5])can();
+//translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);
