@@ -1,4 +1,4 @@
-use <quadcopterV2.scad>;
+use <can.scad>;
 servoWid = 26;
 goodKKWid = 37;
 holdWid = goodKKWid + 5 + servoWid;
@@ -66,10 +66,10 @@ motorD = 28;
 motorR = motorD/2;
 holeR = 1.5;
 
-module slot() {
+module slot(radius) {
     hull() {
-        cylinder(r=holeR, h=100, center=true);
-        translate([4,0,0]) cylinder(r=holeR, h=100, center=true);
+        cylinder(r=radius, h=100, center=true);
+        translate([4,0,0]) cylinder(r=radius, h=100, center=true);
     }
 }
 
@@ -89,6 +89,15 @@ module motor_mount() {
         }
     }
 	 //#translate([0,0,10])cylinder(r=127/2, h=10);
+}
+module motor_clear() {
+    union() {
+        translate([0,0,6]) cylinder(r= motorR, h=7);
+        for(a = [0 : (90) : 360]) {
+            rotate(a) translate([5.5,0,0]) slot(1.5);
+            rotate(a) translate([5.5,0,-50])slot(3);
+        }
+     }
 }
 UltraWid = 50;
 UltraLen = 20;
@@ -144,63 +153,78 @@ module KKMiniHold() {
 		translate([0,0,3])cube([goodKKWid,goodKKWid,10], center=true);
 	}
 }
-module newNewMain() {
+
+module motor_arm(height) {
+   		 difference() {
+                hull() {
+                    difference() {
+                        translate([20,-armWid/2,-14])rotate([0,-65,0])cube([120,armWid,10]);
+                        translate([20,-50,height+10])cube(100,100,100);
+                    }
+                    translate([70,0,height])rotate([0,0,180])motor_mount();
+                }
+                    //Arm Cutouts
+				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
+				translate([-30,-30,-17])cube([60,60,12]);
+                translate([70,0,height]) motor_clear();
+		}
+}
+
+module body() {
 	//Motor Mounts
-	for(angle = [0 : (360/2) : 360]) {
+	for(angle = [0, 180]) {
 		//Forward and back
-       rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
-        rotate(angle)translate([52,-armWid/2,-5])cube([5,armWid,56]);
+        difference() {
+            hull() {
+                rotate(angle)translate([70,0,50])rotate([0,0,180])motor_mount();
+                rotate(angle)translate([52,-armWid/2,-5])cube([5,armWid,56]);
+            }
+            rotate(angle)translate([70,0,50])motor_clear();
+        }
         rotate(angle)translate([37/2,-armWid/2,-5])cube([52-(37/2),armWid,5]);
 		difference() {
-		 	rotate(angle)translate([20,-armWid/2,-14])rotate([0,-60,0])cube([80,armWid,10]);
+		 	rotate(angle)translate([20,-armWid/2,-14])rotate([0,-60,0])cube([90,armWid,10]);
+            rotate(angle)translate([20,-50,50+10])cube(100,100,100);
 			//Arm Cutouts
 			translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 			translate([-30,-30,-17])cube([60,60,12]);
-			rotate(angle)translate([70,0,50])rotate([0,0,180])union() {
-	         rotate(angle)motor_base();
-   		     rotate(angle)translate([0,0,6]) cylinder(r= motorR, h=7);
-      		  for(angle = [0 : (360/4) : 360]) {
-        	  	  rotate(angle) translate([5.5,0,45 ]) slot();
-		  	  }
-			}	
+			rotate(angle)translate([70,0,50])rotate([0,0,180])motor_clear();
 		}
    }
-	for(angle = [0 : (360/2) : 360]) {
-       #rotate(angle+360/4)translate([70,0,70])rotate([0,0,180])motor_mount();
-
-   		 difference() {
-		 		rotate(angle+360/4)translate([20,-armWid/2,-14])rotate([0,-65,0])cube([100,armWid,10]);
-				//Arm Cutouts
-				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
-				translate([-30,-30,-17])cube([60,60,12]);
-				rotate(90)translate([70,0,50])cylinder(r= 28/2, h=100);
-				rotate(270)translate([70,0,50])cylinder(r=motorR,h=100)
-				rotate(angle/2-90)translate([70,0,70])rotate([0,0,180])union() {
-	        		//motor_base();
-   		     	translate([0,0,50])cylinder(r= motorR, h=100);
-      		  	for(angle = [0 : (360/4) : 360]) {
-        	  	  		rotate(angle) translate([5.5,0,45 ]) slot();
-		  	  		}
-			}	
-		}
+	for(angle = [90, 270]) {
+   		 rotate(angle) motor_arm(70);
 	}
 	//KK Mini Holder
 	KKMiniHold();
+    translate([0,0,20]) difference() {
+        cylinder(d=85,h=10);
+        cylinder(d=60,h=30, center=true);
+    }
 }
 
-difference() {
-	newNewMain();
-	/*translate([45,-21/2,-7]) cylinder(r=1, h=10);
-translate([45, 21/2, -7]) cylinder(r=1,h=10);
-translate([32.5,21/2, -7]) cylinder(r=1, h=10);
-translate([32.5,-21/2,-7]) cylinder(r=1, h=10);*/
+module prop() {
+    cylinder(d=127.5, h=10);
 }
+module mounting_holes() {
+    difference() {
+        body();
+        translate([45,-21/2,-7]) cylinder(r=1, h=10);
+        translate([45, 21/2, -7]) cylinder(r=1,h=10);
+        translate([32.5,21/2, -7]) cylinder(r=1, h=10);
+        translate([32.5,-21/2,-7]) cylinder(r=1, h=10);
+    }
+}
+
+//motor_arm(70);
+
+mounting_holes();
 //newMain();
 //PiServo();
 //prop size
-//for(angle = [0 : (360/4) : 360]) {
-//   #rotate(angle)translate([70,0,10])cylinder(d=127.5, h=10);
-//}
+/*#rotate([0,0,0])translate([70,0,70]) prop();
+#rotate([0,0,90])translate([70,0,90]) prop();
+#rotate([0,0,180])translate([70,0,70]) prop();
+#rotate([0,0,270])translate([70,0,90]) prop();*/
 //translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);

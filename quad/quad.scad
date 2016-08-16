@@ -2,7 +2,7 @@ motor_dia = 23.0;
 motor_height = 18.5;
 controller_width = 40;
 
-use <prop/multistar_1704_1900kv.scad>;
+use <../prop/multistar_1704_1900kv.scad>;
 
 module motor_mount() {
     translate([0,0,-5]) cylinder(d=motor_dia, h=5);
@@ -61,7 +61,10 @@ module arm(height) {
 
 
 module base() {
-    cylinder(d=70, h=10);
+    difference() {
+        cylinder(d=70, h=10);
+        cylinder(d=20, h=50, center=true);
+    }
     
     // Arms
     for (a =[0, 180]) {
@@ -74,7 +77,7 @@ module base() {
 
 base();
 
-//#difference() {
-//    cylinder(d=270,h=100);
-//    cylinder(d=265, h=500, center=true);
-//}
+#difference() {
+    cylinder(d=170,h=100);
+    cylinder(d=165, h=500, center=true);
+}
