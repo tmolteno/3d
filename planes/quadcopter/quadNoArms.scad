@@ -192,14 +192,15 @@ module body() {
 		}
    }
 	for(angle = [90, 270]) {
-   		 rotate(angle) motor_arm(70);
+   		 rotate(angle) motor_arm(30);
 	}
 	//KK Mini Holder
 	KKMiniHold();
-    translate([0,0,20]) difference() {
+    /*translate([0,0,20]) difference() {
         cylinder(d=85,h=10);
         cylinder(d=60,h=30, center=true);
-    }
+    }*/
+		//make cross for pi/servo controller on arms
 }
 
 module prop() {
@@ -222,9 +223,9 @@ mounting_holes();
 //PiServo();
 //prop size
 /*#rotate([0,0,0])translate([70,0,70]) prop();
-#rotate([0,0,90])translate([70,0,90]) prop();
+#rotate([0,0,90])translate([70,0,50]) prop();
 #rotate([0,0,180])translate([70,0,70]) prop();
-#rotate([0,0,270])translate([70,0,90]) prop();*/
+#rotate([0,0,270])translate([70,0,50]) prop();*/
 //translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);
