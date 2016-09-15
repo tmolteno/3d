@@ -165,7 +165,7 @@ module motor_arm(height) {
                 }
                     //Arm Cutouts
 				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
-				translate([-30,-30,-17])cube([60,60,12]);
+				translate([-50,-50,-17])cube([100,100,12]);
                 translate([70,0,height]) motor_clear();
 		}
 }
@@ -200,7 +200,13 @@ module body() {
         cylinder(d=85,h=10);
         cylinder(d=60,h=30, center=true);
     }*/
-		//make cross for pi/servo controller on arms
+	difference() {
+		union() {
+			translate([0,0,32.5])cube([armWid,70,15], center=true);
+			translate([0,0,32.5])cube([80,armWid,15], center=true);
+		}
+		translate([0,0,-10.5])sphere(d=100);
+	}
 }
 
 module prop() {
