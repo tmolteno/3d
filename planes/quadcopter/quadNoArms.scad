@@ -11,6 +11,12 @@ motorBoltSpace = 14;
 armWid = rPiWid;
 armLength = 110-armWid/2;   // Distance to center of motor mount
 height = 15;
+module pi() {
+	cube([rPiLen, rPiWid, 1], center=true);
+}
+module servo() {
+	cube([servoLen, servoWid, 254],center=true);
+}
 module kk() {
 	cube([goodKKWid,goodKKWid,12]);
 }
@@ -166,7 +172,8 @@ module motor_arm(height) {
                     //Arm Cutouts
 				translate([-goodKKWid/2,-goodKKWid/2,-2])kk();
 				translate([-50,-50,-17])cube([100,100,12]);
-                translate([70,0,height]) motor_clear();
+            translate([70,0,height]) motor_clear();
+				translate([0,0,150])servo();
 		}
 }
 
@@ -200,12 +207,12 @@ module body() {
         cylinder(d=85,h=10);
         cylinder(d=60,h=30, center=true);
     }*/
+	//Cross between arms
 	difference() {
 		union() {
-			translate([0,0,32.5])cube([armWid,70,15], center=true);
 			translate([0,0,32.5])cube([80,armWid,15], center=true);
 		}
-		translate([0,0,-10.5])sphere(d=100);
+		translate([0,0,0.5])sphere(d=100);
 	}
 }
 
@@ -226,12 +233,13 @@ module mounting_holes() {
 
 mounting_holes();
 //newMain();
-//PiServo();
+//translate([0,0,-60])PiServo();
+translate([0,0,40])pi();
 //prop size
-/*#rotate([0,0,0])translate([70,0,70]) prop();
+#rotate([0,0,0])translate([70,0,70]) prop();
 #rotate([0,0,90])translate([70,0,50]) prop();
 #rotate([0,0,180])translate([70,0,70]) prop();
-#rotate([0,0,270])translate([70,0,50]) prop();*/
+#rotate([0,0,270])translate([70,0,50]) prop();
 //translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);
