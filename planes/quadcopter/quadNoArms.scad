@@ -208,25 +208,32 @@ module body() {
         cylinder(d=60,h=30, center=true);
     }*/
 	//Cross between arms
-	difference() {
-		union() {
-			translate([0,0,32.5])cube([80,armWid,15], center=true);
-		}
-		translate([0,0,0.5])sphere(d=100);
-	}
+	
 }
 
 module prop() {
     cylinder(d=127.5, h=10);
 }
 module mounting_holes() {
-    difference() {
-        body();
-        translate([45,-21/2,-7]) cylinder(r=1, h=10);
-        translate([45, 21/2, -7]) cylinder(r=1,h=10);
-        translate([32.5,21/2, -7]) cylinder(r=1, h=10);
-        translate([32.5,-21/2,-7]) cylinder(r=1, h=10);
-    }
+		difference() {
+			union() {
+				translate([0,0,32.5])cube([80,armWid,15], center=true);
+			}
+			translate([0,0,-1])sphere(d=100);
+			#translate([(rPiLen/2)-(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
+			#translate([(-rPiLen/2)+(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
+			#translate([(rPiLen/2)-(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
+			#translate([(-rPiLen/2)+(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
+		}
+    	difference() {
+			union() {
+        		body();
+		  	}
+        	translate([45,-21/2,-7]) cylinder(r=1, h=10);
+        	translate([45, 21/2, -7]) cylinder(r=1,h=10);
+        	translate([32.5,21/2, -7]) cylinder(r=1, h=10);
+        	translate([32.5,-21/2,-7]) cylinder(r=1, h=10);
+    	}
 }
 
 //motor_arm(70);
@@ -234,8 +241,7 @@ module mounting_holes() {
 mounting_holes();
 //newMain();
 //translate([0,0,-60])PiServo();
-translate([0,0,40])pi();
-//prop size
+/*prop size
 #rotate([0,0,0])translate([70,0,70]) prop();
 #rotate([0,0,90])translate([70,0,50]) prop();
 #rotate([0,0,180])translate([70,0,70]) prop();
