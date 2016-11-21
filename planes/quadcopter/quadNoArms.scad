@@ -229,17 +229,19 @@ module mounting_holes() {
 			union() {
         		body();
 		  	}
+            //Camera mount
         	translate([45,-21/2,-7]) cylinder(r=1, h=10);
         	translate([45, 21/2, -7]) cylinder(r=1,h=10);
         	translate([32.5,21/2, -7]) cylinder(r=1, h=10);
         	translate([32.5,-21/2,-7]) cylinder(r=1, h=10);
+            //Reciever mounting (cable ties)
             translate([-32.5,0,0])hull() {
-                    translate([0,5,0])cylinder(r=1.5, h=10, center=true);
-                    translate([0,-5,0])cylinder(r=1.5, h=10,center = true);
+                    translate([0,5,-1])cylinder(r=1.5, h=10, center=true);
+                    translate([0,-5,-1])cylinder(r=1.5, h=10,center = true);
             }
             translate([-47.5,0,0])hull() {
-                    translate([0,5,0])cylinder(r=1.5, h=10, center=true);
-                    translate([0,-5,0])cylinder(r=1.5, h=10,center = true);
+                    translate([0,5,-1])cylinder(r=1.5, h=10, center=true);
+                    translate([0,-5,-1])cylinder(r=1.5, h=10,center = true);
             }
     	}
 }
@@ -255,6 +257,6 @@ mounting_holes();
 #rotate([0,0,180])translate([70,0,70]) prop();
 #rotate([0,0,270])translate([70,0,50]) prop();
 */
-rotate([0,0,0])translate([0,0,-124/4-5])can();
+rotate([0,0,0])translate([0,0,-(124/4-5)-26])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);

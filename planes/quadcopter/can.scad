@@ -37,9 +37,20 @@ module can() {
         translate([0,21,17/2])
         rotate([0,270,0])
         cylinder(d=UltraHole,h=100);
-        //RUNS INTO CAN
+        //RUNS INTO CAN (not anymore)
         translate([-canD/2-1,0,-6])
         cube([4,12,10],center=true);
+    }
+    //battery mounting
+    translate([0,-20,30])difference() {
+        cube([36, 40,18]);
+        translate([2+32/2,0,1.5+15/2])cube([32,100,15], center = true);
+        
+    }
+    translate([-36,-20,30])difference() {
+        cube([36, 40,18]);
+        translate([2+32/2,0,1.5+15/2])cube([32,100,15], center= true);
+        
     }
 }
 can();
