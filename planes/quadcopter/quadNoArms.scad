@@ -11,6 +11,9 @@ motorBoltSpace = 14;
 armWid = rPiWid;
 armLength = 110-armWid/2;   // Distance to center of motor mount
 height = 15;
+batH = 30;
+batL = 54;
+batW = 18;
 module pi() {
 	cube([rPiLen, rPiWid, 1], center=true);
 }
@@ -82,7 +85,7 @@ module slot(radius) {
 module motor_base() {
    hull() {
        cylinder(r = motorR+1.5, h=armH);
-       translate([motorR+1, -armWid/2,0])cube([1,armWid,armH]);
+      translate([motorR+1, -armWid/2,0])cube([1,armWid,armH]);
    }
 }
 
@@ -105,11 +108,8 @@ module motor_clear() {
         }
      }
 }
-UltraWid = 50;
-UltraLen = 20;
-module ultraBottom() {
-    rotate([0,0,45])translate([10,-UltraWid/2,-15])cube([UltraLen,UltraWid,10]);
-}
+
+
 //translate([-25,holdLen/2-12.5,0])arm();
 //main();
 module newMain() {
@@ -220,10 +220,10 @@ module mounting_holes() {
 				translate([0,0,32.5])cube([80,armWid,15], center=true);
 			}
 			translate([0,0,-1])sphere(d=100);
-			#translate([(rPiLen/2)-(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
-			#translate([(-rPiLen/2)+(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
-			#translate([(rPiLen/2)-(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
-			#translate([(-rPiLen/2)+(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
+			translate([(rPiLen/2)-(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
+			translate([(-rPiLen/2)+(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
+			translate([(rPiLen/2)-(1.4+3.5),(-rPiWid/2)+(1.4+3.5),30])cylinder(d=2.8, h=100);
+			translate([(-rPiLen/2)+(1.4+3.5),(rPiWid/2)-(1.4+3.5),30])cylinder(d=2.8, h=100);
 		}
     	difference() {
 			union() {
@@ -233,6 +233,14 @@ module mounting_holes() {
         	translate([45, 21/2, -7]) cylinder(r=1,h=10);
         	translate([32.5,21/2, -7]) cylinder(r=1, h=10);
         	translate([32.5,-21/2,-7]) cylinder(r=1, h=10);
+            translate([-32.5,0,0])hull() {
+                    translate([0,5,0])cylinder(r=1.5, h=10, center=true);
+                    translate([0,-5,0])cylinder(r=1.5, h=10,center = true);
+            }
+            translate([-47.5,0,0])hull() {
+                    translate([0,5,0])cylinder(r=1.5, h=10, center=true);
+                    translate([0,-5,0])cylinder(r=1.5, h=10,center = true);
+            }
     	}
 }
 
@@ -241,11 +249,12 @@ module mounting_holes() {
 mounting_holes();
 //newMain();
 //translate([0,0,-60])PiServo();
-/*prop size
-#rotate([0,0,0])translate([70,0,70]) prop();
+//prop size
+/*#rotate([0,0,0])translate([70,0,70]) prop();
 #rotate([0,0,90])translate([70,0,50]) prop();
 #rotate([0,0,180])translate([70,0,70]) prop();
 #rotate([0,0,270])translate([70,0,50]) prop();
-//translate([0,0,-124/4-5])can();
+*/
+rotate([0,0,0])translate([0,0,-124/4-5])can();
 //Boundry cylinder
 //#cylinder(r=135,h=270);
