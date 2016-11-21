@@ -42,12 +42,12 @@ module can() {
         cube([4,12,10],center=true);
     }
     //battery mounting
-    translate([0,-20,30])difference() {
+    translate([-1,-20,29.5])difference() {
         cube([36, 40,18]);
         translate([2+32/2,0,1.5+15/2])cube([32,100,15], center = true);
         
     }
-    translate([-36,-20,30])difference() {
+    translate([-35,-20,29.5])difference() {
         cube([36, 40,18]);
         translate([2+32/2,0,1.5+15/2])cube([32,100,15], center= true);
         
