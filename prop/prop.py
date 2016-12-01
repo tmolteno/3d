@@ -46,7 +46,8 @@ class Prop:
         r = self.param.radius
         tau=torque
         rps = rpm / 60.0
-        return np.sqrt((r**2*rho)**(1/3)*(rps*tau)**(2/3)/(r**2*rho))
+        v = np.sqrt((r**2*rho)**(1/3)*(rps*tau)**(2/3)/(r**2*rho))
+        return v/2.0 # Half of the 
 
     def get_air_density(self):
         return 1.225 # kg m^{-3}
@@ -170,7 +171,7 @@ class Prop:
             torque += drag
             thrust += lift
 
-        return 0.75*torque, lift
+        return torque+0.001, lift
 
 
 
@@ -410,7 +411,7 @@ if __name__ == "__main__":
     optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
     power = m.get_Pmax(param.motor_volts)
     print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
-    v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)/2
+    v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)
     print("Airspeed at propellers (hovering): %f" % (v))
     param.forward_airspeed = v
 

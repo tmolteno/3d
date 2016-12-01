@@ -16,7 +16,7 @@ class SimulatedFoil:
 class PlateSimulatedFoil(SimulatedFoil):
   
     def get_zero_cl_angle(self, v):
-        zero = 0.0
+        zero = 0.1
         return zero
 
     def get_cl(self, v, alpha):

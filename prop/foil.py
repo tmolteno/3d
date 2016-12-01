@@ -51,13 +51,14 @@ class Foil(object):
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl
+        print xl
         xu, yu = pu
         xl,yl = self.rotate(xl,yl, rotation_angle)
         xu,yu = self.rotate(xu,yu, rotation_angle)
         
-        max_y = 0.0 #np.max(yu)
-        mean_x = 0.0 # np.mean(xl)
-        print np.mean(xu), " ", np.mean(xl)
+        max_y = 0 # np.max(yu)
+        mean_x = 0 # 0.67*(np.max(xu)-np.min(xu))
+        print("Mean={0} {1}".format(np.mean(xu), np.mean(xl)))
         
         return [[xl-mean_x,yl-max_y],[xu-mean_x,yu-max_y]]
 
@@ -68,6 +69,12 @@ class Foil(object):
         y2 = -x*np.sin(theta) + y*np.cos(theta)
         return [x2,y2]
 
+    def plot(self):
+        pt, pb = self.get_points(30, rotation_angle=0.0)
+        import matplotlib.pyplot as plt
+        plt.plot(pt[0], pt[1], 'x')
+        plt.plot(pb[0], pb[1], 'o')
+        plt.show()
 
 '''
    Flat plate has analytic polars. Useful for simple testing
@@ -144,7 +151,7 @@ class NACA4(Foil):
         # Translate to a system where 0,0 is the max_x, max_y (these are defined by p and t)
         # max(yt) = 0.5, occurs at x=.2998
         # max(dyc) = p
-        max_x = 0.3
+        max_x = xu[np.argmax(yu)] #0.3
         max_y = np.max(yu)
         # print np.max(yu), max_y, np.argmax(yu) 
         
@@ -157,16 +164,11 @@ class NACA4(Foil):
         c = self.chord
         return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
     
-    def plot(self):
-        pt, pb = f.get_points(30, alpha=0.0)
-        import matplotlib.pyplot as plt
-        plt.plot(pt[0], pt[1], 'x')
-        plt.plot(pb[0], pb[1], 'o')
-        plt.show()
         
 if __name__ == "__main__":
     
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
+    #f = Foil(chord=0.1, thickness=0.15)
     f.set_trailing_edge(0.01)
     print f
     print f.hash()
