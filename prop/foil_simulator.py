@@ -15,6 +15,10 @@ class SimulatedFoil:
     
 class PlateSimulatedFoil(SimulatedFoil):
   
+    def get_zero_cl_angle(self, v):
+        zero = 0.0
+        return zero
+
     def get_cl(self, v, alpha):
         return 2.0 * np.pi * alpha
 

@@ -2,8 +2,9 @@ import numpy as np
 
 
 class Foil(object):
-    def __init__(self, chord):
+    def __init__(self, chord, thickness):
         self.chord = chord
+        self.thickness = thickness
         self.trailing_edge = 0.0
 
     ''' Calculate Reynolds number from air density rho
@@ -34,7 +35,7 @@ class Foil(object):
         return "%s" % (np.sum(pu[1]) + np.sum(pl[1]))
     
     def __repr__(self):
-      return "ch=%f, a=%f" % (self.chord)
+      return "ch=%f, a=%f" % (self.chord, self.thickness)
   
     def set_trailing_edge(self, t):
         self.trailing_edge = t
@@ -43,7 +44,7 @@ class Foil(object):
         ''' Return a list of x,y coordinates for the foil with zero angle of attack
         '''
         x = np.linspace(0, self.chord, n)
-        y = 0.05*self.chord*np.ones(n)
+        y = self.thickness*self.chord*np.ones(n)
         return [[x,-y],[x,y]]
     
     

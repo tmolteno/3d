@@ -26,7 +26,22 @@ class Prop:
         self.chord_fraction = 7.0
         self.n_blades = 2
         
-    
+    def new_foil(self, r, rpm, alpha):
+        twist = self.get_twist(r, rpm)
+        thickness = self.get_foil_thickness(r)
+        angle = min(np.pi/2, twist + alpha)
+        depth_max = self.get_max_depth(r)
+        chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
+
+        
+        f = foil.Foil(chord=chord, thickness=thickness)
+        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        
+        v = self.get_blade_velocity(r, rpm)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=alpha, velocity=v)
+        return be
+
+
     def get_air_velocity_at_prop(self, torque, rpm, rho=1.225):
         r = self.param.radius
         tau=torque
@@ -260,29 +275,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         
         f.write(template)
         f.close()
-    
-class NACAProp(Prop):
-    
-    def new_foil(self, r, rpm, alpha):
-        twist = self.get_twist(r, rpm)
-        thickness = self.get_foil_thickness(r)
-        angle = min(np.pi/2, twist + alpha)
-        depth_max = self.get_max_depth(r)
-        chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
 
-        
-        if (r < 0.01):
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
-        else:
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
-        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
-        
-        v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=alpha, velocity=v)
-        return be
-    
-    ''' Prop that uses NACA Airfoils
-    '''
     def design(self, optimum_rpm):
         forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
         print("Revs per second %f" % (optimum_rpm/60.0))
@@ -369,6 +362,29 @@ class NACAProp(Prop):
 
         torque, lift = self.get_torque(optimum_rpm)
         return torque, lift
+
+class NACAProp(Prop):
+    ''' Prop that uses NACA Airfoils
+    '''
+
+    def new_foil(self, r, rpm, alpha):
+        twist = self.get_twist(r, rpm)
+        thickness = self.get_foil_thickness(r)
+        angle = min(np.pi/2, twist + alpha)
+        depth_max = self.get_max_depth(r)
+        chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
+
+        
+        if (r < 0.01):
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
+        else:
+            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
+        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        
+        v = self.get_blade_velocity(r, rpm)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=alpha, velocity=v)
+        return be
+    
         
 if __name__ == "__main__":
     import argparse
@@ -377,13 +393,17 @@ if __name__ == "__main__":
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
+    parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
     
     param = DesignParameters(args.param)
-    p = NACAProp(param, args.resolution / 1000)
+    if args.naca:
+        p = NACAProp(param, args.resolution / 1000)
+    else:
+        p = Prop(param, args.resolution / 1000)
 
     m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
     optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
