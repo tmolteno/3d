@@ -90,8 +90,7 @@ class NACA4(Foil):
               m - maximum camber as a percentage of the chord.
               p - location of maximum camber as a percentage of chord line from leading edge
         '''
-        Foil.__init__(self,chord)
-        self.thickness = thickness
+        Foil.__init__(self,chord, thickness)
         self.m = m
         self.p = p
 

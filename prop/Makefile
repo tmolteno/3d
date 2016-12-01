@@ -7,7 +7,7 @@ TARGET=test_prop
 all:	auto scad
 
 prop:
-	python prop.py --n 40 --resolution 2.0 --param='${TARGET}.json'
+	python prop.py --naca --n 40 --resolution 2.0 --param='${TARGET}.json'
 
 auto:
 	python prop.py --auto --n 40 --resolution 2.0 --param='${TARGET}.json'
