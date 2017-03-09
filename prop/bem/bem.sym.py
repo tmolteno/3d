@@ -25,8 +25,7 @@ dT = 2*pi*r*rho* u * (V_0 - u_1) * dr
 
 # Velocity at the disk is average of V_0 and u_1
 
-deltaV = a*u_1
-u_subs = [(V_0, u - deltaV), (u, u_1 - deltaV)]
+u_subs = [(V_0, u_1*(1 - 2*a)), (u, u_1*(1 - a))]
 dT = dT.subs(u_subs)
 dT = simplify(dT)
 print("dT = {}".format(dT))  # Equivalent to 8.4
@@ -53,5 +52,29 @@ print("phi = {}".format(phi))  # Equivalent to 8.7
 c = Symbol('c', real=True)  # Chord of element airfoil
 V_rel = sqrt(u**2 + v_radial**2)
 
-L = rho*V_rel**2*c*C_l/2
-D = rho*V_rel**2*c*C_d/2
+norm = rho*V_rel**2*c/2
+alpha = phi - theta
+
+L = norm*C_L    # Lift Force per unit length of prop
+D = norm*C_D    # Drag Force per unit length of prop
+
+F_N = L*cos(phi) + D*sin(phi)
+F_T = L*sin(phi) + D*cos(phi)
+
+C_n = F_N / norm
+C_t = F_T / norm
+
+
+B = Symbol('B', real=True)  # Number of blades
+
+# Expressions for Thrust & Torque
+dT_2 = B*F_N*dr
+dM_2 = B*F_T*r*dr
+
+dT_2 = dT_2.subs(u_subs)
+dM_2 = dM_2.subs(u_subs)
+
+pprint(simplify(dT_2))
+pprint(simplify(dM_2))
+
+print solve(Eq(dT, dT_2), a)
