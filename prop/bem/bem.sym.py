@@ -23,16 +23,22 @@ dr = Symbol('dr', real=True)
 
 dT = 2*pi*r*rho* u * (V_0 - u_1) * dr
 
-# Velocity at the disk is average of V_0 and u_1
+# Velocity at the disk is average of V_0 and u_1. We create an axial induction factor that 
+# Expresses the blade velocity (u) and the upstream velocity (V_0) in terms of the
+# Wake velocity u_1.
+a_prime = Symbol('a_prime')
+omega = Symbol('omega')
+
+v_radial = omega*r*(1 + a_prime)
+v_radial = Symbol('V_radial') # omega*r*(1 + a_prime)
 
 u_subs = [(V_0, u_1*(1 - 2*a)), (u, u_1*(1 - a))]
+v_subs = [(v_radial, omega*r*(1 + a_prime))]
 dT = dT.subs(u_subs)
 dT = simplify(dT)
 print("dT = {}".format(dT))  # Equivalent to 8.4
 
 C_inf = Symbol('C_oo')
-a_prime = Symbol('a_prime')
-omega = Symbol('omega')
 
 dM = 2*pi*r**2 * rho*u*C_inf*dr
 dM = dM.subs(C_inf, 2*omega*r*a_prime)
@@ -41,16 +47,17 @@ dM = simplify(dM)
 
 print("dM = {}".format(dM))  # Equivalent to 8.5
 
-v_radial = omega*r*(1 + a_prime)
-phi = atan(u/v_radial)
-phi = phi.subs(u_subs)
-print("phi = {}".format(phi))  # Equivalent to 8.7
 
+
+#phi = atan(u/v_radial)
+#phi = phi.subs(u_subs)
+#print("phi = {}".format(phi))  # Equivalent to 8.7
+phi = Symbol('phi')
 
 ## Now get Lift and Drag
 
 c = Symbol('c', real=True)  # Chord of element airfoil
-V_rel = sqrt(u**2 + v_radial**2)
+V_rel = Symbol('V_rel') # sqrt(u**2 + v_radial**2)
 
 norm = rho*V_rel**2*c/2
 alpha = phi - theta
@@ -71,10 +78,16 @@ B = Symbol('B', real=True)  # Number of blades
 dT_2 = B*F_N*dr
 dM_2 = B*F_T*r*dr
 
+dT_2 = dT_2.subs(sin(phi), u/V_rel)
+dT_2 = dT_2.subs(cos(phi), v_radial/V_rel)
+
 dT_2 = dT_2.subs(u_subs)
+dT_2 = dT_2.subs(v_subs)
 dM_2 = dM_2.subs(u_subs)
+
 
 pprint(simplify(dT_2))
 pprint(simplify(dM_2))
 
-print solve(Eq(dT, dT_2), a)
+solnT = simplify(solve(Eq(dT, dT_2), a))
+pprint(solnT)
