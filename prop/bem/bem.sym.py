@@ -20,22 +20,23 @@ rho = Symbol('rho', real=True)
 a = Symbol('a', real=True)
 dr = Symbol('dr', real=True)
 
-u_1 = u*(1+a)
-u_0 = u*(1-a)
+dv = Symbol('dv', real=True)
+u_1 = u_0 + 2*dv
+u = u_0 + dv
+
 
 m_dot = 2*pi*r*dr*rho*u
 
 
-dT = m_dot * (u_0 - u_1)
+dT = m_dot * (u_1 - u_0)
 
 # Velocity at the disk is average of V_0 and u_1. We create an axial induction factor that 
 # Expresses the blade velocity (u) and the upstream velocity (V_0) in terms of the
 # Wake velocity u_1.
-a_prime = Symbol('a_prime')
-omega = Symbol('omega')
+a_prime = Symbol('a_prime', real=True)
+omega = Symbol('omega', real=True)
 
-v = omega*r*(1 + a_prime)
-v = Symbol('v')
+v = Symbol('v', real=True)
 
 dT = simplify(dT)
 print("dT = {}".format(dT))  # Equivalent to 8.4
@@ -58,7 +59,7 @@ phi = Symbol('phi')
 ## Now get Lift and Drag
 
 c = Symbol('c', real=True)  # Chord of element airfoil
-V_rel = Symbol('V_rel') # sqrt(u**2 + v_radial**2)
+V_rel = Symbol('V_rel', real=True) # sqrt(u**2 + v_radial**2)
 
 norm = rho*V_rel**2*c/2
 alpha = theta - phi
@@ -79,26 +80,32 @@ B = Symbol('B', real=True)  # Number of blades
 dT_2 = B*F_N*dr
 dM_2 = B*F_T*r*dr
 
-print simplify(dT_2)
-print simplify(dM_2)
 
 #dT_2 = dT_2.subs(sin(phi), u/V_rel)
 #dT_2 = dT_2.subs(cos(phi), v/V_rel)
 
 dT_2 = dT_2.subs(V_rel, u / sin(phi))
 
+dM = dM.subs(u, V_rel * sin(phi))
+dM = dM.subs(V_rel, v / cos(phi))
+dM = dM.subs(v, omega*r*(1 - a_prime))
+dM = simplify(dM)
+
 dM_2 = dM_2.subs(u, V_rel * sin(phi))
-dM_2 = dM_2.subs(u, V_rel * sin(phi))
-dM_2 = dM_2.subs(v, omega*r*(1 + a_prime))
+dM_2 = dM_2.subs(V_rel, v / cos(phi))
+dM_2 = dM_2.subs(v, omega*r*(1 - a_prime))
+dM_2 = simplify(dM_2)
 
-pprint(simplify(dT_2))
-pprint(simplify(dM_2))
+print("dT_2 = {}".format(dT_2))  # Equivalent to 8.4
 
-solnT = simplify(solve([Eq(dT, dT_2)], a))
-solnM = simplify(solve([Eq(dM, dM_2)], a_prime))
-
+solnT = simplify(solve([Eq(dT, dT_2)], dv))
 pprint(solnT)
+print python(solnT)
+
+print("dM = {}".format(dM))  # Equivalent to 8.4
+print("dM_2 = {}".format(dM_2))  # Equivalent to 8.4
+
+solnM = simplify(solve([Eq(dM, dM_2)], a_prime))[1][0]
 pprint(solnM)
 
-print python(solnT[a])
-
+print python(solnM)
