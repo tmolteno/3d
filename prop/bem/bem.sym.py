@@ -22,7 +22,7 @@ dr = Symbol('dr', real=True)
 
 dv = Symbol('dv', real=True)
 u_1 = u_0 + 2*dv
-u = u_0 + dv
+#u = u_0 + dv
 
 
 m_dot = 2*pi*r*dr*rho*u
@@ -85,6 +85,7 @@ dM_2 = B*F_T*r*dr
 #dT_2 = dT_2.subs(cos(phi), v/V_rel)
 
 dT_2 = dT_2.subs(V_rel, u / sin(phi))
+dT_2 = simplify(dT_2)
 
 dM = dM.subs(u, V_rel * sin(phi))
 dM = dM.subs(V_rel, v / cos(phi))
@@ -96,6 +97,7 @@ dM_2 = dM_2.subs(V_rel, v / cos(phi))
 dM_2 = dM_2.subs(v, omega*r*(1 - a_prime))
 dM_2 = simplify(dM_2)
 
+print("dT = {}".format(dT))  # Equivalent to 8.4
 print("dT_2 = {}".format(dT_2))  # Equivalent to 8.4
 
 solnT = simplify(solve([Eq(dT, dT_2)], dv))
