@@ -91,6 +91,11 @@ dM = dM.subs(u, V_rel * sin(phi))
 dM = dM.subs(V_rel, v / cos(phi))
 dM = dM.subs(v, omega*r*(1 - a_prime))
 dM = simplify(dM)
+print("Element Torque: dM")
+print python(dM)
+
+print("Element Thrust: dT")
+print python(dT)
 
 dM_2 = dM_2.subs(u, V_rel * sin(phi))
 dM_2 = dM_2.subs(V_rel, v / cos(phi))
