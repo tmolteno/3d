@@ -45,7 +45,7 @@ def dM(a_prime, r, dr, omega, u_0, rho=1.225):
 def min_func(x, theta, omega, r, u_0, B, foil_simulator):
     dv, a_prime = x
     dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
-    err = 10*((dv - dv2)/dv)**2 + 10.0*(a_prime - a_prime2)**2
+    err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
     return err
 
 from scipy.optimize import minimize
@@ -54,27 +54,29 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
-    x0 = [10.0, 0.1]
+    x0 = [5.0, 0.0]
     res = minimize(min_func, x0, args=(theta, omega, r, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': False})
+    #res = minimize(min_func, res.x, args=(theta, omega, r, u_0, B, foil_simulator), \
+        #method='nelder-mead', options={'xtol': 1e-8, 'disp': True})
     dv, a_prime = res.x
     return dv, a_prime
 
 ''' Get a desired dv, by modifying alpha '''
 def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
-    theta = x
-    dv, a_prime = bem2(foil_simulator, theta, rpm, r, u_0, B)
-    err = ((dv - goal)/dv)**2
+    dv, a_prime, theta = x
+    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
+    err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
+    err += ((dv - goal)/dv)**2
     return err
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-
-    x0 = [radians(20)]
+    x0 = [radians(0), 10.0, 0.0]
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': True, 'maxiter': 1000})
-    theta = res.x
-    dv, a_prime = bem2(foil_simulator, theta, rpm, r, u_0, B)
-    return dv, a_prime, theta
+    #theta = res.x
+    #dv, a_prime = bem2(foil_simulator, theta, rpm, r, u_0, B)
+    return res.x
 
 '''
 
@@ -114,25 +116,33 @@ def bem(foil_simulator, theta, rpm, r, u_0, B):
 
 
 #print design_for_dv(foil_simulator=fs, dv_goal=15.0, rpm = 15000.0, B = 3, r = 0.05, u_0 = 0.0)
-#for r in arange(0.005, 0.1, 0.005):
-    #f = NACA4(chord=0.01, thickness=0.15, m=0.06, p=0.4)
-    #f.set_trailing_edge(0.01)
-    #fs = FoilSim(f)
-    #dv, a_prime, theta = design_for_dv(foil_simulator=fs, dv_goal=20.0, rpm = 15000.0, B = 3, r = r, u_0 = 0.0)
-    #print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
-if (True):
-    f = NACA4(chord=0.01, thickness=0.15, m=0.06, p=0.4)
+R = 0.1 # Radius of prop
+tip_chord = 0.01
+dr = 0.005
+chord_scaling = tip_chord*R
+u_0 = 0.0
+rpm = 15000.0
+rps = rpm / 60.0
+omega = rps * 2 * pi
+
+for r in arange(0.01, R, dr):
+    
+
+    f = NACA4(chord=chord_scaling/r, thickness=0.15, m=0.06, p=0.4)
     f.set_trailing_edge(0.01)
     fs = FoilSim(f)
 
+    dv, a_prime, theta = design_for_dv(foil_simulator=fs, dv_goal=25.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
+    print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
+    
+if (True):
+    r = 0.07
+    
+    f = NACA4(chord=chord_scaling/r, thickness=0.15, m=0.06, p=0.4)
+    f.set_trailing_edge(0.01)
+    fs = FoilSim(f)
 
-    for th_deg in arange(0.0, 25.0):
-        u_0 = 0.0
-        r = 0.05
-        dr = 0.001
-        rpm = 15000.0
-        rps = rpm / 60.0
-        omega = rps * 2 * pi
+    for th_deg in arange(-10.0, 25.0):
 
         dv, a_prime = bem2(foil_simulator=fs, theta = radians(th_deg), rpm = rpm, B = 3, r = r, u_0 = u_0)
         thrust =  dT(dv, r, dr, u_0)
