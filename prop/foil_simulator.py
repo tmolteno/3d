@@ -148,7 +148,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (-40, 40, 0.5)
+        alfa = (-30, 30, 0.5)
         results = xfoil.oper_visc_alpha(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
                                         iterlim=n_points*4, normalize=True, show_seconds=1)
         labels = results[1]
