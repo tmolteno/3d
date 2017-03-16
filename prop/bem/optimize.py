@@ -54,7 +54,7 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
-    x0 = [5.0, 0.0]
+    x0 = [10.0, 0.0]
     res = minimize(min_func, x0, args=(theta, omega, r, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': False})
     #res = minimize(min_func, res.x, args=(theta, omega, r, u_0, B, foil_simulator), \
@@ -67,11 +67,11 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     dv, a_prime, theta = x
     dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
     err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
-    err += ((dv - goal)/dv)**2
+    err += ((dv - goal)/goal)**2
     return err
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    x0 = [radians(0), 10.0, 0.0]
+    x0 = [radians(0), 12.0, 0.0]
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': True, 'maxiter': 1000})
     #theta = res.x
@@ -125,20 +125,20 @@ rpm = 15000.0
 rps = rpm / 60.0
 omega = rps * 2 * pi
 
-for r in arange(0.01, R, dr):
+#for r in arange(0.01, R, dr):
     
+    #chord = min(3*tip_chord, chord_scaling/r)
+    #f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
+    #f.set_trailing_edge(0.01)
+    #fs = FoilSim(f)
 
-    f = NACA4(chord=chord_scaling/r, thickness=0.15, m=0.06, p=0.4)
-    f.set_trailing_edge(0.01)
-    fs = FoilSim(f)
-
-    dv, a_prime, theta = design_for_dv(foil_simulator=fs, dv_goal=25.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
-    print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
+    #dv, a_prime, theta = design_for_dv(foil_simulator=fs, dv_goal=25.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
+    #print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
     
 if (True):
-    r = 0.07
-    
-    f = NACA4(chord=chord_scaling/r, thickness=0.15, m=0.06, p=0.4)
+    r = 0.03
+    chord = min(3*tip_chord, chord_scaling/r)
+    f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
     f.set_trailing_edge(0.01)
     fs = FoilSim(f)
 
