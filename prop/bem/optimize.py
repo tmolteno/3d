@@ -17,7 +17,7 @@ def iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B):
     u = u_0 + dv
     v = 2.0*omega*r*(1.0 - a_prime)
     c = foil_simulator.foil.chord
-    
+    #print u, v
     phi = arctan(u/v)
     
     alpha = theta - phi
@@ -64,7 +64,7 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
 ''' Get a desired dv, by modifying alpha '''
 def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     theta, dv, a_prime = x
-    if (a_prime > 0.5):
+    if (a_prime > 0.1):
         return 1e6
     if (a_prime < 0.0):
         return 1e6
@@ -73,13 +73,14 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     err += ((dv - goal)/goal)**2
     return err
 
+from  numpy import array
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    cons = ({'type': 'ineq',
-                'fun' : lambda x: np.array([x[2], -x[2]+0.02, x[1]-2.0])})
+    #cons = ({'type': 'ineq',
+                #'fun' : lambda x: array([x[0]-5.0, x[2], -x[2]+0.05, x[1]-2.0])})
 
-    x0 = [radians(5), 10.0, 0.001] # theta, dv, a_prime
+    x0 = [radians(10), dv_goal, 0.0] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), \
-        method='BFGS', constraints=cons, options={'xtol': 1e-6, 'disp': True, 'maxiter': 1000})
+        method='BFGS', options={'xtol': 1e-8, 'disp': True, 'maxiter': 1000})
     #theta = res.x
     #dv, a_prime = bem2(foil_simulator, theta, rpm, r, u_0, B)
     return res.x
