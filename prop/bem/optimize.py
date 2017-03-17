@@ -64,12 +64,18 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
 ''' Get a desired dv, by modifying alpha '''
 def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     theta, dv, a_prime = x
-    if (a_prime > 0.1):
+    if (theta < 0.0):
+        return 1e6
+    if (theta > radians(60)):
+        return 1e6
+    if (a_prime > 0.35):
         return 1e6
     if (a_prime < 0.0):
         return 1e6
+    omega = (rpm/60) * 2 * pi
+
     dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
-    err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
+    err = ((dv - dv2)/dv2)**2 + ((a_prime - a_prime2)/a_prime2)**2
     err += ((dv - goal)/goal)**2
     return err
 
@@ -78,11 +84,12 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
     #cons = ({'type': 'ineq',
                 #'fun' : lambda x: array([x[0]-5.0, x[2], -x[2]+0.05, x[1]-2.0])})
 
-    x0 = [radians(10), dv_goal, 0.0] # theta, dv, a_prime
-    res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), \
-        method='BFGS', options={'xtol': 1e-8, 'disp': True, 'maxiter': 1000})
-    #theta = res.x
-    #dv, a_prime = bem2(foil_simulator, theta, rpm, r, u_0, B)
+    x0 = [radians(15), dv_goal, 0.0] # theta, dv, a_prime
+    res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
+        method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
+        #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
+    if res.fun > 0.01:
+        print "FAILED"
     return res.x
 
 '''
@@ -122,37 +129,35 @@ def bem(foil_simulator, theta, rpm, r, u_0, B):
 
 
 
-#print design_for_dv(foil_simulator=fs, dv_goal=15.0, rpm = 15000.0, B = 3, r = 0.05, u_0 = 0.0)
-R = 0.1 # Radius of prop
-tip_chord = 0.01
-dr = 0.005
-chord_scaling = tip_chord*R
-u_0 = 0.0
-rpm = 15000.0
-rps = rpm / 60.0
-omega = rps * 2 * pi
+def prop_design(R = 0.1, tip_chord = 0.01, dr = 0.005, u_0 = 0.0, rpm = 15000.0):
+    chord_scaling = tip_chord*R
 
-for r in arange(0.03, R, dr):
-    
-    chord = min(3*tip_chord, chord_scaling/r)
-    f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
-    f.set_trailing_edge(0.01)
-    fs = FoilSim(f)
+    rps = rpm / 60.0
+    omega = rps * 2 * pi
 
-    theta, dv, a_prime = design_for_dv(foil_simulator=fs, dv_goal=35.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
-    print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
-    
-if (True):
-    r = 0.04
-    chord = min(3*tip_chord, chord_scaling/r)
-    f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
-    f.set_trailing_edge(0.01)
-    fs = FoilSim(f)
-    print f
-    for th_deg in arange(0.0, 35.0):
+    for r in arange(0.02, R, dr):
+        
+        chord = min(3*tip_chord, chord_scaling/r)
+        f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
+        f.set_trailing_edge(0.01)
+        fs = FoilSim(f)
 
-        dv, a_prime = bem2(foil_simulator=fs, theta = radians(th_deg), rpm = rpm, B = 3, r = r, u_0 = u_0)
-        thrust =  dT(dv, r, dr, u_0)
+        theta, dv, a_prime = design_for_dv(foil_simulator=fs, dv_goal=30.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
+        print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
 
-        torque = dM(a_prime, r, dr, omega, u_0)
-        print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(th_deg, dv, a_prime, thrust, torque, thrust/torque))
+prop_design()
+
+#if (False):
+    #r = 0.03
+    #chord = min(3*tip_chord, chord_scaling/r)
+    #f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
+    #f.set_trailing_edge(0.01)
+    #fs = FoilSim(f)
+    #print f
+    #for th_deg in arange(0.0, 35.0):
+
+        #dv, a_prime = bem2(foil_simulator=fs, theta = radians(th_deg), rpm = rpm, B = 3, r = r, u_0 = u_0)
+        #thrust =  dT(dv, r, dr, u_0)
+
+        #torque = dM(a_prime, r, dr, omega, u_0)
+        #print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(th_deg, dv, a_prime, thrust, torque, thrust/torque))

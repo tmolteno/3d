@@ -251,10 +251,13 @@ class NonBlockingStreamReader:
         # Start collecting lines from the stream
         self._t.start()
 
-    def readline(self, timeout = 10.0):
+    def readline(self, timeout = None):
         try:
-            return self._q.get(block = timeout is not None,
-                    timeout = timeout)
+            if timeout is not None:
+                return self._q.get(block = True, timeout = timeout)
+            else:
+                return self._q.get(block = False)
+
         except Empty:
             return None
 
