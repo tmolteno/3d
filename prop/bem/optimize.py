@@ -79,18 +79,13 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     err += ((dv - goal)/goal)**2
     return err
 
-from  numpy import array
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    #cons = ({'type': 'ineq',
-                #'fun' : lambda x: array([x[0]-5.0, x[2], -x[2]+0.05, x[1]-2.0])})
 
     x0 = [radians(15), dv_goal, 0.0] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
         method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
-    if res.fun > 0.01:
-        print "FAILED"
-    return res.x
+    return res.x, res.fun
 
 '''
 
@@ -129,21 +124,22 @@ def bem(foil_simulator, theta, rpm, r, u_0, B):
 
 
 
-def prop_design(R = 0.1, tip_chord = 0.01, dr = 0.005, u_0 = 0.0, rpm = 15000.0):
+def prop_design(R0 = 2.0/100, R = 10.0/100, tip_chord = 0.01, dr = 0.005, u_0 = 0.0, rpm = 15000.0):
     chord_scaling = tip_chord*R
 
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
-    for r in arange(0.02, R, dr):
+    for r in arange(R0, R, dr):
         
         chord = min(3*tip_chord, chord_scaling/r)
         f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
         f.set_trailing_edge(0.01)
         fs = FoilSim(f)
 
-        theta, dv, a_prime = design_for_dv(foil_simulator=fs, dv_goal=30.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
-        print("r={}, theta={}, dv={}, a_prime={} ".format(r*100, degrees(theta), dv, a_prime))
+        x, fun = design_for_dv(foil_simulator=fs, dv_goal=30.0,  rpm = rpm, B = 3, r = r, u_0 = u_0)
+        theta, dv, a_prime = x
+        print("r={}, theta={}, dv={}, a_prime={} \t:err={} ".format(r*100, degrees(theta), dv, a_prime, fun))
 
 prop_design()
 
