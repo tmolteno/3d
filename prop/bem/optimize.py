@@ -38,13 +38,9 @@ def dT(dv, r, dr, u_0, rho=1.225):
     return 4.0*pi*dr*dv*r*rho*u
 
 def dv_from_thrust(thrust, R, u_0, rho=1.225):
-    
     c = thrust / (4.0*pi*R*R*rho)
-    
     #dv^2 + u_0 dv - c = 0
-    
     dv = (-u_0 + sqrt(u_0**2 + 4*c)) / 2.0
-    
     return dv
 
 def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):

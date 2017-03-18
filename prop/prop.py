@@ -25,7 +25,7 @@ class Prop:
         self.param = param
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
-        self.chord_fraction = 7.0
+        self.chord_fraction = 8.0
         self.n_blades = 2
         
     def new_foil(self, r, rpm, alpha):
@@ -94,7 +94,7 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = self.param.hub_depth*0.9
-        thickness_end = 1.0 / 1000
+        thickness_end = 0.8 / 1000
         # Solve s + kr^2 = end && s + kh^2 = start
         # Subtract kr^2 - k h^2 = (end - start) => k = (end - start) / (r^2 - h^2)
         # s = end - kr^2
@@ -347,7 +347,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         self.blade_elements = []
         u_0 = self.param.forward_airspeed
 
-        dv_goal = 8.0 #optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
+        dv_goal = optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
         
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         total_thrust = 0.0
@@ -461,7 +461,7 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, 1.0)
+        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=10.0)
         
 
     if (args.auto):
