@@ -4,6 +4,8 @@
 ##
 TARGET=test_prop
 
+.PHONY: bem
+
 all:	auto scad
 
 prop:
@@ -12,6 +14,10 @@ prop:
 
 auto:
 	python prop.py --naca --auto --n 40 --resolution 2.0 --param='${TARGET}.json'
+	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
+
+bem:
+	python prop.py --naca --bem --n 40 --resolution 2.0 --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl

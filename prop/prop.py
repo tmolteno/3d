@@ -12,7 +12,9 @@ from blade_element import BladeElement
 from design_parameters import DesignParameters
 from scipy.interpolate import PchipInterpolator
 
-
+import sys
+sys.path.append('bem')
+import optimize
 
 class Prop:
     '''
@@ -340,6 +342,47 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Assign angle of attack to be optimium
         torque, lift = self.get_torque(optimum_rpm)
         return torque
+
+    def design_bem(self, optimum_torque, optimum_rpm, thrust):
+        self.blade_elements = []
+        u_0 = self.param.forward_airspeed
+
+        dv_goal = 8.0 #optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
+        
+        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        total_thrust = 0.0
+        total_torque = 0.0
+        omega = (optimum_rpm /  60.0) * 2.0 * np.pi
+        dr = (radial_points[1]-radial_points[0])
+        for r in radial_points:
+            be = self.new_foil(r, optimum_rpm, 0.0)
+            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_goal, \
+                rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
+            theta, dv, a_prime = x
+            if (fun > 0.1):
+                theta = np.radians(40.0)
+                #opt = 99.0
+                #for th_deg in np.arange(0.0, 55.0, 3):
+                    #dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
+                        #rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
+                    #if (abs(dv_test - dv_goal) < opt):
+                        #opt = abs(dv_test - dv_goal)
+                        #dv = dv_test
+                        #a_prime = a_prime_test
+                        #theta = np.radians(th_deg)
+                        
+            be.set_twist(theta)
+            T =  optimize.dT(dv, r, dr, u_0)
+            M = optimize.dM(dv, a_prime, r, dr, omega, u_0)
+            total_thrust += T
+            total_torque += M
+            
+            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, T, M, T/M))
+            print be
+
+            self.blade_elements.append(be)
+        print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
+        return total_torque
         
     def torque_modify(self, optimum_torque, optimum_rpm, dt):
 
@@ -394,6 +437,7 @@ if __name__ == "__main__":
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
     parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
+    parser.add_argument('--bem', action='store_true', help="Use bem design")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
@@ -415,6 +459,11 @@ if __name__ == "__main__":
     print("Airspeed at propellers (hovering): %f" % (v))
     param.forward_airspeed = v
 
+
+    if (args.bem):
+        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, 1.0)
+        
+
     if (args.auto):
       p.n_blades = 2
       aoa = np.radians(6.0)
@@ -435,9 +484,9 @@ if __name__ == "__main__":
         dt = (optimum_torque - torque*p.n_blades) / optimum_torque
         print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque*p.n_blades, lift*p.n_blades, optimum_torque, dt )
       
-    else:
-      p.n_blades = 2
-      p.design(optimum_rpm)
+    #else:
+      #p.n_blades = 2
+      #p.design(optimum_rpm)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

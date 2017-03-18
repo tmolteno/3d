@@ -37,7 +37,17 @@ def dT(dv, r, dr, u_0, rho=1.225):
     u = u_0 + dv
     return 4.0*pi*dr*dv*r*rho*u
 
-def dM(a_prime, r, dr, omega, u_0, rho=1.225):
+def dv_from_thrust(thrust, R, u_0, rho=1.225):
+    
+    c = thrust / (4.0*pi*R*R*rho)
+    
+    #dv^2 + u_0 dv - c = 0
+    
+    dv = (-u_0 + sqrt(u_0**2 + 4*c)) / 2.0
+    
+    return dv
+
+def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):
     u = u_0 + dv
     return 4*pi*a_prime*dr*omega*r**3*rho*u
 
@@ -80,7 +90,6 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     return err
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-
     x0 = [radians(15), dv_goal, 0.0] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
         method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
@@ -141,7 +150,8 @@ def prop_design(R0 = 2.0/100, R = 10.0/100, tip_chord = 0.01, dr = 0.005, u_0 = 
         theta, dv, a_prime = x
         print("r={}, theta={}, dv={}, a_prime={} \t:err={} ".format(r*100, degrees(theta), dv, a_prime, fun))
 
-prop_design()
+if __name__=="main":
+    prop_design()
 
 #if (False):
     #r = 0.03
@@ -155,5 +165,5 @@ prop_design()
         #dv, a_prime = bem2(foil_simulator=fs, theta = radians(th_deg), rpm = rpm, B = 3, r = r, u_0 = u_0)
         #thrust =  dT(dv, r, dr, u_0)
 
-        #torque = dM(a_prime, r, dr, omega, u_0)
+        #torque = dM(dv, a_prime, r, dr, omega, u_0)
         #print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(th_deg, dv, a_prime, thrust, torque, thrust/torque))
