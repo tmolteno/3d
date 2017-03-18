@@ -9,7 +9,7 @@ TARGET=test_prop
 all:	bem scad
 
 prop:
-	python prop.py --n 40 --resolution 1.0 --param='${TARGET}.json'
+	python prop.py --n 40 --resolution .5 --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 auto:
