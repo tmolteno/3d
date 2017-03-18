@@ -39,6 +39,9 @@ class BladeElement:
         self._twist = twist
         self.chord_angle = self._twist + self.zero_lift_angle
 
+    def get_twist(self):
+        return self._twist
+
     def set_alpha(self, alpha):
         self._alpha = alpha
 

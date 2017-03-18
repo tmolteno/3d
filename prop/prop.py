@@ -349,7 +349,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
 
         dv_goal = optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
         
-        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+        radial_points = np.linspace(self.param.radius, self.param.hub_radius, self.radial_steps)
+        #radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         total_thrust = 0.0
         total_torque = 0.0
         omega = (optimum_rpm /  60.0) * 2.0 * np.pi
@@ -359,8 +360,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_goal, \
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
-            if (fun > 0.1):
-                theta = np.radians(40.0)
+            if (fun > 0.01):
+                theta = self.blade_elements[-1].get_twist()
                 #opt = 99.0
                 #for th_deg in np.arange(0.0, 55.0, 3):
                     #dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
@@ -381,6 +382,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             print be
 
             self.blade_elements.append(be)
+        self.blade_elements.reverse()
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
         return total_torque
         
@@ -461,7 +463,7 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=10.0)
+        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=8.0)
         
 
     if (args.auto):
