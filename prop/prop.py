@@ -354,10 +354,11 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         total_thrust = 0.0
         total_torque = 0.0
         omega = (optimum_rpm /  60.0) * 2.0 * np.pi
-        dr = (radial_points[1]-radial_points[0])
+        dr = (radial_points[0]-radial_points[1])
         for r in radial_points:
+            dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
             be = self.new_foil(r, optimum_rpm, 0.0)
-            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_goal, \
+            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):

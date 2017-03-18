@@ -148,18 +148,19 @@ class NACA4(Foil):
         xl = x + yt*np.sin(theta)
         yl = yc - yt*np.cos(theta)
         
-        # Translate to a system where 0,0 is the max_x, max_y (these are defined by p and t)
-        # max(yt) = 0.5, occurs at x=.2998
-        # max(dyc) = p
-        max_x = xu[np.argmax(yu)] #0.3
-        max_y = np.max(yu)
-        # print np.max(yu), max_y, np.argmax(yu) 
-        
-        xu = xu - max_x
-        xl = xl - max_x
-        
-        yu = yu - max_y
-        yl = yl - max_y
+        if (True):
+            # Translate to a system where 0,0 is the max_x, max_y (these are defined by p and t)
+            # max(yt) = 0.5, occurs at x=.2998
+            # max(dyc) = p
+            max_x = 0.5 #xu[np.argmax(yu)] #0.3
+            max_y = np.max(yu)
+            # print np.max(yu), max_y, np.argmax(yu) 
+            
+            xu = xu - max_x
+            xl = xl - max_x
+            
+            yu = yu - max_y
+            yl = yl - max_y
         
         c = self.chord
         return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
