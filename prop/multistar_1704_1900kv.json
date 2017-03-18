@@ -2,7 +2,7 @@
     "name": "multistar_1704_1900kv",
     
     "altitude": 0.0,
-    "forward_airspeed": 10.0,
+    "forward_airspeed": 0.0,
     
     "motor_Kv": 1900,
     "motor_volts": 11.0,

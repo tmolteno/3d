@@ -6,7 +6,7 @@ TARGET=test_prop
 
 .PHONY: bem
 
-all:	auto scad
+all:	bem scad
 
 prop:
 	python prop.py --n 40 --resolution 1.0 --param='${TARGET}.json'
