@@ -51,14 +51,14 @@ class Foil(object):
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl
-        print xl
+        #print xl
         xu, yu = pu
         xl,yl = self.rotate(xl,yl, rotation_angle)
         xu,yu = self.rotate(xu,yu, rotation_angle)
         
         max_y = 0 # np.max(yu)
         mean_x = 0 # 0.67*(np.max(xu)-np.min(xu))
-        print("Mean={0} {1}".format(np.mean(xu), np.mean(xl)))
+        #print("Mean={0} {1}".format(np.mean(xu), np.mean(xl)))
         
         return [[xl-mean_x,yl-max_y],[xu-mean_x,yu-max_y]]
 
