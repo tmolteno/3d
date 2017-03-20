@@ -464,7 +464,13 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=8.0)
+        thrust = 50;
+        goal_torque = optimum_torque/2
+        single_blade_torque = goal_torque + 0.001
+        
+        while single_blade_torque > goal_torque:
+            thrust *= min(0.95, np.sqrt(goal_torque/single_blade_torque))
+            single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
 
     if (args.auto):
