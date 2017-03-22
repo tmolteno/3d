@@ -1,4 +1,4 @@
-import xfoil 
+import xfoil_2 as xfoil
 import numpy as np
 from scipy.optimize import brentq
 
@@ -111,9 +111,10 @@ class XfoilSimulatedFoil(SimulatedFoil):
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         
-        n_points = int(101.0*self.foil.chord / self.foil.trailing_edge) + 30
-        n_points = min(81.0, n_points)
-        n_points = max(61, n_points)
+        #n_points = int(101.0*self.foil.chord / self.foil.trailing_edge) + 30
+        #n_points = min(81.0, n_points)
+        #n_points = max(61, n_points)
+        n_points = 71
         print "N Points = %d" % n_points
         
         pl, pu = self.foil.get_shape_points(n=n_points)
@@ -128,9 +129,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
         limit = xcoords <= xcoords[0]
         xcoords = xcoords[limit]
         ycoords = ycoords[limit]
-        #if (True):
-            #xcoords = np.append(xcoords, xcoords[0] )
-            #ycoords = np.append(ycoords, ycoords[0] )
+        if (False):
+            xcoords = np.append(xcoords, xcoords[0] )
+            ycoords = np.append(ycoords, ycoords[0] )
         #if (False):
             #xcoords = np.append(xcoords, xcoords[0] )
             #ycoords = np.append(ycoords, ycoords[-1] )
@@ -148,20 +149,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = (-30, 30, 0.5)
-        results = xfoil.oper_visc_alpha(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
-                                        iterlim=n_points*4, normalize=True, show_seconds=1)
-        labels = results[1]
-        values = results[0]
-        
-        polar = {}
-        for label in labels:
-            polar[label] = []
-        
-        for v in values:
-            for label, value in zip(labels, v):
-                polar[label].append(value)
-        
+        alfa = np.arange(-30, 30, 0.5)
+        polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
+                                        iterlim=n_points*10, normalize=True, show_seconds=1)        
         #print polar.keys()
         os.remove(filename)
                 
