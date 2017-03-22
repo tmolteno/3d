@@ -468,6 +468,7 @@ if __name__ == "__main__":
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
+    parser.add_argument('--thrust', type=float, default=6.0, help="The thrust (Newtons).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     

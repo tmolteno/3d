@@ -17,7 +17,7 @@ auto:
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 bem:
-	python prop.py --naca --bem --n 40 --resolution 2.0 --param='${TARGET}.json'
+	python prop.py --naca --bem --n 40 --resolution 2.0 --thrust 2.0 --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
