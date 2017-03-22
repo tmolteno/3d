@@ -202,13 +202,15 @@ if __name__ == "__main__":
     for a in alpha:
      cd.append(fs.get_cd(v, a))
      cl.append(fs.get_cl(v, a))
-
+    cl = np.array(cl)
+    cd = np.array(cd)
     z = fs.get_zero_cl_angle(v)
     print "Zero angle %f " % np.degrees(z)
     
     import matplotlib.pyplot as plt
     plt.plot(np.degrees(alpha), cl, label='Cl')
     plt.plot(np.degrees(alpha), cd, label='Cd')
+    plt.plot(np.degrees(alpha), cl/cd, label='Cl/Cd')
     plt.plot([np.degrees(z)], [fs.get_cl(v, z)], 'x', label='Zero CL')
     plt.legend()
     plt.grid(True)
