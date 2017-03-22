@@ -72,7 +72,7 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
 ''' Get a desired dv, by modifying alpha '''
 def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     theta, dv, a_prime = x
-    if (theta < 0.0):
+    if (theta < -10.0):
         return 1e6
     if (theta > radians(70)):
         return 1e6
