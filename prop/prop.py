@@ -383,16 +383,22 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):
-                #theta = self.blade_elements[-1].get_twist()
-                opt = 99.0
-                for th_deg in np.arange(0.0, 25.0, 3):
-                    dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
+                try:
+                    theta = self.blade_elements[-1].get_twist()
+                except Exception:
+                    theta = np.radians(10.0)
+                dv, a_prime = optimize.bem2(foil_simulator=be.fs, theta = theta, \
                         rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
-                    if (abs(dv_test - dv_goal) < opt):
-                        opt = abs(dv_test - dv_goal)
-                        dv = dv_test
-                        a_prime = a_prime_test
-                        theta = np.radians(th_deg)
+
+                #opt = 99.0
+                #for th_deg in np.arange(0.0, 25.0, 3):
+                    #dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
+                        #rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
+                    #if (abs(dv_test - dv_goal) < opt):
+                        #opt = abs(dv_test - dv_goal)
+                        #dv = dv_test
+                        #a_prime = a_prime_test
+                        #theta = np.radians(th_deg)
                         
             be.set_twist(theta)
             T =  optimize.dT(dv, r, dr, u_0)
@@ -482,12 +488,13 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        thrust = 50;
+        p.n_blades = 2
+        thrust = 30
         goal_torque = optimum_torque/2
         single_blade_torque = goal_torque + 0.001
         
         while single_blade_torque > goal_torque:
-            thrust *= min(0.95, np.sqrt(goal_torque/single_blade_torque))
+            thrust *= 0.95 * goal_torque/single_blade_torque
             single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
 
