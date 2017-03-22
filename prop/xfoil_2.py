@@ -49,7 +49,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
        gen_naca=False -> Generate airfoil='NACA xxxx(x)' within XFOIL
     """
     # Circumvent different current working directory problems
-    print alpha
+    print alpha, 
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
 

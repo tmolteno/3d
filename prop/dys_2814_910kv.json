@@ -1,0 +1,23 @@
+{
+    "name": "dys_2814_910kv",
+
+    "altitude": 0.0,
+    "forward_airspeed": 0.0,
+
+    "motor_Kv": 910,
+    "motor_volts": 11.0,
+    "motor_no_load_current": 1.0,
+    "motor_winding_resistance": 0.061,
+
+    "radius": 0.12,
+    "scimitar_percent": 0.0,
+    "trailing_edge": 0.35,
+    "hub_radius": 0.009,
+    "hub_depth": 0.006,
+
+    "exclude_zone": [
+        {"x":0.009, "z":0.005},
+        {"x":0.015, "z":0.01},
+        {"x":0.02, "z":0.015}
+    ]
+}
