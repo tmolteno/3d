@@ -129,7 +129,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         limit = xcoords <= xcoords[0]
         xcoords = xcoords[limit]
         ycoords = ycoords[limit]
-        if (False):
+        if (True):
             xcoords = np.append(xcoords, xcoords[0] )
             ycoords = np.append(ycoords, ycoords[0] )
         #if (False):

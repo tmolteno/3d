@@ -15,11 +15,11 @@ on files for output, and was not interactive.)
 """
 
 from __future__ import division
-from time import sleep
 import subprocess as subp
 import numpy as np
 import os.path
 import re
+import time
 
 from threading import Thread
 from Queue import Queue, Empty
@@ -75,8 +75,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     if iterlim:
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))
-    xf.cmd("ALFA 3.0")
-    xf.cmd("INIT")
+    #xf.cmd("ALFA 3.0")
+    #xf.cmd("INIT")
     if Mach:
         xf.cmd("MACH {:.3f}".format(Mach))
 
@@ -88,11 +88,10 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         a = alpha
         xf.cmd("{:s} {:.3f}".format("ALFA", a))
         test = True
-        n = 0
         while test:
+            start_time = time.time()
             line = xf.readline()
             if line:
-                print line
                 output.append(line)
                 #print line
                 if re.search("Point added to stored polar", line):
@@ -101,15 +100,15 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     xf.cmd("INIT")
                     #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
                     test = False
-                if re.search("TRCHEK2: N2 convergence failed", line):
-                    xf.cmd("INIT")
-                    print "Convergence failed at alpha=%f. Initializing boundary layer" % a
-                    test = False
+                #if re.search("TRCHEK2: N2 convergence failed", line):
+                    #xf.cmd("INIT")
+                    #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
+                    #test = False
             else:
-                n += 1
-                sleep(0.1)
-                if n > 1000:
+                seconds = time.time() - start_time
+                if seconds > 30.0:
                     print "Termination under way. Taking too long"
+
                     xf.close()
                     test = False
                 
@@ -197,8 +196,8 @@ class Xfoil():
     
     def __init__(self, path="/usr/bin"):
         """Spawn xfoil child process"""
-        #xf = "/home/tim/github/xfoil/build/bin/xfoil"
-        xf = "/usr/bin/xfoil"
+        xf = "/home/tim/github/xfoil/build/bin/xfoil"
+        #xf = "/usr/bin/xfoil"
         self.xfinst = subp.Popen(xf,
                   stdin=subp.PIPE, stdout=subp.PIPE, stderr=subp.PIPE)
         self._stdoutnonblock = NonBlockingStreamReader(self.xfinst.stdout)
@@ -208,7 +207,7 @@ class Xfoil():
     def cmd(self, cmd, autonewline=True):
         """Give a command. Set newline=False for manual control with '\n'"""
         n = '\n' if autonewline else ''
-        print (cmd + n),
+        #print (cmd + n),
         self.xfinst.stdin.write(cmd + n)
 
     def readline(self):

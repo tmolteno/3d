@@ -439,11 +439,8 @@ class NACAProp(Prop):
     def new_foil(self, r, rpm, alpha):
         twist = self.get_twist(r, rpm)
         thickness = self.get_foil_thickness(r)
-        angle = min(np.pi/2, twist + alpha)
-        depth_max = self.get_max_depth(r)
-        chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
+        chord = self.get_chord(r, rpm, alpha)
 
-        
         if (r < 0.01):
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
         else:
