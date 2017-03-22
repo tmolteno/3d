@@ -95,10 +95,12 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
         alfa = np.arange(*operating_point)
         for a in alfa:
             xf.cmd("{:s} {:.3f}".format(pcmd[0], a))
+            print pcmd
             test = True
             while test:
                 line = xf.readline()
                 if line:
+                    print " LINE: " + line
                     output.append(line)
                     #print line
                     if re.search("Point added to stored polar", line):
@@ -107,6 +109,11 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
                         xf.cmd("INIT")
                         #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
                         test = False
+                    if re.search("TRCHEK2: N2 convergence failed", line):
+                        xf.cmd("INIT")
+                        print "Convergence failed at alpha=%f. Initializing boundary layer" % a
+                        test = False
+
                     #if (re.search("CPCALC: Local speed too large.", line)):
                         #print "CPCALC: Local speed too large" % a
                         #test = False
@@ -239,12 +246,11 @@ class NonBlockingStreamReader:
                 #sleep(0.1)
                 if line:
                     queue.put(line)
-                    #print line
+                    print line
                 else:
                     #print "NonBlockingStreamReader: End of stream"
                     # Make sure to terminate
-                    return
-                    #raise UnexpectedEndOfStream
+                    raise UnexpectedEndOfStream
         self._t = Thread(target = _populateQueue,
                 args = (self._s, self._q))
         self._t.daemon = True

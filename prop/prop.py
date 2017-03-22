@@ -25,15 +25,20 @@ class Prop:
         self.param = param
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
-        self.chord_fraction = 8.0
+        self.aspect_ratio = 10.0
         self.n_blades = 2
-        
-    def new_foil(self, r, rpm, alpha):
+
+    def get_chord(self, r, rpm, alpha):
         twist = self.get_twist(r, rpm)
-        thickness = self.get_foil_thickness(r)
         angle = min(np.pi/2, twist + alpha)
         depth_max = self.get_max_depth(r)
         chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
+        return chord
+
+    def new_foil(self, r, rpm, alpha):
+        twist = self.get_twist(r, rpm)
+        thickness = self.get_foil_thickness(r)
+        chord = self.get_chord(r, rpm, alpha)
 
         
         f = foil.Foil(chord=chord, thickness=thickness)
@@ -62,14 +67,28 @@ class Prop:
             c = k / r
             
         '''
-        circumference = 2.0*np.pi*r
-        
-        end_c = self.param.radius / self.chord_fraction
-        k = end_c * self.param.radius
+        if (False):
+            circumference = 2.0*np.pi*r
 
-        chord = k / r
+            end_c = self.param.radius / self.aspect_ratio
+            k = end_c * self.param.radius
+
+            chord = k / r
+            chord = min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
+
+        # New method using interpolation
+        x = np.linspace(0.01, self.param.radius, 6)
+        end_c = self.param.radius / self.aspect_ratio
+        k = end_c * self.param.radius
+        y = k / x
         
-        return min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
+        lower_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
+
+        y = np.minimum(y,lower_limit)
+
+        s = PchipInterpolator(x, y)
+
+        return s(r) # min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -106,12 +125,14 @@ class Prop:
     def get_max_depth(self,r):
         ''' Allowed depth of the prop as a function of radius (m)
             This is a property of the environment that the prop operates in.
+            
+            TODO Load this from the exclude zone of the prop description
         '''
         hub_r = self.param.hub_radius
         hub_depth = self.param.hub_depth
         max_depth = 12.0 / 1000
         max_r = self.param.radius / 3.0
-        end_depth = 4.0 / 1000
+        end_depth = 5.0 / 1000
 
         x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
         y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
@@ -393,7 +414,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
         
         # if dt < 0, we must reduce drag
-        p.chord_fraction *= 1.0 - dt/3
+        p.aspect_ratio *= 1.0 - dt/3
 
         for be in self.blade_elements:
             aoa = be.get_alpha()
@@ -485,8 +506,8 @@ if __name__ == "__main__":
       dt = (optimum_torque - torque) / optimum_torque
       print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
       while (abs(dt)  > 0.03):
-        #p.chord_fraction *= 1.0 - dt/3
-        print "Chord Fraction %f" % p.chord_fraction
+        #p.aspect_ratio *= 1.0 - dt/3
+        print "Chord Fraction %f" % p.aspect_ratio
         print "AOA %f" % np.degrees(aoa)
         torque,lift = p.torque_modify(optimum_torque, optimum_rpm, dt)
 

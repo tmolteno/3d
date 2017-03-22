@@ -35,7 +35,8 @@ def iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B):
 
 def dT(dv, r, dr, u_0, rho=1.225):
     u = u_0 + dv
-    return 4.0*pi*dr*dv*r*rho*u
+    dA = 2*pi*r*dr
+    return 2.0*rho*u*dv*dA
 
 def dv_from_thrust(thrust, R, u_0, rho=1.225):
     c = thrust / (4.0*pi*R*R*rho)
@@ -45,6 +46,7 @@ def dv_from_thrust(thrust, R, u_0, rho=1.225):
 
 def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):
     u = u_0 + dv
+    # TODO check that this isn't omega**2 below
     return 4*pi*a_prime*dr*omega*r**3*rho*u
 
 def min_func(x, theta, omega, r, u_0, B, foil_simulator):

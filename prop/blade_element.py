@@ -1,6 +1,6 @@
 import numpy as np
-#from foil_simulator import XfoilSimulatedFoil as FoilSimulator
-from foil_simulator import PlateSimulatedFoil as FoilSimulator
+from foil_simulator import XfoilSimulatedFoil as FoilSimulator
+#from foil_simulator import PlateSimulatedFoil as FoilSimulator
 import math
 
 
