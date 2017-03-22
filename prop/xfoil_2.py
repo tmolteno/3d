@@ -123,6 +123,13 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         #print "Xfoil module starting read"
         # Keep reading until end marker is encountered
         while not re.search("ENDD", output[-1]):
+            seconds = time.time() - start_time
+            if seconds > 30.0:
+                print "Termination under way. Taking too long"
+
+                xf.close()
+                raise Exception('Runtime took too long')
+
             line = xf.readline()
             if line:
                 #print "End Search %s" % line
