@@ -63,8 +63,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                autonewline=False)
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
-    #xf.cmd("GDES")
-    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    xf.cmd("GDES")
+    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
     if not show_seconds:
@@ -88,8 +88,9 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         a = alpha
         xf.cmd("{:s} {:.3f}".format("ALFA", a))
         test = True
+        start_time = time.time()
+
         while test:
-            start_time = time.time()
             line = xf.readline()
             if line:
                 output.append(line)
@@ -110,13 +111,13 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     print "Termination under way. Taking too long"
 
                     xf.close()
-                    test = False
+                    raise Exception('Runtime took too long')
                 
         
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #print "CPCALC: Local speed too large" % a
                     #test = False
-
+        
         # List polar and send recognizable end marker
         xf.cmd("PLIS\nENDD\n\n", autonewline=False)
         
