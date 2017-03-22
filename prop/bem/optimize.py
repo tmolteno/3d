@@ -88,14 +88,14 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     return err
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    x0 = [radians(15), dv_goal, 0.0] # theta, dv, a_prime
+    x0 = [radians(5), dv_goal, 0.0] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
         method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
     if (res.fun > 0.01):
-        x0 = [radians(40), dv_goal, 0.0] # theta, dv, a_prime
+        x0 = [radians(20), dv_goal, 0.0] # theta, dv, a_prime
         res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
-            method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
+            method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
             #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
     return res.x, res.fun
 
