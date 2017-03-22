@@ -137,7 +137,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #break
         return parse_stdout_polar(output)
-    except:
+    except Exception:
         return None
 
 def get_polars(airfoil, alpha, Re, Mach=None,
