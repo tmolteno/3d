@@ -153,7 +153,7 @@ def prop_design(R0 = 2.0/100, R = 10.0/100, tip_chord = 0.01, dr = 0.005, u_0 = 
         theta, dv, a_prime = x
         print("r={}, theta={}, dv={}, a_prime={} \t:err={} ".format(r*100, degrees(theta), dv, a_prime, fun))
 
-if __name__=="main":
+if __name__=="__main__":
     prop_design()
 
 #if (False):

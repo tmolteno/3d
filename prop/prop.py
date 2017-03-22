@@ -401,12 +401,12 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                         #theta = np.radians(th_deg)
                         
             be.set_twist(theta)
-            T =  optimize.dT(dv, r, dr, u_0)
-            M = optimize.dM(dv, a_prime, r, dr, omega, u_0)
-            total_thrust += T
-            total_torque += M
+            dT =  optimize.dT(dv, r, dr, u_0)
+            dM = optimize.dM(dv, a_prime, r, dr, omega, u_0)
+            total_thrust += dT
+            total_torque += dM
             
-            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, T, M, T/M))
+            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
             print be
 
             self.blade_elements.append(be)
@@ -488,7 +488,7 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        p.n_blades = 2
+        #p.n_blades = 2
         thrust = 30
         goal_torque = optimum_torque/2
         single_blade_torque = goal_torque + 0.001

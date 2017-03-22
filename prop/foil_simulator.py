@@ -192,7 +192,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
 if __name__ == "__main__":
     from foil import NACA4
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
-    f.set_trailing_edge(0.01)
+    f.set_trailing_edge(0.1)
     fs = XfoilSimulatedFoil(f)
     
     alpha = np.radians(np.linspace(-30, 40, 40))
