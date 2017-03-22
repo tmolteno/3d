@@ -63,12 +63,11 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                autonewline=False)
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
-    xf.cmd("GDES")
-    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    #xf.cmd("GDES")
+    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
-    if not show_seconds:
-        xf.cmd("PLOP\nG\n\n", autonewline=False)
+    xf.cmd("PLOP\nG\n\n", autonewline=False)
     # Enter OPER menu
     xf.cmd("OPER")
     xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
@@ -117,7 +116,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #print "CPCALC: Local speed too large" % a
                     #test = False
-        
+        print("Simulation took {} seconds".format(time.time() - start_time))
         # List polar and send recognizable end marker
         xf.cmd("PLIS\nENDD\n\n", autonewline=False)
         

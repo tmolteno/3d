@@ -149,7 +149,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             af.write(points)
             
         # Let Xfoil do its magic
-        alfa = np.arange(-30, 30, 0.5)
+        alfa = np.arange(-30, 30, 1.0)
         polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
                                         iterlim=n_points*10, normalize=True, show_seconds=1)        
         #print polar.keys()
