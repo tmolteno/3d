@@ -509,9 +509,9 @@ if __name__ == "__main__":
 
 
     if (args.bem):
-        #p.n_blades = 2
+        p.n_blades = 2
         thrust = args.thrust
-        goal_torque = optimum_torque/2
+        goal_torque = optimum_torque/p.n_blades
         single_blade_torque = goal_torque + 0.001
         
         #while single_blade_torque > goal_torque:

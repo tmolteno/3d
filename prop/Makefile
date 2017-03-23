@@ -3,6 +3,7 @@
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
 TARGET=test_prop
+THRUST=7.0
 
 .PHONY: bem
 
@@ -17,7 +18,7 @@ auto:
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 bem:
-	python prop.py --naca --bem --n 40 --resolution 2.0 --thrust 4.0 --param='${TARGET}.json'
+	python prop.py --naca --bem --n 40 --resolution 2.0 --thrust ${THRUST} --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
