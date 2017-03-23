@@ -3,7 +3,7 @@
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
 TARGET=test_prop
-THRUST=7.0
+THRUST=4.0
 
 .PHONY: bem
 
