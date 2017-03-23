@@ -376,6 +376,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         total_torque = 0.0
         omega = (optimum_rpm /  60.0) * 2.0 * np.pi
         dr = abs(radial_points[0]-radial_points[1])
+        
+        twist_angles = []
         for r in radial_points:
             dv_modified = dv_goal*(np.exp(-(self.param.radius/(20.0*r))**2))
             be = self.new_foil(r, optimum_rpm, 0.0)
@@ -403,6 +405,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                             theta = np.radians(th_deg)
                         
             be.set_twist(theta)
+            twist_angles.append(theta)
+            
             dT =  optimize.dT(dv, r, dr, u_0)
             dM = optimize.dM(dv, a_prime, r, dr, omega, u_0)
             total_thrust += dT
@@ -413,6 +417,20 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
 
             self.blade_elements.append(be)
         self.blade_elements.reverse()
+        twist_angles.reverse()
+        # Now smooth the twist angles
+        # Now smooth the optimum angles of attack
+        twist_angles = np.array(twist_angles)
+        print twist_angles
+        coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
+        twist_angle_poly = np.poly1d(coeff)
+        
+        for be in self.blade_elements:
+            a = twist_angle_poly(be.r)
+            be.set_twist(a)
+            print be
+            
+        torque, lift = self.get_torque(optimum_rpm)
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
         return total_torque
         
@@ -492,7 +510,7 @@ if __name__ == "__main__":
 
     if (args.bem):
         #p.n_blades = 2
-        thrust = 3.0
+        thrust = args.thrust
         goal_torque = optimum_torque/2
         single_blade_torque = goal_torque + 0.001
         
