@@ -14,8 +14,8 @@ The path to the xfoil is contained in the file xfoil_2.py.
 
 ## First Run
 
-The results from xfoil are stored in a database (sqlite). Before running this program for the first time,
-create a database file using 
+The results from xfoil are stored in a database (sqlite). The distribution contains a database file (foil_simulator.db)
+If this is missing, or you believe the results stored there are corrupted, you can delete this file and recreate it using
 
     make db
 
