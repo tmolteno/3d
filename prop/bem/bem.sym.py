@@ -109,7 +109,8 @@ solnT = simplify(solve([Eq(dT, dT_2)], dv))
 pprint(solnT)
 print python(solnT)
 
-print("dM = {}".format(dM))  # Equivalent to 8.4
+dm_calc = dM.subs([(tan(phi), u/v), (v, omega*r*(1 - a_prime))])
+print("dM = {}".format(simplify(dm_calc)))  # Equivalent to 8.4
 print("dM_2 = {}".format(dM_2))  # Equivalent to 8.4
 
 solnM = simplify(solve([Eq(dM, dM_2)], a_prime))[1][0]

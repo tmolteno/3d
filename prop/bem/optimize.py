@@ -44,9 +44,11 @@ def dv_from_thrust(thrust, R, u_0, rho=1.225):
     dv = (-u_0 + sqrt(u_0**2 + 4*c)) / 2.0
     return dv
 
+'''
+4*pi*a_prime*dr*omega*r**3*rho*u
+'''
 def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):
     u = u_0 + dv
-    # TODO check that this isn't omega**2 below
     return 4*pi*a_prime*dr*omega*r**3*rho*u
 
 def min_func(x, theta, omega, r, u_0, B, foil_simulator):
@@ -91,13 +93,16 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
     x0 = [radians(5), dv_goal, 0.0] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-6, \
         #method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
-        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
+        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': False, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
+        x0 = [radians(5), dv_goal, 0.01] # theta, dv, a_prime
+
         res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
             method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
             #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
+    print("dv: {}, goal: {}".format(res.x[1], dv_goal))
     return res.x, res.fun
 
 '''

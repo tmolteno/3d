@@ -112,14 +112,14 @@ class Prop:
         ''' Allowed foil thickness as a function of radius (m) 
             Limited by mechanical strength, or weight issues
         '''
-        thickness_root = self.param.hub_depth*0.9
-        thickness_end = 0.8 / 1000
-        # Solve s + kr^2 = end && s + kh^2 = start
-        # Subtract kr^2 - k h^2 = (end - start) => k = (end - start) / (r^2 - h^2)
-        # s = end - kr^2
-        k = (thickness_end - thickness_root) / (self.param.radius**2 - self.param.hub_radius**2)
-        s = thickness_end - k*self.param.radius**2
-        thickness = s + k*r**2
+        thickness_root = self.param.hub_depth*0.8
+        thickness_end = 0.7 / 1000
+        # Solve s + kr^3 = end && s + kh^3 = start
+        # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
+        # s = end - kr^3
+        k = (thickness_end - thickness_root) / (self.param.radius**3 - self.param.hub_radius**3)
+        s = thickness_end - k*self.param.radius**3
+        thickness = s + k*r**3
         return thickness
 
     def get_max_depth(self,r):
@@ -377,22 +377,22 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         omega = (optimum_rpm /  60.0) * 2.0 * np.pi
         dr = abs(radial_points[0]-radial_points[1])
         for r in radial_points:
-            dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
+            dv_modified = dv_goal*(np.exp(-(self.param.radius/(20.0*r))**2))
             be = self.new_foil(r, optimum_rpm, 0.0)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):
-                #try:
-                    #theta = self.blade_elements[-1].get_twist()
-                #except Exception:
+                try:
+                    theta = self.blade_elements[-1].get_twist()
+                except Exception:
                     #theta = np.radians(10.0)
                     ##dv, a_prime = optimize.bem2(foil_simulator=be.fs, theta = theta, \
                             ##rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
-                    
-                    print("Rescan around {}".format(np.degrees(theta)))
+                    th_old = min(np.degrees(theta), 20)
+                    print("Rescan around {}".format(th_old))
                     opt = 99.0
-                    for th_deg in np.arange(np.degrees(theta)-3, np.degrees(theta)+15, 0.5):
+                    for th_deg in np.arange(th_old-15, th_old+15, 0.5):
                         dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
                             rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
                         print (th_deg, dv_test, a_prime_test)
