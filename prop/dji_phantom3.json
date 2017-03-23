@@ -5,7 +5,7 @@
     "forward_airspeed": 0.0,
 
     "motor_Kv": 960,
-    "motor_volts": 11.0,
+    "motor_volts": 14.8,
     "motor_no_load_current": 0.45,
     "motor_winding_resistance": 0.117,
 
