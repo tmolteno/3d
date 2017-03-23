@@ -1,3 +1,11 @@
+'''
+    Prop Design Code
+    
+    Author Tim Molteno tim@elec.ac.nz
+    
+    Copyright 2016-2017
+
+'''
 import numpy as np
 
 

@@ -1,3 +1,20 @@
+'''
+    Simulation Code for Airfoils
+    
+    Author Tim Molteno tim@elec.ac.nz
+    
+    Copyright 2016-2017
+    
+    Two classes are in here. The PlateSimulatedFoil returns C_L and C_D assuming the
+    foil is a plate. Its quick and pretty rough.
+    
+    The XfoilSimulatedFoil uses the xfoil program to generate polars. Its slower and more accurate.
+    
+    
+    TODO: Use some CFD to do the job better?
+
+'''
+
 import xfoil_2 as xfoil
 import numpy as np
 from scipy.optimize import brentq
