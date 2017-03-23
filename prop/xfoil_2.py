@@ -63,8 +63,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                autonewline=False)
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
-    xf.cmd("GDES")
-    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    #xf.cmd("GDES")
+    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
     xf.cmd("PLOP\nG\n\n", autonewline=False)

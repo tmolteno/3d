@@ -1,9 +1,15 @@
-# Prereq
+# Install Instructions
+
+Note: Development is being done on Debian linux. Any debian derived distribution should be fine, and most other linux distributions
+should work just fine too. 
+
+## Prereq
+
     sudo aptitude install python-pip
     sudo pip install numpy-stl enum enum34
 
 
-# XFOIL
+## XFOIL
 
 The package located at [https://github.com/RobotLocomotion/xfoil.git] is much
 better and appears to work correctly (the debian install doesn't and I'm figuring out

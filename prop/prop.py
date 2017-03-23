@@ -385,16 +385,16 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):
-                try:
+                #try:
                     theta = self.blade_elements[-1].get_twist()
-                except Exception:
+                #except Exception:
                     #theta = np.radians(10.0)
                     ##dv, a_prime = optimize.bem2(foil_simulator=be.fs, theta = theta, \
                             ##rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
-                    th_old = min(np.degrees(theta), 20)
+                    th_old = np.degrees(theta)
                     print("Rescan around {}".format(th_old))
-                    opt = 99.0
-                    for th_deg in np.arange(th_old-15, th_old+15, 0.5):
+                    opt = 5.0
+                    for th_deg in np.arange(th_old, th_old+5, 0.5):
                         dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
                             rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
                         print (th_deg, dv_test, a_prime_test)
