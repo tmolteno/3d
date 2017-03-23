@@ -38,10 +38,11 @@ def dT(dv, r, dr, u_0, rho=1.225):
     dA = 2*pi*r*dr
     return 2.0*rho*u*dv*dA
 
+''' 
+    http://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node86.html 
+'''
 def dv_from_thrust(thrust, R, u_0, rho=1.225):
-    c = thrust / (4.0*pi*R*R*rho)
-    #dv^2 + u_0 dv - c = 0
-    dv = (-u_0 + sqrt(u_0**2 + 4*c)) / 2.0
+    dv = sqrt(thrust) / (sqrt(2.0*pi) * R*sqrt(rho))
     return dv
 
 '''
