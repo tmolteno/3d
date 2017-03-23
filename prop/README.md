@@ -1,5 +1,9 @@
 # Propeller Design in Python
 
+Note: This software is a work-in-progress, its also under heavy development, so I may break things. Please accept my apologies if this happens.
+
+Contact the Author (Tim Molteno) if you have any questions.
+
 This code will generate propeller designs automatically that can be 3D printed. Below is an example of a three-bladed prop designed with this software.
 
 ![alt text][prop5x3]
@@ -8,11 +12,11 @@ This code will generate propeller designs automatically that can be 3D printed. 
 
 A single blade is generated as an STL file using the command:
 
-    python prop.py --min-edge 0.35 --n 60 --diameter 130 --pitch 50 --stl-file 'blade5x3.ascii.stl'
+    python prop.py --naca --bem --n 40 --resolution 2.0 --thrust 4.0 --param='test_prop.json'
 
 The mesh can be cleaned using meshlab to remove duplicate vertices with:
 
-    meshlabserver -i blade5x3.ascii.stl -o blade5x3.stl -s meshclean.mlx
+    make scad TARGET=test_prop
 
 ##  Using OpenSCAD to generate a propeller
 

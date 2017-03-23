@@ -1,4 +1,6 @@
+## Author Tim Molteno tim@elec.ac.nz
 ##
+## Copyright 2016-2017.
 ##
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
@@ -9,23 +11,13 @@ THRUST=4.0
 
 all:	bem scad
 
-prop:
-	python prop.py --n 40 --resolution .5 --param='${TARGET}.json'
-	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
-
-auto:
-	python prop.py --naca --auto --n 40 --resolution 2.0 --param='${TARGET}.json'
-	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
-
+# Build using the Blade Element Momentum method
 bem:
 	python prop.py --naca --bem --n 40 --resolution 2.0 --thrust ${THRUST} --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
 	
-
-mesh:
-	python prop.py --min-edge 0.35 --n 10 --param='prop_design.json' --mesh --resolution 10
 
 sym:
 	python naca_sym.py
@@ -52,3 +44,17 @@ include $(wildcard *.deps)
 %.tab: %.scad
 	cp $< $@
 	expand $@ > $<
+
+	
+#  TARGETS THAT ARE NOT WORKING YET
+prop:
+	python prop.py --n 40 --resolution .5 --param='${TARGET}.json'
+	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
+
+auto:
+	python prop.py --naca --auto --n 40 --resolution 2.0 --param='${TARGET}.json'
+	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
+
+mesh:
+	python prop.py --min-edge 0.35 --n 10 --param='prop_design.json' --mesh --resolution 10
+

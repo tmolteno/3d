@@ -1,1 +1,1 @@
-make TARGET=dys_2814_910kv THRUST=12.0
+make TARGET=dys_2814_910kv THRUST=28.0

@@ -1,5 +1,5 @@
 # Super simple prop design by Tim Molteno
-# Copyright (c) 2016. Tim Molteno tim@molteno.net
+# Copyright (c) 2016-2017. Tim Molteno tim@molteno.net
 #
 
 import numpy as np
