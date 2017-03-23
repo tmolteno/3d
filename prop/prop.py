@@ -394,7 +394,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                     th_old = np.degrees(theta)
                     print("Rescan around {}".format(th_old))
                     opt = 5.0
-                    for th_deg in np.arange(th_old, th_old+5, 0.5):
+                    for th_deg in np.arange(th_old, th_old+7, 0.5):
                         dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
                             rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
                         print (th_deg, dv_test, a_prime_test)
