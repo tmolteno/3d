@@ -15,7 +15,7 @@
 
 '''
 
-import xfoil_2 as xfoil
+import xfoil
 import numpy as np
 from scipy.optimize import brentq
 

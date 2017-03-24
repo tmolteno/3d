@@ -301,49 +301,6 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         f.write(template)
         f.close()
 
-    def design(self, optimum_rpm):
-        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
-        print("Revs per second %f" % (optimum_rpm/60.0))
-        print("Forward travel per rev %f" % forward_travel_per_rev)
-        self.blade_elements = []
-        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
-        for r in radial_points:
-            nominal_alpha = np.radians(0)
-            be = self.new_foil(r, optimum_rpm, nominal_alpha)
-            print be
-            self.blade_elements.append(be)
-
-        optimum_aoa = []
-        for be in self.blade_elements:
-            v = self.get_blade_velocity(be.r, optimum_rpm)
-            # Assume a slow velocity forward, and an angle of attack of 8 degrees
-            twist = self.get_twist(be.r, optimum_rpm)
-          
-            alpha = np.radians(np.linspace(-20, 30, 100))
-            
-            cl = be.fs.get_cl(v, alpha)
-            cd = be.fs.get_cd(v, alpha)
-            
-            optim_target = ((cl + 1.0) / (cd + 0.01))
-            
-            j = np.argmax(optim_target)
-            opt_alpha = alpha[j]
-            print np.degrees(opt_alpha)
-            optimum_aoa.append(opt_alpha)
-
-        # Now smooth the optimum angles of attack
-        optimum_aoa = np.array(optimum_aoa)
-        coeff = np.polyfit(radial_points, optimum_aoa, 4)
-        angle_of_attack = np.poly1d(coeff)
-        
-        for be in self.blade_elements:
-            a = angle_of_attack(be.r)
-            be.set_alpha(a)
-            print be
-            
-        torque, lift = self.get_torque(optimum_rpm)
-        
-        print("Torque: %f, Lift %f" % (torque, lift))
 
     def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.blade_elements = []
@@ -369,19 +326,22 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         u_0 = self.param.forward_airspeed
 
         dv_goal = optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
-        
         radial_points = np.linspace(self.param.radius, self.param.hub_radius, self.radial_steps)
-        #radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
+
         total_thrust = 0.0
         total_torque = 0.0
         omega = (optimum_rpm /  60.0) * 2.0 * np.pi
         dr = abs(radial_points[0]-radial_points[1])
         
         twist_angles = []
+        theta = 0.0  # start guess
+        dv = dv_goal  # start guess
+        a_prime = 0.001  # start guess
         for r in radial_points:
             dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
             be = self.new_foil(r, optimum_rpm, 0.0)
-            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
+            x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
+                th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):

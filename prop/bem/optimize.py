@@ -91,11 +91,10 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     err += ((dv - goal)/goal)**2
     return err
 
-def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    x0 = [radians(0), dv_goal, 0.0] # theta, dv, a_prime
+def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, u_0, B):
+    x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-6, \
-        #method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
-        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': False, 'maxiter': 1000})
+        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
@@ -103,7 +102,6 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
 
         res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
             method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
-            #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
     print("dv: {}, goal: {}".format(res.x[1], dv_goal))
     return res.x, res.fun
 

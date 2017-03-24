@@ -15,11 +15,11 @@ on files for output, and was not interactive.)
 """
 
 from __future__ import division
-from time import sleep
 import subprocess as subp
 import numpy as np
 import os.path
 import re
+import time
 
 from threading import Thread
 from Queue import Queue, Empty
@@ -29,16 +29,8 @@ from Queue import Queue, Empty
    INSTALL from https://github.com/RobotLocomotion/xfoil.git
 '''
 
-def oper_visc_alpha(*args, **kwargs):
-    """Wrapper for _oper_visc"""
-    return _oper_visc(["ALFA","ASEQ"], *args, **kwargs)
 
-def oper_visc_cl(*args, **kwargs):
-    """Wrapper for _oper_visc"""
-    return _oper_visc(["Cl","CSEQ"], *args, **kwargs)
-
-
-def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
+def get_polar(airfoil, alpha, Re, Mach=None,
              normalize=True, show_seconds=None, iterlim=None, gen_naca=False):
     """
     Convenience function that returns polar for specified airfoil and
@@ -57,6 +49,11 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
        gen_naca=False -> Generate airfoil='NACA xxxx(x)' within XFOIL
     """
     # Circumvent different current working directory problems
+    if (Mach is not None):
+        if Mach > 1.0:
+            raise Exception("Mach number exceeds 1.0")
+    
+    print alpha, 
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
 
@@ -74,16 +71,15 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
-    if not show_seconds:
-        xf.cmd("PLOP\nG\n\n", autonewline=False)
+    xf.cmd("PLOP\nG\n\n", autonewline=False)
     # Enter OPER menu
     xf.cmd("OPER")
     xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
     if iterlim:
         xf.cmd("ITER {:.0f}".format(iterlim))
     xf.cmd("VISC {}".format(Re))
-    xf.cmd("ALFA 3.0")
-    xf.cmd("INIT")
+    #xf.cmd("ALFA 3.0")
+    #xf.cmd("INIT")
     if Mach:
         xf.cmd("MACH {:.3f}".format(Mach))
 
@@ -91,60 +87,83 @@ def _oper_visc(pcmd, airfoil, operating_point, Re, Mach=None,
     # Turn polar accumulation on, double enter for no savefile or dumpfile
     xf.cmd("PACC\n\n\n", autonewline=False)
     # Calculate polar
-    if True:
-        alfa = np.arange(*operating_point)
-        for a in alfa:
-            xf.cmd("{:s} {:.3f}".format(pcmd[0], a))
-            print pcmd
-            test = True
-            while test:
-                line = xf.readline()
-                if line:
-                    print " LINE: " + line
-                    output.append(line)
-                    #print line
-                    if re.search("Point added to stored polar", line):
-                        test = False
-                    if re.search("VISCAL:  Convergence failed", line):
-                        xf.cmd("INIT")
-                        #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
-                        test = False
-                    if re.search("TRCHEK2: N2 convergence failed", line):
-                        xf.cmd("INIT")
-                        print "Convergence failed at alpha=%f. Initializing boundary layer" % a
-                        test = False
+    try:
+        a = alpha
+        xf.cmd("{:s} {:.3f}".format("ALFA", a))
+        test = True
+        start_time = time.time()
 
-                    #if (re.search("CPCALC: Local speed too large.", line)):
-                        #print "CPCALC: Local speed too large" % a
-                        #test = False
-    else:
-        try:
-            if len(operating_point) != 3:
-                raise Warning("oper pt is single value or [start, stop, interval]")
-            # * unpacks, same as (alpha[0], alpha[1],...)
-            xf.cmd("{:s} {:.3f} {:.3f} {:.3f}".format(pcmd[1], *operating_point))
-        except TypeError:
-            # If iterating doesn't work, assume it's a single digit
-            xf.cmd("{:s} {:.3f}".format(pcmd[0], operating_point))
+        while test:
+            line = xf.readline()
+            if line:
+                output.append(line)
+                #print line
+                if re.search("Point added to stored polar", line):
+                    test = False
+                if re.search("VISCAL:  Convergence failed", line):
+                    xf.cmd("INIT")
+                    #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
+                    test = False
+                #if re.search("TRCHEK2: N2 convergence failed", line):
+                    #xf.cmd("INIT")
+                    #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
+                    #test = False
+            else:
+                seconds = time.time() - start_time
+                if seconds > 30.0:
+                    print "Termination under way. Taking too long"
 
-    # List polar and send recognizable end marker
-    xf.cmd("PLIS\nENDD\n\n", autonewline=False)
-    
-    #print "Xfoil module starting read"
-    # Keep reading until end marker is encountered
-    while not re.search("ENDD", output[-1]):
-        line = xf.readline()
-        if line:
-            #print "End Search %s" % line
-            output.append(line)
-            #if (re.search("CPCALC: Local speed too large.", line)):
-                #break
-    #print "Xfoil module ending read"
-    if show_seconds:
-        sleep(show_seconds)
-    #print ''.join(output)
-    return parse_stdout_polar(output)
+                    xf.close()
+                    raise Exception('Runtime took too long')
+                
+        
+                #if (re.search("CPCALC: Local speed too large.", line)):
+                    #print "CPCALC: Local speed too large" % a
+                    #test = False
+        print("Simulation took {} seconds".format(time.time() - start_time))
+        # List polar and send recognizable end marker
+        xf.cmd("PLIS\nENDD\n\n", autonewline=False)
+        
+        #print "Xfoil module starting read"
+        # Keep reading until end marker is encountered
+        while not re.search("ENDD", output[-1]):
+            seconds = time.time() - start_time
+            if seconds > 30.0:
+                print "Termination under way. Taking too long"
 
+                xf.close()
+                raise Exception('Runtime took too long')
+
+            line = xf.readline()
+            if line:
+                #print "End Search %s" % line
+                output.append(line)
+                #if (re.search("CPCALC: Local speed too large.", line)):
+                    #break
+        return parse_stdout_polar(output)
+    except Exception:
+        return None
+
+def get_polars(airfoil, alpha, Re, Mach=None,
+             normalize=True, show_seconds=None, iterlim=None, gen_naca=False):
+
+    polar = None
+        
+    for a in alpha:
+        results = get_polar(airfoil, a, Re, Mach, normalize, show_seconds, iterlim, gen_naca)
+        if results is not None:
+            labels = results[1]
+            values = results[0]
+            
+            if (polar is None):
+                polar = {}
+                for label in labels:
+                    polar[label] = []
+            
+            for v in values:
+                for label, value in zip(labels, v):
+                    polar[label].append(value)
+    return polar
 
 def parse_stdout_polar(lines):
     """Converts polar 'PLIS' data to array"""    
@@ -246,11 +265,11 @@ class NonBlockingStreamReader:
                 #sleep(0.1)
                 if line:
                     queue.put(line)
-                    print line
+                    #print line
                 else:
                     #print "NonBlockingStreamReader: End of stream"
                     # Make sure to terminate
-                    raise UnexpectedEndOfStream
+                    return
         self._t = Thread(target = _populateQueue,
                 args = (self._s, self._q))
         self._t.daemon = True
@@ -271,7 +290,7 @@ class NonBlockingStreamReader:
 import foil
 
 if __name__ == "__main__":
-    polar = oper_visc_alpha("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
+    polar = get_polar("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
     print polar
-    #print oper_visc_cl("NACA 2215", [0,1,0.3], 5E4, Mach=.06,
-                        #gen_naca=True, show_seconds=20)
+    polars = get_polars("NACA 2215", np.arange(-30,30,3), 5E4, Mach=.06, gen_naca=True, show_seconds=20)
+    print polars['CL']
