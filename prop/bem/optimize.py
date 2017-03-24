@@ -15,6 +15,7 @@ def C_drag(alpha):
 
 def iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B):
     u = u_0 + dv
+    #print dv, a_prime, u_0, omega, r
     v = 2.0*omega*r*(1.0 - a_prime)
     c = foil_simulator.foil.chord
     #print u, v
@@ -38,10 +39,11 @@ def dT(dv, r, dr, u_0, rho=1.225):
     dA = 2*pi*r*dr
     return 2.0*rho*u*dv*dA
 
+''' 
+    http://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node86.html 
+'''
 def dv_from_thrust(thrust, R, u_0, rho=1.225):
-    c = thrust / (4.0*pi*R*R*rho)
-    #dv^2 + u_0 dv - c = 0
-    dv = (-u_0 + sqrt(u_0**2 + 4*c)) / 2.0
+    dv = sqrt(thrust) / (sqrt(2.0*pi) * R*sqrt(rho))
     return dv
 
 '''
@@ -89,11 +91,10 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
     err += ((dv - goal)/goal)**2
     return err
 
-def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
-    x0 = [radians(5), dv_goal, 0.0] # theta, dv, a_prime
+def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, u_0, B):
+    x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-6, \
-        #method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
-        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': False, 'maxiter': 1000})
+        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
@@ -101,7 +102,6 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, u_0, B):
 
         res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
             method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
-            #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
     print("dv: {}, goal: {}".format(res.x[1], dv_goal))
     return res.x, res.fun
 
