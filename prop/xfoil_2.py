@@ -49,6 +49,10 @@ def get_polar(airfoil, alpha, Re, Mach=None,
        gen_naca=False -> Generate airfoil='NACA xxxx(x)' within XFOIL
     """
     # Circumvent different current working directory problems
+    if (Mach is not None):
+        if Mach > 1.0:
+            raise Exception("Mach number exceeds 1.0")
+    
     print alpha, 
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
@@ -63,8 +67,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                autonewline=False)
     if not show_seconds:
         xf.cmd("PLOP\nG\n\n", autonewline=False)
-    xf.cmd("GDES")
-    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    #xf.cmd("GDES")
+    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     # Disable G(raphics) flag in Plotting options
     xf.cmd("PLOP\nG\n\n", autonewline=False)

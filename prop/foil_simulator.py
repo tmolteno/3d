@@ -124,7 +124,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cd = 1.28 * np.sin(alpha)
            
 
-        print "Simulating Foil %s, at Re=%f" % (self.foil, reynolds)
+        print "Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, self.foil.Mach(velocity))
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         

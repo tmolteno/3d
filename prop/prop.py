@@ -379,7 +379,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         
         twist_angles = []
         for r in radial_points:
-            dv_modified = dv_goal*(np.exp(-(self.param.radius/(20.0*r))**2))
+            dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
             be = self.new_foil(r, optimum_rpm, 0.0)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)

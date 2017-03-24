@@ -17,22 +17,29 @@ C_D = Symbol('C_D', real=True)               # Coefficient of Drag for the eleme
 
 # Flow tube is annular at a radius r from the axis of the propeller.
 rho = Symbol('rho', real=True)
-a = Symbol('a', real=True)
 dr = Symbol('dr', real=True)
 
+'''
+    Velocity at the disk is average of u_0 and u_1. We create a dv factor that 
+    Expresses the blade velocity (u) and the wake velocity (u_1) in terms of the
+    upstream velocity (u_0) and dv, where
+    Wake velocity u_1 = u_0 + 2*dv
+    Disk Velocity u = u_0 + dv
+'''
 dv = Symbol('dv', real=True)
 u_1 = u_0 + 2*dv
 #u = u_0 + dv
 
-
-m_dot = 2*pi*r*dr*rho*u
+dA = pi*(r + dr)**2 - pi*r**2
+m_dot = rho*u*dA
+print simplify(m_dot)
+print expand(dA, dr)
+#m_dot = 2*pi*r*dr*rho*u
 
 
 dT = m_dot * (u_1 - u_0)
 
-# Velocity at the disk is average of V_0 and u_1. We create an axial induction factor that 
-# Expresses the blade velocity (u) and the upstream velocity (V_0) in terms of the
-# Wake velocity u_1.
+
 a_prime = Symbol('a_prime', real=True)
 omega = Symbol('omega', real=True)
 

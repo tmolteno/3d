@@ -1,1 +1,1 @@
-make TARGET=dji_phantom3 THRUST=28.0
+make TARGET=dji_phantom3 THRUST=8.0
