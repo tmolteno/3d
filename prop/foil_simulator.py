@@ -66,6 +66,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             self.foil_id = result[0]
         conn.commit()
         conn.close()
+        self.polar_poly_cache = {}
 
     def get_zero_cl_angle(self, v):
         cl, cd = self.get_polars(v)
@@ -95,6 +96,10 @@ class XfoilSimulatedFoil(SimulatedFoil):
     def get_polars(self, velocity):
         reynolds = np.round(self.foil.Reynolds(velocity), -4)  # Round to nearest 1000
 
+        re_str = str(reynolds)
+        if re_str in self.polar_poly_cache:
+            return self.polar_poly_cache[re_str]
+        
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
         c = conn.cursor()
@@ -115,6 +120,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
             conn.commit()
             conn.close()
+            self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
+
             return [cl_poly, cd_poly]
         
         if (self.foil.Reynolds(velocity) < 20000.0):
