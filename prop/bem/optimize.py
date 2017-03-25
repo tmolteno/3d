@@ -13,7 +13,7 @@ def C_lift(alpha):
 def C_drag(alpha):
     return 1.28 * sin(alpha)
 
-def iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B):
+def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     u = u_0 + dv
     #print dv, a_prime, u_0, omega, r
     v = 2.0*omega*r*(1.0 - a_prime)
@@ -30,14 +30,18 @@ def iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B):
     # Blade Element Momentum method.
     dv_new = B*c*u*(-C_D*tan(phi) + C_L)/(8*pi*r*sin(phi)*tan(phi))
     a_prime_new =  B*c*(C_D + C_L*tan(phi))/(B*C_D*c + B*C_L*c*tan(phi) + 8*pi*r*sin(phi))
+    #print dv_new, a_prime_new
 
+    dv_new = B*c*u*(-C_D*tan(phi) + C_L)/(4*pi*(dr + 2*r)*sin(phi)*tan(phi))
+    a_prime_new = B*c*(C_D + C_L*tan(phi))/(B*C_D*c + B*C_L*c*tan(phi) + 4*pi*dr*sin(phi) + 8*pi*r*sin(phi))
+
+    #print dv_new, a_prime_new
     return dv_new, a_prime_new
 
 
 def dT(dv, r, dr, u_0, rho=1.225):
     u = u_0 + dv
-    dA = 2*pi*r*dr
-    return 2.0*rho*u*dv*dA
+    return 2*pi*dr*dv*rho*u*(dr + 2*r)
 
 ''' 
     http://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node86.html 
@@ -51,22 +55,22 @@ def dv_from_thrust(thrust, R, u_0, rho=1.225):
 '''
 def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):
     u = u_0 + dv
-    return 4*pi*a_prime*dr*omega*r**3*rho*u
+    return 2*pi*a_prime*dr*omega*r**2*rho*u*(dr + 2*r)
 
-def min_func(x, theta, omega, r, u_0, B, foil_simulator):
+def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
+    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
     return err
 
 from scipy.optimize import minimize
-def bem2(foil_simulator, theta, rpm, r, u_0, B):
+def bem2(foil_simulator, theta, rpm, r, dr, u_0, B):
 
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
     x0 = [10.0, 0.0]
-    res = minimize(min_func, x0, args=(theta, omega, r, u_0, B, foil_simulator), \
+    res = minimize(min_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': False})
     #res = minimize(min_func, res.x, args=(theta, omega, r, u_0, B, foil_simulator), \
         #method='nelder-mead', options={'xtol': 1e-8, 'disp': True})
@@ -74,7 +78,7 @@ def bem2(foil_simulator, theta, rpm, r, u_0, B):
     return dv, a_prime
 
 ''' Get a desired dv, by modifying alpha '''
-def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
+def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
     theta, dv, a_prime = x
     if (theta < radians(-5.0)):
         return 1e6
@@ -86,23 +90,23 @@ def min_all(x, goal, rpm, r, u_0, B, foil_simulator):
         return 1e6
     omega = (rpm/60) * 2 * pi
 
-    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
+    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     err = ((dv - dv2)/dv2)**2 + ((a_prime - a_prime2)/a_prime2)**2
     err += ((dv - goal)/goal)**2
     return err
 
-def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, u_0, B):
+def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, dr, u_0, B):
     x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
-    res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-6, \
+    res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-6, \
         method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
         x0 = [radians(5), dv_goal, 0.01] # theta, dv, a_prime
 
-        res = minimize(min_all, x0, args=(dv_goal, rpm, r, u_0, B, foil_simulator), tol=1e-8, \
+        res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
             method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
-    print("dv: {}, goal: {}".format(res.x[1], dv_goal))
+    print("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
     return res.x, res.fun
 
 '''

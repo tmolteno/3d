@@ -5,7 +5,7 @@
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
 TARGET=test_prop
-THRUST=4.0 
+THRUST=1.5 
 # 400 g of thrust (4 Newtons)
 
 .PHONY: bem
