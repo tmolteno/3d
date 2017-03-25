@@ -31,6 +31,8 @@ class BladeElement:
         self.zero_lift_angle = self.fs.get_zero_cl_angle(self.velocity)
         self.set_alpha(alpha)
         self.set_twist(twist)
+        self.dv = 0.0
+        self.a_prime = 0.0
 
     def get_zero_cl_angle(self):
         return self.zero_lift_angle
@@ -41,6 +43,11 @@ class BladeElement:
 
     def get_twist(self):
         return self._twist
+
+    def set_bem(self, dv, a_prime):
+        self.dv = dv
+        self.a_prime = a_prime
+
 
     def set_alpha(self, alpha):
         self._alpha = alpha

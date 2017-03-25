@@ -346,26 +346,27 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):
-                #try:
+                try:
                     theta = self.blade_elements[-1].get_twist()
-                #except Exception:
-                    #theta = np.radians(10.0)
+                except Exception:
+                    theta = np.radians(7.0)
                     ##dv, a_prime = optimize.bem2(foil_simulator=be.fs, theta = theta, \
                             ##rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
-                    th_old = np.degrees(theta)
-                    print("Rescan around {}".format(th_old))
-                    opt = min(dv_goal - dv, 7.0)
-                    for th_deg in np.arange(th_old-7, th_old+20, 0.5):
-                        dv_test, a_prime_test, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
-                            rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                        print (err, th_deg, dv_test, a_prime_test)
-                        if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
-                            opt = abs(dv_test - dv_goal)
-                            dv = dv_test
-                            a_prime = a_prime_test
-                            theta = np.radians(th_deg)
+                th_old = np.degrees(theta)
+                print("Rescan around {}".format(th_old))
+                opt = min(dv_goal - dv, 7.0)
+                for th_deg in np.arange(th_old-7, th_old+20, 0.5):
+                    dv_test, a_prime_test, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
+                        rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                    print (err, th_deg, dv_test, a_prime_test)
+                    if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
+                        opt = abs(dv_test - dv_goal)
+                        dv = dv_test
+                        a_prime = a_prime_test
+                        theta = np.radians(th_deg)
                         
             be.set_twist(theta)
+            be.set_bem(dv, a_prime)
             twist_angles.append(theta)
             
             dT =  optimize.dT(dv, r, dr, u_0)
@@ -382,14 +383,21 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
-        print twist_angles
         coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
         twist_angle_poly = np.poly1d(coeff)
         
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)
             be.set_twist(a)
-            print be
+            dv, a_prime, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = a, \
+                                    rpm = optimum_rpm, B = self.n_blades, r = be.r, dr=dr, u_0 = u_0)
+            be.set_bem(dv, a_prime)
+            dT =  optimize.dT(dv, r, dr, u_0)
+            dM = optimize.dM(dv, a_prime, r, dr, omega, u_0)
+            total_thrust += dT
+            total_torque += dM
+            
+            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(a), dv, a_prime, dT, dM, dT/dM))
             
         torque, lift = self.get_torque(optimum_rpm)
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
@@ -472,12 +480,12 @@ if __name__ == "__main__":
     if (args.bem):
         p.n_blades = 2
         thrust = args.thrust
-        goal_torque = optimum_torque/p.n_blades
-        single_blade_torque = goal_torque + 0.001
+        goal_torque = optimum_torque
+        Q = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
-        #while single_blade_torque > goal_torque:
-        #thrust *= 0.95 * goal_torque/single_blade_torque
-        single_blade_torque = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+        while Q > goal_torque:
+            thrust *= 0.95 * goal_torque/Q
+            Q = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
 
     if (args.auto):
