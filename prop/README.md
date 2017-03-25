@@ -1,4 +1,4 @@
-# Propeller Design in Python
+# Proply: Propeller Design in Python
 
 Note: This software is a work-in-progress, its also under heavy development, so I may break things. Please accept my apologies if this happens.
 

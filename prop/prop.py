@@ -117,9 +117,10 @@ class Prop:
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        k = (thickness_end - thickness_root) / (self.param.radius**3 - self.param.hub_radius**3)
-        s = thickness_end - k*self.param.radius**3
-        thickness = s + k*r**3
+        p = 4
+        k = (thickness_end - thickness_root) / (self.param.radius**p - self.param.hub_radius**p)
+        s = thickness_end - k*self.param.radius**p
+        thickness = s + k*r**p
         return thickness
 
     def get_max_depth(self,r):

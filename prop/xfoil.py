@@ -53,7 +53,6 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         if Mach > 1.0:
             raise Exception("Mach number exceeds 1.0")
     
-    print alpha, 
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
 
@@ -120,7 +119,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #print "CPCALC: Local speed too large" % a
                     #test = False
-        print("Simulation took {} seconds".format(time.time() - start_time))
+
         # List polar and send recognizable end marker
         xf.cmd("PLIS\nENDD\n\n", autonewline=False)
         
@@ -150,8 +149,11 @@ def get_polars(airfoil, alpha, Re, Mach=None,
     polar = None
         
     for a in alpha:
+        start_time = time.time()
+        print("alpha={:4.2f}".format(a)), 
         results = get_polar(airfoil, a, Re, Mach, normalize, show_seconds, iterlim, gen_naca)
         if results is not None:
+            print("Simulation took {:4.2f} seconds".format(time.time() - start_time))
             labels = results[1]
             values = results[0]
             

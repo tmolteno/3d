@@ -67,12 +67,19 @@ class BladeElement:
     def get_foil_points(self, n, scimitar_offset):
         pl, pu = self.foil.get_points(n, self._alpha + self._twist)
         r = self.r
+        
         ''' points are in the y - z plane. The x value is set by the radius'''
         yl, zl = pl
         yu, zu = pu
         x = np.zeros(n) + r
 
+        y_offset = np.mean(np.append(yl,yu))
+        
+        yl -= y_offset
+        yu -= y_offset
+        
         scimitar_angle = math.atan(scimitar_offset / r)
+        
         # Transform the profile to lie on a circle of radius r
         c = 2.0*np.pi*r   # Circumference
         theta_l = 2.0*np.pi*yl / c  + scimitar_angle # angular coordinate along circumference (fraction)
@@ -82,6 +89,7 @@ class BladeElement:
         theta_u = 2.0*np.pi*yu / c  + scimitar_angle # angular coordinate along circumference (fraction)
         xu = r*np.cos(theta_u)
         yu = r*np.sin(theta_u)
+        
         
         upper_line = np.zeros([n,3])
         upper_line[:,0] = xu

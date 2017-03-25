@@ -45,9 +45,10 @@ def dT(dv, r, dr, u_0, rho=1.225):
 
 ''' 
     http://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node86.html 
+    see integral_momentum.sym.py
 '''
-def dv_from_thrust(thrust, R, u_0, rho=1.225):
-    dv = sqrt(thrust) / (sqrt(2.0*pi) * R*sqrt(rho))
+def dv_from_thrust(T, R, u_0, rho=1.225):
+    dv = -u_0/2 + sqrt(pi*R**2*rho**2*u_0**2 + 2*T*rho)/(2*sqrt(pi)*R*rho)
     return dv
 
 '''

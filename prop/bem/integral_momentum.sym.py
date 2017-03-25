@@ -6,7 +6,7 @@ T = Symbol('T', real=True, positive=True)    # Tip Radius
 
 u_1 = Symbol('u_1', real=True)               # Downstream Velocity 
 u = Symbol('u', real=True)                   #  Velocity at prop
-u_0 = 0 #Symbol('u_0', real=True)               # Upstream Velocity 
+u_0 = Symbol('u_0', real=True)               # Upstream Velocity 
 
 
 # Flow tube is annular at a radius r from the axis of the propeller.
@@ -20,7 +20,10 @@ u = u_0 + dv
 A = pi*R*R
 m_dot = rho * u * A
 
-
+print m_dot
 eqn = Eq(T , m_dot * (u_1 - u_0))
+pprint(eqn)
+soln = simplify(solve(eqn, dv))
 
-pprint(simplify(solve(eqn, dv)))
+dv = simplify(soln[1])
+print dv

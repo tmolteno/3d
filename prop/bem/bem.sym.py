@@ -30,6 +30,7 @@ dv = Symbol('dv', real=True)
 u_1 = u_0 + 2*dv
 #u = u_0 + dv
 
+
 dA = pi*(r + dr)**2 - pi*r**2
 m_dot = rho*u*dA
 print simplify(m_dot)
