@@ -64,18 +64,18 @@ def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     return err
 
 from scipy.optimize import minimize
-def bem2(foil_simulator, theta, rpm, r, dr, u_0, B):
+def bem2(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
 
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
-    x0 = [10.0, 0.0]
+    x0 = [0.0, 0.001]
     res = minimize(min_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
         method='nelder-mead', options={'xtol': 1e-6, 'disp': False})
     #res = minimize(min_func, res.x, args=(theta, omega, r, u_0, B, foil_simulator), \
         #method='nelder-mead', options={'xtol': 1e-8, 'disp': True})
     dv, a_prime = res.x
-    return dv, a_prime
+    return dv, a_prime, res.fun
 
 ''' Get a desired dv, by modifying alpha '''
 def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
@@ -98,7 +98,8 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, dr, u_0, B):
     x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-6, \
-        method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
+        #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
+          method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime

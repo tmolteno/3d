@@ -342,7 +342,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             be = self.new_foil(r, optimum_rpm, 0.0)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
                 th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
-                rpm = optimum_rpm, B = 1, r = r, dr=dr, u_0 = u_0)
+                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.01):
                 #try:
@@ -354,11 +354,11 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                     th_old = np.degrees(theta)
                     print("Rescan around {}".format(th_old))
                     opt = min(dv_goal - dv, 7.0)
-                    for th_deg in np.arange(th_old, th_old+7, 0.5):
-                        dv_test, a_prime_test = optimize.bem2(foil_simulator=be.fs, theta = np.radians(th_deg), \
-                            rpm = optimum_rpm, B = 1, r = r, dr=dr, u_0 = u_0)
-                        print (th_deg, dv_test, a_prime_test)
-                        if (abs(dv_test - dv_goal) < opt):
+                    for th_deg in np.arange(th_old-7, th_old+20, 0.5):
+                        dv_test, a_prime_test, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
+                            rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                        print (err, th_deg, dv_test, a_prime_test)
+                        if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
                             opt = abs(dv_test - dv_goal)
                             dv = dv_test
                             a_prime = a_prime_test

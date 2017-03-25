@@ -99,6 +99,9 @@ class XfoilSimulatedFoil(SimulatedFoil):
         re_str = str(reynolds)
         if re_str in self.polar_poly_cache:
             return self.polar_poly_cache[re_str]
+
+        if (reynolds < 20000.0):
+            reynolds = 20000.0
         
         # Check if we're in the databse
         conn = sqlite3.connect('foil_simulator.db')
@@ -124,13 +127,6 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
             return [cl_poly, cd_poly]
         
-        if (self.foil.Reynolds(velocity) < 20000.0):
-            alpha = np.radians(np.linspace(-30, 40, 20))
-            cl = 2.0 * np.pi * alpha
-
-            cd = 1.28 * np.sin(alpha)
-           
-
         print "Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, self.foil.Mach(velocity))
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
