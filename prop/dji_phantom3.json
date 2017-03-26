@@ -10,6 +10,7 @@
     "motor_winding_resistance": 0.117,
 
     "radius": 0.11,
+    "tip_chord": 0.009,
     "scimitar_percent": 0.0,
     "trailing_edge": 0.15,
     "hub_radius": 0.007,
