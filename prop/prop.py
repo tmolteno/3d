@@ -25,7 +25,6 @@ class Prop:
         self.param = param
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
-        self.aspect_ratio = 10.0
         self.n_blades = 2
 
     def get_chord(self, r, rpm, alpha):
@@ -63,32 +62,21 @@ class Prop:
         ''' Allowed chord as a function of radius (m) 
             Limited by mechanical strength, or weight issues
             
-            k/r = end_c
+            k/r = tip_chord
             c = k / r
-            
         '''
-        if (False):
-            circumference = 2.0*np.pi*r
-
-            end_c = self.param.radius / self.aspect_ratio
-            k = end_c * self.param.radius
-
-            chord = k / r
-            chord = min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
-
-        # New method using interpolation
-        x = np.linspace(0.01, self.param.radius, 6)
-        end_c = self.param.radius / self.aspect_ratio
-        k = end_c * self.param.radius
+        x = np.linspace(0.01, self.param.radius, 36)
+        k = self.param.tip_chord * self.param.radius
         y = k / x
         
-        lower_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
+        upper_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
 
-        y = np.minimum(y,lower_limit)
+        y = np.minimum(y,upper_limit)
 
-        s = PchipInterpolator(x, y)
+        coeff = np.polyfit(x, y, 7)
+        poly = np.poly1d(coeff)
 
-        return s(r) # min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
+        return poly(r) # min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -356,7 +344,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 print("Rescan around {}".format(th_old))
                 opt = min(dv_goal - dv, 7.0)
                 for th_deg in np.arange(th_old-7, th_old+20, 0.5):
-                    dv_test, a_prime_test, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
+                    dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
                     print (err, th_deg, dv_test, a_prime_test)
                     if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
@@ -383,17 +371,19 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
-        coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
+        coeff = np.polyfit(radial_points[::-1], twist_angles, 3)
         twist_angle_poly = np.poly1d(coeff)
         
+        total_thrust = 0.0
+        total_torque = 0.0
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)
             be.set_twist(a)
-            dv, a_prime, err = optimize.bem2(foil_simulator=be.fs, dv_goal=dv_goal, theta = a, \
+            dv, a_prime, err = optimize.bem_iterate(foil_simulator=be.fs, dv_goal=dv_goal, theta = a, \
                                     rpm = optimum_rpm, B = self.n_blades, r = be.r, dr=dr, u_0 = u_0)
             be.set_bem(dv, a_prime)
-            dT =  optimize.dT(dv, r, dr, u_0)
-            dM = optimize.dM(dv, a_prime, r, dr, omega, u_0)
+            dT =  optimize.dT(dv, be.r, dr, u_0)
+            dM = optimize.dM(dv, a_prime, be.r, dr, omega, u_0)
             total_thrust += dT
             total_torque += dM
             
@@ -401,7 +391,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             
         torque, lift = self.get_torque(optimum_rpm)
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
-        return total_torque
+        return total_torque, total_thrust
         
     def torque_modify(self, optimum_torque, optimum_rpm, dt):
 
@@ -480,12 +470,14 @@ if __name__ == "__main__":
     if (args.bem):
         p.n_blades = 2
         thrust = args.thrust
-        goal_torque = optimum_torque
-        Q = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+        goal_torque = optimum_torque*1.5
+        Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
-        while Q > goal_torque:
-            thrust *= 0.95 * goal_torque/Q
-            Q = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+        if (args.auto):
+            while Q > goal_torque:
+                thrust *= 0.95 * goal_torque/Q
+                p.tip_chord *= 0.9
+                Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
 
     if (args.auto):
