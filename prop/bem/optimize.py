@@ -65,15 +65,14 @@ def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     return err
 
 from scipy.optimize import minimize
-def bem2(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
+def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
 
     rps = rpm / 60.0
     omega = rps * 2 * pi
 
-    x0 = [0.0, 0.001]
+    x0 = [dv_goal, 0.001]
     res = minimize(min_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
-        method='nelder-mead', options={'xtol': 1e-6, 'disp': False})
-    #res = minimize(min_func, res.x, args=(theta, omega, r, u_0, B, foil_simulator), \
+        method='BFGS', options={'gtol': 1e-7, 'eps': 1e-7, 'disp': False, 'maxiter': 1000})
         #method='nelder-mead', options={'xtol': 1e-8, 'disp': True})
     dv, a_prime = res.x
     return dv, a_prime, res.fun
@@ -110,42 +109,6 @@ def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rp
             method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
     print("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
     return res.x, res.fun
-
-'''
-
-Tihs is an old optimisation method that doesn't work very well.
-def bem(foil_simulator, theta, rpm, r, u_0, B):
-
-    rps = rpm / 60.0
-    omega = rps * 2 * pi
-
-    err_min = 1e6
-    
-    for dv in arange(1.0, 50.0, 0.5):
-        for a_prime in arange(0.0, 0.5, 0.02):
-            dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, u_0, B)
-            err = abs(dv - dv2)/dv + 10.0*abs(a_prime - a_prime2)
-            if (err < err_min):
-                dv_guess = dv
-                a_prime_guess = a_prime
-                err_min = err
-            #print dv_guess, dummy
-
-    #print dv_guess, a_prime_guess
-    dv = dv_guess
-    a_prime = a_prime_guess
-    while (True):
-        dv2, a_prime2 = iterate(foil_simulator, dv,a_prime, theta, omega, r, u_0, B)
-        err = abs(dv - dv2)/dv + 10.0*abs(a_prime - a_prime2)
-        if (abs(err) < 0.0001):
-            break
-        dv += (dv2 - dv)/20
-        a_prime += (a_prime2 - a_prime)/20
-
-    return (dv2 + dv)/2, (a_prime2 + a_prime)/2
-'''
-
-
 
 
 def prop_design(R0 = 2.0/100, R = 10.0/100, tip_chord = 0.01, dr = 0.005, u_0 = 0.0, rpm = 15000.0):
