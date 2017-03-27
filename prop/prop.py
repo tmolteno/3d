@@ -44,12 +44,10 @@ class Prop:
         thickness = self.get_foil_thickness(r)
         chord = self.get_chord(r, rpm, twist)
 
-        
         f = foil.Foil(chord=chord, thickness=thickness)
         f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
-        
-        v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, velocity=v)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
+            rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
 
 
@@ -391,29 +389,6 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
         return total_torque, total_thrust
         
-    def torque_modify(self, optimum_torque, optimum_rpm, dt):
-
-        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm/60.0)
-        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
-        
-        # if dt < 0, we must reduce drag
-        p.aspect_ratio *= 1.0 - dt/3
-
-        for be in self.blade_elements:
-            aoa = be.get_alpha()
-            print "Current Angle of Attack %f" % np.degrees(aoa)
-            v = self.get_blade_velocity(be.r, optimum_rpm)
-            twist = self.get_twist(be.r, optimum_rpm)
-            angle = min(np.pi/2, twist + aoa)
-            print "Angle %f" % np.degrees(angle)
-            depth_max = self.get_max_depth(be.r)
-            chord = min(self.get_max_chord(be.r, angle), abs(depth_max / np.sin(angle)))
-            be.foil.chord = chord
-            be.set_alpha(aoa)
-            print be
-
-        torque, lift = self.get_torque(optimum_rpm)
-        return torque, lift
 
 class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
@@ -460,11 +435,12 @@ if __name__ == "__main__":
     m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
     optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
     power = m.get_Pmax(param.motor_volts)
+    
+    print("\nPROPLY: Automatic propeller Design\n\n")
     print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
-    v = p.get_air_velocity_at_prop(optimum_torque, optimum_rpm)
-    print("Airspeed at propellers (hovering): %f" % (v))
-    param.forward_airspeed = v
-
+    print(param)
+    dv = optimize.dv_from_thrust(args.thrust, param.radius, param.forward_airspeed,)
+    print("Airspeed at propellers (hovering): %f" % (param.forward_airspeed + dv))
 
     if (args.bem):
         p.n_blades = 2
@@ -476,31 +452,6 @@ if __name__ == "__main__":
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
                 Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
-        
-
-    if (args.auto):
-      p.n_blades = 2
-      aoa = np.radians(6.0)
-      single_blade_torque = p.design_torque(optimum_torque, optimum_rpm, aoa)
-      p.n_blades = np.round(optimum_torque/single_blade_torque)
-      if (p.n_blades < 2):
-        p.n_blades = 2
-      print "Number of Blades: %d" % p.n_blades
-      torque = single_blade_torque*p.n_blades
-      dt = (optimum_torque - torque) / optimum_torque
-      print "Torque=%f, optimum=%f, dt=%f" % (torque, optimum_torque, dt )
-      while (abs(dt)  > 0.03):
-        #p.aspect_ratio *= 1.0 - dt/3
-        print "Chord Fraction %f" % p.aspect_ratio
-        print "AOA %f" % np.degrees(aoa)
-        torque,lift = p.torque_modify(optimum_torque, optimum_rpm, dt)
-
-        dt = (optimum_torque - torque*p.n_blades) / optimum_torque
-        print "Torque=%f, lift=%f, optimum=%f, dt=%f" % (torque*p.n_blades, lift*p.n_blades, optimum_torque, dt )
-      
-    #else:
-      #p.n_blades = 2
-      #p.design(optimum_rpm)
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

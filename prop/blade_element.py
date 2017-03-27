@@ -12,8 +12,7 @@ import optimize
     - zero_lift_angle. The angle of attack where Cl is zero.
     
     
-    Why does the zero lift angle matter? Well, if we have no effect on the wake, then the foil will be oriented so that 
-    it is twisted to point this angle at the upstream air.
+    Why does the zero lift angle matter? Well, if we have no effect on the wake, then the foil will be oriented so that it is twisted to point this angle at the upstream air.
 '''
 class BladeElement:
     def __init__(self, r, dr, foil, twist, rpm, u_0):

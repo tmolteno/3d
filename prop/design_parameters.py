@@ -78,7 +78,10 @@ class DesignParameters:
         f=open(fname,"w")
         f.write(self.to_json())
         f.close()
-      
+
+    def __repr__(self):
+        return "Design Parameters: r={:5.2f}, u_0={}".format(self.radius, self.forward_airspeed)
+
 if __name__ == "__main__":
     d = DesignParameters()
     d.save('prop_design.json')
