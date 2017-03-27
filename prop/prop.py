@@ -26,25 +26,30 @@ class Prop:
         self.radial_resolution = resolution  # How often to create a profile
         self.radial_steps = int(self.param.radius / self.radial_resolution)
         self.n_blades = 2
+        self.max_depth_interpolator = None
+        self.scimitar_interpolator = None
+        self.max_chord_poly = None
+        
 
-    def get_chord(self, r, rpm, alpha):
-        twist = self.get_twist(r, rpm)
-        angle = min(np.pi/2, twist + alpha)
-        depth_max = self.get_max_depth(r)
-        chord = min(self.get_max_chord(r, angle), depth_max / np.sin(angle))
-        return chord
+    def get_chord(self, r, rpm, twist):
+        '''
+            depth = chord * sin(twist)
+        '''
+        angle = min(np.pi/2, twist)
+        depth_limited_chord = np.abs(self.get_max_depth(r) / np.sin(angle))
+        print depth_limited_chord, 
+        return min(self.get_max_chord(r, angle), depth_limited_chord)
 
-    def new_foil(self, r, rpm, alpha):
-        twist = self.get_twist(r, rpm)
+    def new_foil(self, r, rpm, twist):
         thickness = self.get_foil_thickness(r)
-        chord = self.get_chord(r, rpm, alpha)
+        chord = self.get_chord(r, rpm, twist)
 
         
         f = foil.Foil(chord=chord, thickness=thickness)
         f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
         
         v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=alpha, velocity=v)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, velocity=v)
         return be
 
 
@@ -65,36 +70,55 @@ class Prop:
             k/r = tip_chord
             c = k / r
         '''
-        x = np.linspace(0.01, self.param.radius, 36)
-        k = self.param.tip_chord * self.param.radius
-        y = k / x
-        
-        upper_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
+        if (self.max_chord_poly is None):
+            x = np.linspace(0.001, self.param.radius, 36)
+            k = self.param.tip_chord * self.param.radius
+            y = k / x
+            
+            upper_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
 
-        y = np.minimum(y,upper_limit)
+            y = np.minimum(y,upper_limit)
 
-        coeff = np.polyfit(x, y, 7)
-        poly = np.poly1d(coeff)
+            coeff = np.polyfit(x, y, 11)
+            self.max_chord_poly = np.poly1d(coeff)
+            
+            #import matplotlib.pyplot as plt
+            #rpts = np.linspace(0, self.param.radius, 40)
+            #plt.plot(rpts, self.max_chord_poly(rpts), label='max_chord')
+            #plt.plot(x, y, 'x', label='points')
+            #plt.legend()
+            #plt.grid(True)
+            #plt.xlabel('r')
+            #plt.ylabel('Chord')
+            #plt.show()
 
-        return poly(r) # min(chord, (circumference / (self.n_blades+1))/np.cos(twist))
+
+        return self.max_chord_poly(r)
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
         '''
+        if (self.scimitar_interpolator is None):
+            hub_r = self.param.hub_radius
+            max_r = self.param.radius * 0.8
 
-        hub_r = self.param.hub_radius
-        max_r = self.param.radius * 0.8
+            hub_c = 0.0
+            max_c = self.param.radius * (self.param.scimitar_percent / 100.0)
+            end_c = 0.0
+            x = np.array([0,     hub_r,     max_r, self.param.radius] )
+            y = np.array([hub_c, 1.1*hub_c, max_c, end_c] )
 
-        hub_c = 0.0
-        max_c = self.param.radius * (self.param.scimitar_percent / 100.0)
-        end_c = 0.0
+            self.scimitar_interpolator = PchipInterpolator(x, y)
 
-        x = np.array([0,     hub_r,     max_r, self.param.radius] )
-        y = np.array([hub_c, 1.1*hub_c, max_c, end_c] )
-
-        s = PchipInterpolator(x, y)
-
-        return s(r)
+            #import matplotlib.pyplot as plt
+            #rpts = np.linspace(0, self.param.radius, 40)
+            #plt.plot(rpts, self.scimitar_interpolator(rpts), label='scimitar')
+            #plt.plot(x, y, 'x', label='points')
+            #plt.legend()
+            #plt.grid(True)
+            #plt.xlabel('Angle of Attack')
+            #plt.show()
+        return self.scimitar_interpolator(r)
 
     def get_foil_thickness(self,r):
         ''' Allowed foil thickness as a function of radius (m) 
@@ -117,73 +141,38 @@ class Prop:
             
             TODO Load this from the exclude zone of the prop description
         '''
-        hub_r = self.param.hub_radius
-        hub_depth = self.param.hub_depth
-        max_depth = 12.0 / 1000
-        max_r = self.param.radius / 3.0
-        end_depth = 5.0 / 1000
+        if (self.max_depth_interpolator is None):
+            hub_r = self.param.hub_radius
+            hub_depth = self.param.hub_depth
+            max_depth = 12.0 / 1000
+            max_r = self.param.radius / 3.0
+            end_depth = 5.0 / 1000
 
-        x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
-        y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+            x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
+            y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+            self.max_depth_interpolator = PchipInterpolator(x, y)
 
-        s = PchipInterpolator(x, y)
+            #import matplotlib.pyplot as plt
+            #rpts = np.linspace(0, self.param.radius, 40)
+            #plt.plot(rpts, self.max_depth_interpolator(rpts), label='max depth')
+            #plt.plot(x, y, 'x', label='points')
+            #plt.legend()
+            #plt.grid(True)
+            #plt.xlabel('r')
+            #plt.show()
 
-        depth = s(r)
-        return depth
 
-    def get_helical_length(self, r, rpm):
-        circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.get_forward_windspeed(r) / (rpm/60.0)
+        return self.max_depth_interpolator(r)
 
-        helical_length = np.sqrt(circumference*circumference + forward_travel_per_rev*forward_travel_per_rev)
-        return helical_length
-
-    def get_twist(self, r, rpm):
-        '''This is the angle that the prop makes to the air moving past at the design wind speed
-        '''
-        circumference = np.pi * 2 * r
-        forward_travel_per_rev = self.get_forward_windspeed(r) / (rpm/60.0)
-        twist = math.atan(forward_travel_per_rev / circumference)
-        return twist
-
-    def get_blade_velocity(self, r, rpm):
-        '''The speed of the blade through the air
-           The direction of travel is given by the twist angle
-        '''
-        v = self.get_helical_length(r, rpm) * (rpm/60.0)
-        return v
-      
-    def get_forward_windspeed(self, r):
-        ''' Get the airspeed as a function of radius.
-            For hovering props, this will vary considerably and this function should contain
-            a model that describes this.
-        '''
-        v = self.param.forward_airspeed
-        
-        hub_v = 3.0*v    # These should be determined by the thrust and area
-        max_v = 2.0*v
-        end_v = 1.2*v
-
-        max_r = self.param.radius / 2.0
-
-        x = np.array([0, max_r, self.param.radius, 2*self.param.radius] )
-        y = np.array([hub_v, max_v, end_v, v] )
-
-        s = PchipInterpolator(x, y)
-
-        return s(r)
 
     def get_torque(self, rpm):
         torque = 0.0
         thrust = 0.0
         for be in self.blade_elements:
-            v = self.get_blade_velocity(be.r, rpm)
-            drag, lift = be.get_forces(v)
-            
-            torque += drag
-            thrust += lift
+            thrust += be.dT()
+            torque += be.dM()
 
-        return torque+0.001, lift
+        return torque, thrust
 
 
 
@@ -326,9 +315,10 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         theta = 0.0  # start guess
         dv = dv_goal  # start guess
         a_prime = 0.001  # start guess
+        prev_twist = 0.0
         for r in radial_points:
             dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
-            be = self.new_foil(r, optimum_rpm, 0.0)
+            be = self.new_foil(r, optimum_rpm, prev_twist)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
                 th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
@@ -338,8 +328,6 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                     theta = self.blade_elements[-1].get_twist()
                 except Exception:
                     theta = np.radians(7.0)
-                    ##dv, a_prime = optimize.bem2(foil_simulator=be.fs, theta = theta, \
-                            ##rpm = optimum_rpm, B = 1, r = r, u_0 = u_0)
                 th_old = np.degrees(theta)
                 print("Rescan around {}".format(th_old))
                 opt = min(dv_goal - dv, 7.0)
@@ -352,13 +340,13 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                         dv = dv_test
                         a_prime = a_prime_test
                         theta = np.radians(th_deg)
-                        
+
             be.set_twist(theta)
             be.set_bem(dv, a_prime)
             twist_angles.append(theta)
             
-            dT =  optimize.dT(dv, r, dr, u_0)
-            dM = optimize.dM(dv, a_prime, r, dr, omega, u_0)
+            dT = be.dT()
+            dM = be.dM()
             total_thrust += dT
             total_torque += dM
             
@@ -366,6 +354,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             print be
 
             self.blade_elements.append(be)
+            prev_twist = theta
+            
         self.blade_elements.reverse()
         twist_angles.reverse()
         # Now smooth the twist angles
@@ -388,16 +378,16 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             a = twist_angle_poly(be.r)
             be.set_twist(a)
             dv, a_prime, err = optimize.bem_iterate(foil_simulator=be.fs, dv_goal=dv_goal, theta = a, \
-                                    rpm = optimum_rpm, B = self.n_blades, r = be.r, dr=dr, u_0 = u_0)
+                     rpm = optimum_rpm, B = self.n_blades, r = be.r, dr=dr, u_0 = u_0)
             be.set_bem(dv, a_prime)
-            dT =  optimize.dT(dv, be.r, dr, u_0)
-            dM = optimize.dM(dv, a_prime, be.r, dr, omega, u_0)
+            dT = be.dT()
+            dM = be.dM()
             total_thrust += dT
             total_torque += dM
             
             print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(a), dv, a_prime, dT, dM, dT/dM))
             
-        torque, lift = self.get_torque(optimum_rpm)
+        #torque, lift = self.get_torque(optimum_rpm)
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
         return total_torque, total_thrust
         
@@ -429,19 +419,20 @@ class NACAProp(Prop):
     ''' Prop that uses NACA Airfoils
     '''
 
-    def new_foil(self, r, rpm, alpha):
-        twist = self.get_twist(r, rpm)
+    def new_foil(self, r, rpm, twist):
         thickness = self.get_foil_thickness(r)
-        chord = self.get_chord(r, rpm, alpha)
-
+        chord = self.get_chord(r, rpm, twist)
+        if (chord < 0.0):
+            raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
         if (r < 0.01):
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
         else:
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
         f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
         
-        v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, alpha=alpha, velocity=v)
+        #v = self.get_blade_velocity(r, rpm)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
+            rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
     
         
@@ -484,7 +475,6 @@ if __name__ == "__main__":
         if (args.auto):
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
-                p.tip_chord *= 0.9
                 Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         
 

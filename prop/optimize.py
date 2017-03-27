@@ -3,9 +3,6 @@ from numpy import pi, sin, cos, tan, arctan, degrees, sqrt, radians, arange
 import sys
 sys.path.append('..')
 
-from foil_simulator import XfoilSimulatedFoil as FoilSim
-from foil import NACA4
-
 def C_lift(alpha):
     Clo = 2.0 * pi * alpha 
     return Clo
@@ -72,8 +69,8 @@ def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
 
     x0 = [dv_goal, 0.001]
     res = minimize(min_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
-        method='BFGS', options={'gtol': 1e-7, 'eps': 1e-7, 'disp': False, 'maxiter': 1000})
-        #method='nelder-mead', options={'xtol': 1e-8, 'disp': True})
+        #method='BFGS', options={'gtol': 1e-7, 'eps': 1e-7, 'disp': False, 'maxiter': 1000})
+        method='nelder-mead', options={'xtol': 1e-8, 'disp': False})
     dv, a_prime = res.x
     return dv, a_prime, res.fun
 
@@ -99,7 +96,7 @@ def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rp
     x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-6, \
         #method='BFGS', options={'gtol': 1e-5, 'eps': 1e-4, 'disp': False, 'maxiter': 1000})
-          method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
+          method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
     if (res.fun > 0.001):
         # Restart optimization around previous best
         x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
@@ -132,7 +129,11 @@ if __name__=="__main__":
     prop_design()
 
 #if (False):
-    #r = 0.03
+    #from foil_simulator import XfoilSimulatedFoil as FoilSim
+    #from foil import NACA4
+
+
+    ##r = 0.03
     #chord = min(3*tip_chord, chord_scaling/r)
     #f = NACA4(chord=chord, thickness=0.15, m=0.06, p=0.4)
     #f.set_trailing_edge(0.01)
