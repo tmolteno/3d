@@ -36,7 +36,7 @@ class Prop:
             depth = chord * sin(twist)
         '''
         angle = min(np.pi/2, twist)
-        depth_limited_chord = np.abs(self.get_max_depth(r) / np.sin(angle))
+        depth_limited_chord = np.abs(self.get_max_depth(r) / (np.sin(angle) + 1e-6))
         print depth_limited_chord, 
         return min(self.get_max_chord(r, angle), depth_limited_chord)
 
