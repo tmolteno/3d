@@ -277,6 +277,24 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         f.write(template)
         f.close()
 
+    def gen_removable_blade_scad(self, filename):
+        ''' Create an OpenSCAD file for the propeller
+        '''
+        blade_stl_filename = self.param.name + '_blade.stl'
+        f=open(filename,"w")
+        f.write("center_hole = 5;\n \
+hub_diameter = %f;\n \
+hub_height = %f;\n \
+n_blades = %d;\n \
+blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, blade_stl_filename))
+        
+        template_file = open('blade_template.scad', 'r')
+        template = template_file.read()
+        template_file.close()
+        
+        f.write(template)
+        f.close()
+
 
     def design_torque(self, optimum_torque, optimum_rpm, aoa):
         self.blade_elements = []
@@ -461,3 +479,7 @@ if __name__ == "__main__":
     
     scad_filename = param.name + ".scad"
     p.gen_scad(scad_filename)
+    
+    p.gen_removable_blade_scad(param.name + "_removable.scad")
+
+    
