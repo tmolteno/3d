@@ -1,6 +1,20 @@
+/*
+ * The parameters for the prop are written into the file 'prop_parameters.scad' by the design programme.
+ * This file should contain the following definitions.
+ * 
+center_hole = 5; // diameter of the prop shaft.
+hub_diameter = 13.0;
+blade_radius = 100;
+hub_height = 6.0;
+n_blades = 2;
+blade_name = "blade5x3.stl";
+*/
+
+include <prop_parameters.scad>;
+
 module raw_blade() {
         union() {
-            import("test_prop_blade.stl");
+            import(blade_name);
         }
 }
 
@@ -44,7 +58,7 @@ overlap = 1.0;
 module hub() {
     difference() {
         translate([0,0,-hub_h-overlap]) cylinder(r=hub_r,h=hub_h+2*overlap);
-         for(angle =  [0:120:360]) {
+         for(angle = [0 : (360/n_blades) : 360]) {
                  rotate(angle) translate([0,0,0]) key();
         }
         cylinder(d=center_hole,h=100,center=true);
@@ -64,7 +78,7 @@ module top_half() {
         translate([-50,-50,-hub_h/2-20]) cube([100,100,20]);
     }
 }
-for(a=[0:120:360]) rotate(a) translate([hub_r*2,0,-center_r]) rotate([0,270,0]) blade_root();
+for(a = [0 : (360/n_blades) : 360])  rotate(a) translate([hub_r*2,0,-center_r]) rotate([0,270,0]) blade_root();
 //blade_inside();
 //key();
 //hub();
