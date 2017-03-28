@@ -19,7 +19,7 @@ bem:
 
 scad:	${TARGET}.stl
 	
-
+blade:  blade.stl
 sym:
 	python naca_sym.py
 
