@@ -2,4 +2,6 @@
 *.stl
 *.dat
 *.gcode
+*.log
+*.log.*
 
