@@ -21,6 +21,9 @@ import os.path
 import re
 import time
 
+import logging
+logger = logging.getLogger(__name__)
+
 from threading import Thread
 from Queue import Queue, Empty
 
@@ -128,7 +131,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         while not re.search("ENDD", output[-1]):
             seconds = time.time() - start_time
             if seconds > 30.0:
-                print "Termination under way. Taking too long"
+                logger.warning("Termination under way. Taking too long")
 
                 xf.close()
                 raise Exception('Runtime took too long')
@@ -150,10 +153,10 @@ def get_polars(airfoil, alpha, Re, Mach=None,
         
     for a in alpha:
         start_time = time.time()
-        print("alpha={:4.2f}".format(a)), 
+        logger.info("alpha={:4.2f}".format(a)), 
         results = get_polar(airfoil, a, Re, Mach, normalize, show_seconds, iterlim, gen_naca)
         if results is not None:
-            print("Simulation took {:4.2f} seconds".format(time.time() - start_time))
+            logger.info("Simulation took {:4.2f} seconds".format(time.time() - start_time))
             labels = results[1]
             values = results[0]
             

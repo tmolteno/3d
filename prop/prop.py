@@ -12,8 +12,10 @@ from blade_element import BladeElement
 from design_parameters import DesignParameters
 from scipy.interpolate import PchipInterpolator
 
-import sys
-sys.path.append('bem')
+import os
+import logging
+logger = logging.getLogger(__name__)
+
 import optimize
 
 class Prop:
@@ -37,7 +39,6 @@ class Prop:
         '''
         angle = min(np.pi/2, twist)
         depth_limited_chord = np.abs(self.get_max_depth(r) / (np.sin(angle) + 1e-6))
-        print depth_limited_chord, 
         return min(self.get_max_chord(r, angle), depth_limited_chord)
 
     def new_foil(self, r, rpm, twist):
@@ -163,7 +164,7 @@ class Prop:
         return self.max_depth_interpolator(r)
 
 
-    def get_torque(self, rpm):
+    def get_forces(self, rpm):
         torque = 0.0
         thrust = 0.0
         for be in self.blade_elements:
@@ -175,12 +176,12 @@ class Prop:
                 dM = be.dM()
                 thrust += dT
                 torque += dM
-                print("r={}, theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format( \
+                logger.info("r={}, theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format( \
                     be.r, np.degrees(be.get_twist()), \
                     dv, a_prime, dT, dM, dT/dM))
 
             else:
-                print("BEM did not converge {}".format(err))
+                logger.warning("r={}: BEM did not converge {}".format(be.r, err))
 
         return torque, thrust
 
@@ -324,7 +325,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         
         # Get foil polars
         # Assign angle of attack to be optimium
-        torque, lift = self.get_torque(optimum_rpm)
+        torque, thrust = self.get_forces(optimum_rpm)
         return torque
 
     def design_bem(self, optimum_torque, optimum_rpm, thrust):
@@ -357,13 +358,13 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 except Exception:
                     theta = np.radians(7.0)
                 th_old = np.degrees(theta)
-                print("Rescan around {}".format(th_old))
+                logger.info("Rescan around {}".format(th_old))
                 opt = min(dv_goal - dv, 7.0)
                 for th_deg in np.arange(th_old-7, th_old+20, 0.5):
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
                         dv_goal=dv_goal, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                    print (err, th_deg, dv_test, a_prime_test)
+                    logger.info("{},{},{},{}".format(err, th_deg, dv_test, a_prime_test))
                     if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
                         opt = abs(dv_test - dv_goal)
                         dv = dv_test
@@ -379,7 +380,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             total_thrust += dT
             total_torque += dM
             
-            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
+            logger.info("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
             print be
 
             self.blade_elements.append(be)
@@ -405,9 +406,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             a = twist_angle_poly(be.r)
             be.set_twist(a)
             
-        torque, lift = self.get_torque(optimum_rpm)
-        print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
-        return total_torque, total_thrust
+        torque, thrust = self.get_forces(optimum_rpm)
+        return torque, thrust
         
 
 class NACAProp(Prop):
@@ -430,8 +430,11 @@ class NACAProp(Prop):
             rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
     
-        
+import logging.config
+import yaml
+
 if __name__ == "__main__":
+
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop blade.')
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
@@ -445,7 +448,14 @@ if __name__ == "__main__":
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
-    
+    # Set up Logging
+    path = 'logging.yaml'
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.load(f.read())
+        logging.config.dictConfig(config)
+
+    # Decode Design Parameters
     param = DesignParameters(args.param)
     if args.naca:
         p = NACAProp(param, args.resolution / 1000)
@@ -467,18 +477,19 @@ if __name__ == "__main__":
         thrust = args.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
-        
+        print("Total Thrust: {:5.2f}, Torque: {:5.2f}".format(T, Q))
         if (args.auto):
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
                 Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
-                
-        # Print Thrust and Torque as a function of RPM.
-        print("{:5.2f}, \t {:5.2f}, \t{%5.2f}".format(rpm, lift, torque)
+                print("Total Thrust: {:5.2f} (N), Torque: {:5.2f} (Nm)".format(T, Q))
 
-        for rpm in np.linspace(optimum_rpm/3, 2*optimum_rpm, 30):
-            torque, lift = self.get_torque(optimum_rpm)
-            print("{:5.2f}, \t {:5.2f}, \t{%5.2f}".format(rpm, lift, torque)
+        # Print Thrust and Torque as a function of RPM.
+        print("RPM, \t THRUST, \t TORQUE")
+        rpm_list = np.linspace(optimum_rpm/3, 2*optimum_rpm, 30)
+        for rpm in rpm_list:
+            torque, thrust = p.get_forces(rpm)
+            print("{:5.2f}, \t {:5.2f}, \t{%5.2f}".format(rpm, thrust, torque))
 
 
     if (args.mesh):

@@ -4,6 +4,9 @@ from foil_simulator import XfoilSimulatedFoil as FoilSimulator
 import math
 import optimize
 
+import logging
+logger = logging.getLogger(__name__)
+
 '''
     This objects holds an element that describes the foil geometry
     

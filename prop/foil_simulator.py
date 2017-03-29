@@ -19,6 +19,9 @@ import xfoil
 import numpy as np
 from scipy.optimize import brentq
 
+import logging
+logger = logging.getLogger(__name__)
+
 class SimulatedFoil:
     def __init__(self, foil):
       self.foil = foil
@@ -127,7 +130,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
             return [cl_poly, cd_poly]
         
-        print "Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, self.foil.Mach(velocity))
+        logger.info("Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, self.foil.Mach(velocity)))
+        
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
         
@@ -135,7 +139,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         #n_points = min(81.0, n_points)
         #n_points = max(61, n_points)
         n_points = 71
-        print "N Points = %d" % n_points
+        logger.info("N Points = %d" % n_points)
         
         pl, pu = self.foil.get_shape_points(n=n_points)
         ''' This contains only the X,Y coordinates, which run from the 
@@ -183,7 +187,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         bot_xtr = np.array(polar['Bot_Xtr'])
         alfa = np.radians(polar['alpha'])
         if len(alfa) < 5:
-            logging.warning("Foil didn't simulate.")
+            logger.warning("Foil didn't simulate.")
             # Try modifying things.
             alpha = np.radians(np.linspace(-5, 40, 20))
             cl = 2.0 * np.pi * alpha

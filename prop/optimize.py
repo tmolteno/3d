@@ -1,7 +1,7 @@
 from numpy import pi, sin, cos, tan, arctan, degrees, sqrt, radians, arange
 
-import sys
-sys.path.append('..')
+import logging
+logger = logging.getLogger(__name__)
 
 def C_lift(alpha):
     Clo = 2.0 * pi * alpha 
@@ -103,8 +103,8 @@ def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rp
         x0 = [radians(5), dv_goal, 0.01] # theta, dv, a_prime
 
         res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
-            method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
-    print("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
+            method='Nelder-Mead', options={'xatol': 1e-8, 'disp': False, 'maxiter': 1000})
+    logger.info("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
     return res.x, res.fun
 
 
