@@ -92,7 +92,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     # Calculate polar
     try:
         a = alpha
-        xf.cmd("{:s} {:.3f}".format("ALFA", a))
+        xf.cmd("ALFA {:.3f}".format(a))
         test = True
         start_time = time.time()
 
@@ -104,7 +104,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 if re.search("Point added to stored polar", line):
                     test = False
                 if re.search("VISCAL:  Convergence failed", line):
-                    #logger.info("Convergence failed at alpha=%f. Initializing boundary layer" % a)
+                    logger.info("Convergence failed. Trying harder!")
 
                     xf.cmd("!")
 
@@ -145,7 +145,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 output.append(line)
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #break
-        time.sleep(10)
+        if debug:
+            time.sleep(3)
         return parse_stdout_polar(output)
     except Exception:
         return None

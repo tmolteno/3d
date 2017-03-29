@@ -137,7 +137,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         #n_points = int(101.0*self.foil.chord / self.foil.trailing_edge) + 30
         #n_points = min(81.0, n_points)
         #n_points = max(61, n_points)
-        n_points = 71
+        n_points = 121
         logger.info("N Points = %d" % n_points)
         
         pl, pu = self.foil.get_shape_points(n=n_points)
@@ -174,7 +174,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = np.arange(-30, 30, 1.0)
         polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
-                                        iterlim=n_points*30, normalize=True)        
+                                        iterlim=300, normalize=True)
         #print polar.keys()
         os.remove(filename)
                 
