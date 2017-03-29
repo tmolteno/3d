@@ -16,7 +16,7 @@ handlers:
         formatter: simple
         name: ./proply.log
         mode: a
-        maxsize: 32767 
+        maxsize: 327670 
         rotate: 5
 root:
     level: DEBUG

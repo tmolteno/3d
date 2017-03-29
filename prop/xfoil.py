@@ -34,7 +34,7 @@ from Queue import Queue, Empty
 
 
 def get_polar(airfoil, alpha, Re, Mach=None,
-             normalize=True, show_seconds=None, iterlim=None, gen_naca=False):
+             normalize=True, iterlim=None, gen_naca=False, debug=False):
     """
     Convenience function that returns polar for specified airfoil and
     Reynolds number for (range of) alpha or cl.
@@ -67,13 +67,14 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     else:
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
-    if not show_seconds:
-        xf.cmd("PLOP\nG\n\n", autonewline=False)
+
     #xf.cmd("GDES")
     #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
-    # Disable G(raphics) flag in Plotting options
-    xf.cmd("PLOP\nG\n\n", autonewline=False)
+    if (not debug):
+        # Disable G(raphics) flag in Plotting options
+        xf.cmd("PLOP\nG\n\n", autonewline=False)
+        
     # Enter OPER menu
     xf.cmd("OPER")
     xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
@@ -103,9 +104,11 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 if re.search("Point added to stored polar", line):
                     test = False
                 if re.search("VISCAL:  Convergence failed", line):
-                    xf.cmd("INIT")
-                    #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
-                    test = False
+                    #logger.info("Convergence failed at alpha=%f. Initializing boundary layer" % a)
+
+                    xf.cmd("!")
+
+                    #test = False
                 #if re.search("TRCHEK2: N2 convergence failed", line):
                     #xf.cmd("INIT")
                     #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
@@ -113,7 +116,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
             else:
                 seconds = time.time() - start_time
                 if seconds > 30.0:
-                    print "Termination under way. Taking too long"
+                    logger.info("Termination under way. Taking too long")
 
                     xf.close()
                     raise Exception('Runtime took too long')
@@ -142,19 +145,20 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 output.append(line)
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #break
+        time.sleep(10)
         return parse_stdout_polar(output)
     except Exception:
         return None
 
 def get_polars(airfoil, alpha, Re, Mach=None,
-             normalize=True, show_seconds=None, iterlim=None, gen_naca=False):
+             normalize=True, iterlim=None, gen_naca=False):
 
     polar = None
         
     for a in alpha:
         start_time = time.time()
         logger.info("alpha={:4.2f}".format(a)), 
-        results = get_polar(airfoil, a, Re, Mach, normalize, show_seconds, iterlim, gen_naca)
+        results = get_polar(airfoil, a, Re, Mach, normalize, iterlim, gen_naca)
         if results is not None:
             logger.info("Simulation took {:4.2f} seconds".format(time.time() - start_time))
             labels = results[1]

@@ -50,7 +50,6 @@ from string import ascii_uppercase
 import os
 
 import sqlite3
-import logging
 
 class XfoilSimulatedFoil(SimulatedFoil):
   
@@ -64,7 +63,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             c.execute("INSERT INTO foil(hash) VALUES (?)", (self.hash,))
             c.execute("SELECT id FROM foil WHERE (hash=?)", (self.hash,))
             self.foil_id = c.fetchone()[0]
-            logging.info("Creating Foil In Database, %s, id=%d" % (foil, self.foil_id))
+            logger.info("Creating Foil In Database, %s, id=%d" % (foil, self.foil_id))
         else:
             self.foil_id = result[0]
         conn.commit()
@@ -84,7 +83,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         try:
             cl, cd = self.get_polars(v)
         except ValueError:
-            logging.info("Failure to get foil polars")
+            logger.info("Failure to get foil polars")
             return  2.0 * np.pi * alpha
         return cl(alpha)
 
@@ -92,7 +91,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         try:
             cl, cd = self.get_polars(v)
         except ValueError:
-            logging.info("Failure to get foil polars")
+            logger.info("Failure to get foil polars")
             return 0.5
         return cd(alpha)
 
@@ -114,7 +113,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if (result != None):
             # Read from database
             sim_id = result[0]
-            logging.info("retrieving from database sim_id=%d, %f" % (sim_id, reynolds))
+            logger.info("retrieving from database sim_id=%d, %f" % (sim_id, reynolds))
             alpha = []
             cl = []
             cd = []
@@ -175,7 +174,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = np.arange(-30, 30, 1.0)
         polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
-                                        iterlim=n_points*10, normalize=True, show_seconds=1)        
+                                        iterlim=n_points*30, normalize=True)        
         #print polar.keys()
         os.remove(filename)
                 
