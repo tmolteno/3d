@@ -47,6 +47,13 @@ class BladeElement:
     def dM(self):
         return optimize.dM(self.dv, self.a_prime, self.r, self.dr, self.omega, self.u_0, rho=1.225)
 
+    def bem(self, n_blades):
+        dv, a_prime, err = optimize.bem_iterate(foil_simulator=self.fs, dv_goal=self.dv, \
+            theta = self._twist, rpm = self.rpm, B = n_blades, \
+            r = self.r, dr=self.dr, u_0 = self.u_0)
+
+        self.set_bem(dv,a_prime)
+        return dv, a_prime, err
 
     ''' Set parameters from a blade element momentum computation
     '''

@@ -167,8 +167,20 @@ class Prop:
         torque = 0.0
         thrust = 0.0
         for be in self.blade_elements:
-            thrust += be.dT()
-            torque += be.dM()
+            be.rpm = rpm
+            dv, a_prime, err = be.bem(self.n_blades)
+
+            if (err < 0.01):
+                dT = be.dT()
+                dM = be.dM()
+                thrust += dT
+                torque += dM
+                print("r={}, theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format( \
+                    be.r, np.degrees(be.get_twist()), \
+                    dv, a_prime, dT, dM, dT/dM))
+
+            else:
+                print("BEM did not converge {}".format(err))
 
         return torque, thrust
 
@@ -348,7 +360,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 print("Rescan around {}".format(th_old))
                 opt = min(dv_goal - dv, 7.0)
                 for th_deg in np.arange(th_old-7, th_old+20, 0.5):
-                    dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, dv_goal=dv_goal, theta = np.radians(th_deg), \
+                    dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
+                        dv_goal=dv_goal, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
                     print (err, th_deg, dv_test, a_prime_test)
                     if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
@@ -388,22 +401,11 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         #plt.xlabel('Angle of Attack')
         #plt.show()
         
-        total_thrust = 0.0
-        total_torque = 0.0
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)
             be.set_twist(a)
-            dv, a_prime, err = optimize.bem_iterate(foil_simulator=be.fs, dv_goal=dv_goal, theta = a, \
-                     rpm = optimum_rpm, B = self.n_blades, r = be.r, dr=dr, u_0 = u_0)
-            be.set_bem(dv, a_prime)
-            dT = be.dT()
-            dM = be.dM()
-            total_thrust += dT
-            total_torque += dM
             
-            print("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(a), dv, a_prime, dT, dM, dT/dM))
-            
-        #torque, lift = self.get_torque(optimum_rpm)
+        torque, lift = self.get_torque(optimum_rpm)
         print("Total Thrust: {}, Torque: {}".format(total_thrust, total_torque))
         return total_torque, total_thrust
         
@@ -470,6 +472,14 @@ if __name__ == "__main__":
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
                 Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+                
+        # Print Thrust and Torque as a function of RPM.
+        print("{:5.2f}, \t {:5.2f}, \t{%5.2f}".format(rpm, lift, torque)
+
+        for rpm in np.linspace(optimum_rpm/3, 2*optimum_rpm, 30):
+            torque, lift = self.get_torque(optimum_rpm)
+            print("{:5.2f}, \t {:5.2f}, \t{%5.2f}".format(rpm, lift, torque)
+
 
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)

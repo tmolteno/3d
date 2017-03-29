@@ -10,7 +10,7 @@ n_blades = 2;
 blade_name = "blade5x3.stl";
 */
 
-include <prop_parameters.scad>;
+//include <prop_parameters.scad>;
 
 module raw_blade() {
         union() {
@@ -21,8 +21,8 @@ module raw_blade() {
 $fn=31;
 
 center_r = center_hole / 2;
-key_r = hub_diameter / 3;
-hub_h = hub_height;
+key_r = hub_diameter / 3.5;
+hub_h = hub_height + 2;
 hub_r = hub_diameter / 2 + 0.5;
 
 module blade_inside() {
@@ -36,7 +36,7 @@ module blade_inside() {
 }
 
 module key() {
-    translate([center_hole/2-key_r*cos(120)+0.5, 0,0]) hull() {
+    translate([center_hole/2-key_r*cos(120)+1, 0,0]) hull() {
         for(a =  [120:120:350]) {
             rotate(a) translate([key_r,0,-hub_h]) cylinder(d=1, h=hub_h);
         }

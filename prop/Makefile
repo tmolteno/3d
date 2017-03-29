@@ -8,7 +8,7 @@ TARGET=test_prop
 THRUST=2.0
 # 400 g of thrust (4 Newtons)
 
-.PHONY: bem
+.PHONY: bem blade scad
 
 all:	bem scad
 
@@ -19,7 +19,8 @@ bem:
 
 scad:	${TARGET}.stl
 	
-blade:  blade.stl
+blade:  ${TARGET}_removable.stl
+
 sym:
 	python naca_sym.py
 
