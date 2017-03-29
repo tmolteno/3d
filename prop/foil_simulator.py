@@ -22,6 +22,7 @@ from scipy.optimize import brentq
 import logging
 logger = logging.getLogger(__name__)
 
+
 class SimulatedFoil:
     def __init__(self, foil):
       self.foil = foil
@@ -50,13 +51,14 @@ from string import ascii_uppercase
 import os
 
 import sqlite3
+conn_global = None
 
 class XfoilSimulatedFoil(SimulatedFoil):
   
     def __init__(self, foil):
         SimulatedFoil.__init__(self, foil)
         self.hash = foil.hash()
-        conn = sqlite3.connect('foil_simulator.db')
+        conn = self.get_db()
         c = conn.cursor()
         result = c.execute("SELECT f.id FROM foil f WHERE (f.hash=?)", (self.hash,)).fetchone()
         if result == None:
@@ -67,9 +69,15 @@ class XfoilSimulatedFoil(SimulatedFoil):
         else:
             self.foil_id = result[0]
         conn.commit()
-        conn.close()
+        #conn.close()
         self.polar_poly_cache = {}
 
+    def get_db(self):
+        global conn_global
+        if conn_global is None:
+            conn_global = sqlite3.connect('foil_simulator.db')
+        return conn_global
+    
     def get_zero_cl_angle(self, v):
         cl, cd = self.get_polars(v)
         try:
@@ -106,7 +114,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             reynolds = 20000.0
         
         # Check if we're in the databse
-        conn = sqlite3.connect('foil_simulator.db')
+        conn = self.get_db()
         c = conn.cursor()
         c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?)", (self.foil_id, reynolds, ))
         result = c.fetchone()
@@ -124,7 +132,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
             cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
             conn.commit()
-            conn.close()
+            #conn.close()
             self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
 
             return [cl_poly, cd_poly]
@@ -198,7 +206,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             cd = 1.28 * np.sin(alpha)
         else:
             # Insert into database
-            conn = sqlite3.connect('foil_simulator.db')
+            conn = self.get_db()
             c = conn.cursor()
             c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, reynolds, self.foil.Mach(velocity)))
             c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, reynolds, ))
@@ -208,7 +216,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 c.execute("INSERT INTO polar(sim_id, alpha, cl, cd, cdp, cm, Top_Xtr, Bot_Xtr) VALUES (?,?,?,?,?,?,?,?)", 
                           (sim_id, a, cl[i], cd[i], cdp[i], cm[i], top_xtr[i], bot_xtr[i]))
             conn.commit()
-            conn.close()
+            #conn.close()
         
         return self.get_polars(velocity)
 
