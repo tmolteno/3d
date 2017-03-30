@@ -105,7 +105,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
     def get_polars(self, velocity):
         Re = self.foil.Reynolds(velocity)
-        re_space = np.geomspace(30000, 2e6, 20)
+        re_space = np.round(np.geomspace(30000, 2e6, 20), -4)
         idx = np.argmin(re_space - Re)
         reynolds = re_space[idx] # np.round(Re, -4)  # Round to nearest 1000
 
