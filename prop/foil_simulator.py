@@ -96,7 +96,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
                     try:
                         logger.info(command)
                         c.execute(command)
-                    except OperationalError, msg:
+                    except sqlite3.OperationalError, msg:
                         print "Command skipped: ", msg
             conn_global.commit()
 
@@ -130,7 +130,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
     def get_polars(self, velocity):
         Re = self.foil.Reynolds(velocity)
         re_space = np.round(np.geomspace(30000, 2e6, 20), -4)
-        idx = np.argmin(re_space - Re)
+        idx = np.argmin(abs(re_space - Re))
         reynolds = re_space[idx] # np.round(Re, -4)  # Round to nearest 1000
 
         if (reynolds < 30000.0):
