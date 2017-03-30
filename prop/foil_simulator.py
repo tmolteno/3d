@@ -77,7 +77,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if conn_global is None:
             conn_global = sqlite3.connect('foil_simulator.db')
             c = conn_global.cursor()
-            result = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='table_name'").fetchone()
+            result = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='foil'").fetchone()
             if result == None:
                 # Create database tables
                 logger.info("Creating Database for the first time")
