@@ -181,7 +181,9 @@ class Prop:
                     dv, a_prime, dT, dM, dT/dM))
 
             else:
-                logger.warning("r={}: BEM did not converge {}".format(be.r, err))
+                logger.warning("r={}: BEM did not converge {} {} {}".format(be.r, be.dv, dv, a_prime, err))
+                be.dv = 1.0
+                be.a_prime = 0.0
 
         return torque, thrust
 
@@ -328,6 +330,9 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         torque, thrust = self.get_forces(optimum_rpm)
         return torque
 
+    def tip_loss(self, r):
+        return (np.exp(-(self.param.radius/(10.0*r))**3))
+        
     def design_bem(self, optimum_torque, optimum_rpm, thrust):
         self.blade_elements = []
         u_0 = self.param.forward_airspeed
@@ -346,7 +351,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         a_prime = 0.001  # start guess
         prev_twist = 0.0
         for r in radial_points:
-            dv_modified = dv_goal*(np.exp(-(self.param.radius/(10.0*r))**2))
+            dv_modified = dv_goal*self.tip_loss(r)
             be = self.new_foil(r, optimum_rpm, prev_twist)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
                 th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
@@ -364,7 +369,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
                         dv_goal=dv_goal, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                    logger.info("{},{},{},{}".format(err, th_deg, dv_test, a_prime_test))
+                    logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
                     if (err < 0.01) and (abs(dv_test - dv_goal) < opt):
                         opt = abs(dv_test - dv_goal)
                         dv = dv_test
@@ -380,7 +385,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             total_thrust += dT
             total_torque += dM
             
-            logger.info("theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
+            logger.info("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
             print be
 
             self.blade_elements.append(be)
@@ -401,10 +406,13 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         #plt.grid(True)
         #plt.xlabel('Angle of Attack')
         #plt.show()
+        print("Smoothed Blade Form")
         
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)
             be.set_twist(a)
+            print be
+
             
         torque, thrust = self.get_forces(optimum_rpm)
         return torque, thrust
