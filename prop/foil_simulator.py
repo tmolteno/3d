@@ -76,6 +76,30 @@ class XfoilSimulatedFoil(SimulatedFoil):
         global conn_global
         if conn_global is None:
             conn_global = sqlite3.connect('foil_simulator.db')
+            c = conn_global.cursor()
+            result = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='table_name'").fetchone()
+            if result == None:
+                # Create database tables
+                logger.info("Creating Database for the first time")
+                fd = open('foil_simulator.sql', 'r')
+                sqlFile = fd.read()
+                fd.close()
+
+                # all SQL commands (split on ';')
+                sqlCommands = sqlFile.split(';')
+
+                # Execute every command from the input file
+                for command in sqlCommands:
+                    # This will skip and report errors
+                    # For example, if the tables do not yet exist, this will skip over
+                    # the DROP TABLE commands
+                    try:
+                        logger.info(command)
+                        c.execute(command)
+                    except OperationalError, msg:
+                        print "Command skipped: ", msg
+            conn_global.commit()
+
         return conn_global
     
     def get_zero_cl_angle(self, v):

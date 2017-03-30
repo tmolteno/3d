@@ -26,7 +26,7 @@ sym:
 
 # Erases the database, so don't do this by mistake.
 db:
-	sqlite3 foil_simulator.db < foil_simulator.sql
+	rm foil_simulator.db
 
 .SECONDARY:
 
