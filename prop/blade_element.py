@@ -51,6 +51,7 @@ class BladeElement:
         return optimize.dM(self.dv, self.a_prime, self.r, self.dr, self.omega, self.u_0, rho=1.225)
 
     def bem(self, n_blades):
+        logger.info("bem {}".format(self))
         dv, a_prime, err = optimize.bem_iterate(foil_simulator=self.fs, dv_goal=self.dv, \
             theta = self._twist, rpm = self.rpm, B = n_blades, \
             r = self.r, dr=self.dr, u_0 = self.u_0)
@@ -109,7 +110,7 @@ class BladeElement:
         return lower_line, upper_line
 
     def __repr__(self):
-        return "BladeElement(r=%5.3f, twist=%5.2f, z=%4.1f, foil[%s])" % (self.r, np.degrees(self._twist), np.degrees(self.get_zero_cl_angle()), self.foil)
+        return "BladeElement(r={:5.3f}, twist={:5.2f}, z={:4.1f}, foil[{}], dv={})".format(self.r, np.degrees(self._twist), np.degrees(self.get_zero_cl_angle()), self.foil, self.dv)
 
 if __name__ == "__main__":
 

@@ -104,15 +104,19 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return cd(alpha)
 
     def get_polars(self, velocity):
-        reynolds = np.round(self.foil.Reynolds(velocity), -4)  # Round to nearest 1000
+        Re = self.foil.Reynolds(velocity)
+        re_space = np.geomspace(30000, 2e6, 20)
+        idx = np.argmin(re_space - Re)
+        reynolds = re_space[idx] # np.round(Re, -4)  # Round to nearest 1000
 
+        if (reynolds < 30000.0):
+            reynolds = 30000.0
+        
         re_str = str(reynolds)
         if re_str in self.polar_poly_cache:
             return self.polar_poly_cache[re_str]
 
-        if (reynolds < 20000.0):
-            reynolds = 20000.0
-        
+        logger.info("get_polars(Re={:6.2g}, reynolds={})".format(Re, reynolds))
         # Check if we're in the databse
         conn = self.get_db()
         c = conn.cursor()

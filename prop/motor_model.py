@@ -19,6 +19,10 @@ class Motor:
         Kq = 30.0 / (np.pi * self.Kv)
         return Kq*(I - self.I0)
         
+    ''' RPM at torque Q:'''
+    def get_rpm(self, q_in):
+        return np.pi*self.Kv**2*q_in/30
+        
     def get_efficiency(self, V, I):
         return (I - self.I0)*(-I*self.Rm + V)/(I*V)
 
@@ -28,7 +32,6 @@ class Motor:
     
     def get_Qmax(self, V):
         ''' Torque at Max Efficiency (Newton meters)'''
-        pi = 3.1415926
         Imax = self.get_Imax(V)
         Qmax = self.Kq*(Imax - self.I0)
         RPMmax = self.Kv*( V - Imax*self.Rm)
@@ -41,7 +44,7 @@ class Motor:
         return power
 
 def symbolic_stuff():
-    from sympy import Symbol, pi, sqrt, pprint
+    from sympy import Symbol, pi, sqrt, pprint, solve, Eq
 
 
     Kv = Symbol('Kv')  
@@ -61,10 +64,17 @@ def symbolic_stuff():
     RPM = Kv*(I - I0)
     Q = Kq*(I - I0)
 
+    # RPM at voltage V and torque q_in
+    q_in = Symbol('q_in', real=True)
+    rpm_in = Symbol('rpm_in', real=True)
+    eqns = (Eq(Q, q_in))
+    soln = solve(eqns, I, exclude=[I0])
+    pprint(eqns)
+    print("RPM at torque Q: {}".format(RPM.subs(I, soln[0])))
     # Efficiency
 
     eta = (V - I*Rm)*(I - I0)/(V*I)
-    print eta
+    print("efficiency={}".format(eta))
 
     # Current at Max Efficiency
 
@@ -94,7 +104,7 @@ if __name__ == "__main__":
     #q, rpm = m.get_Qmax(v)
     import matplotlib.pyplot as plt
     plt.plot(q, e, label='Efficiency')
-    #plt.plot(i, q, label='Torque')
+    plt.plot(q, m.get_rpm(q), label='RPM')
     #plt.plot(v, q, label='Q_max')
     #plt.plot(v, rpm/1000, label='RPM')
     #plt.plot(v, m.get_Pmax(v), label='P_max')

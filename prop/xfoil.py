@@ -34,7 +34,7 @@ from Queue import Queue, Empty
 
 
 def get_polar(airfoil, alpha, Re, Mach=None,
-             normalize=True, iterlim=None, gen_naca=False, debug=False):
+             normalize=True, iterlim=None, gen_naca=False, debug=False, timeout=30):
     """
     Convenience function that returns polar for specified airfoil and
     Reynolds number for (range of) alpha or cl.
@@ -68,6 +68,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
 
+    xf.cmd("PANE")  # Load Buffer Airfoil into PANEL, adding extra points if necessary
     #xf.cmd("GDES")
     #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
@@ -115,7 +116,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     #test = False
             else:
                 seconds = time.time() - start_time
-                if seconds > 30.0:
+                if seconds > timeout:
                     logger.info("Termination under way. Taking too long")
 
                     xf.close()
@@ -133,7 +134,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         # Keep reading until end marker is encountered
         while not re.search("ENDD", output[-1]):
             seconds = time.time() - start_time
-            if seconds > 30.0:
+            if seconds > timeout:
                 logger.warning("Termination under way. Taking too long")
 
                 xf.close()
