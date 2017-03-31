@@ -249,8 +249,10 @@ class XfoilSimulatedFoil(SimulatedFoil):
         return self.get_polars(velocity)
 
 if __name__ == "__main__":
-    from foil import NACA4
-    f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
+    from foil_ARA import ARAD_20_Foil
+    #f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
+    f = ARAD_20_Foil(chord=0.1)
+
     f.set_trailing_edge(0.1)
     fs = XfoilSimulatedFoil(f)
     
