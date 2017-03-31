@@ -117,7 +117,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
             else:
                 seconds = time.time() - start_time
                 if seconds > timeout:
-                    logger.info("Termination under way. Taking too long")
+                    logger.info("Simulation Terminated!. Taking too long")
 
                     xf.close()
                     raise Exception('Runtime took too long')
@@ -135,7 +135,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         while not re.search("ENDD", output[-1]):
             seconds = time.time() - start_time
             if seconds > timeout:
-                logger.warning("Termination under way. Taking too long")
+                logger.warning("Simulation Terminated!. Taking too long")
 
                 xf.close()
                 raise Exception('Runtime took too long')
@@ -218,7 +218,7 @@ class Xfoil():
     
     def __init__(self, path="/usr/bin"):
         """Spawn xfoil child process"""
-        xf = "/home/tim/github/xfoil/build/bin/xfoil"
+        xf = "/usr/local/bin/xfoil"
         #xf = "/usr/bin/xfoil"
         self.xfinst = subp.Popen(xf,
                   stdin=subp.PIPE, stdout=subp.PIPE, stderr=subp.PIPE)
