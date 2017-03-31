@@ -396,16 +396,16 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
-        coeff = np.polyfit(radial_points[::-1], twist_angles, 7)
+        coeff = np.polyfit(radial_points[::-1], twist_angles, 10)
         twist_angle_poly = np.poly1d(coeff)
         
-        #import matplotlib.pyplot as plt
-        #plt.plot(radial_points[::-1], twist_angles, label='twist angles')
-        #plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
-        #plt.legend()
-        #plt.grid(True)
-        #plt.xlabel('Angle of Attack')
-        #plt.show()
+        import matplotlib.pyplot as plt
+        plt.plot(radial_points[::-1], twist_angles, label='twist angles')
+        plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
+        plt.legend()
+        plt.grid(True)
+        plt.xlabel('Angle of Attack')
+        plt.show()
         print("Smoothed Blade Form")
         
         for be in self.blade_elements:

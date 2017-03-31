@@ -68,9 +68,16 @@ class Foil(object):
         # Execute every command from the input file
         x = []
         y = []
+        import re
+        expr = re.compile(r'[0-9.-]+')
         for p in points:
-            a,b = (p.split(' '))
-            print a,b
+            try:
+                pts = re.findall(expr, p)
+                x.append(float(pts[0]))
+                y.append(float(pts[0]))
+            except:
+                print p
+        return x,y
 
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
