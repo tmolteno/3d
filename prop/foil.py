@@ -8,6 +8,8 @@
 '''
 import numpy as np
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Foil(object):
     def __init__(self, chord, thickness):
@@ -88,9 +90,8 @@ class Foil(object):
 
                     
             except:
-                print p
-        #print xl,yl
-        #print xu, yu
+                logger.info("No information on line {}".format(p))
+                
         return np.array(xl),np.array(yl),np.array(xu),np.array(yu)
 
     def get_points(self, n, rotation_angle):
