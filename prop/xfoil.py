@@ -37,12 +37,11 @@ def get_polar(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False, debug=False, timeout=30):
     """
     Convenience function that returns polar for specified airfoil and
-    Reynolds number for (range of) alpha or cl.
-    Waits on XFOIL to finish so is blocking.
+    Reynolds number for a single angle of attack
     
     args:
        airfoil        -> Airfoil file or NACA xxxx(x) if gen_naca flag set.
-       alpha          -> Single value or list of [start, stop, interval].
+       alpha          -> Single value 
        Re             -> Reynolds number
     kwargs:
        Mach           -> Mach number

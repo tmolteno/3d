@@ -91,7 +91,10 @@ class Foil(object):
                     
             except:
                 logger.info("No information on line {}".format(p))
-                
+        #xl.reverse()
+        #yl.reverse()
+        xu.reverse()
+        yu.reverse()
         return np.array(xl),np.array(yl),np.array(xu),np.array(yu)
 
     def get_points(self, n, rotation_angle):
