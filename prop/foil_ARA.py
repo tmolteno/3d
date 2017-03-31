@@ -24,12 +24,12 @@ class ARAD_10_Foil(Foil):
         xu, yu, xl, yl = self.load_selig('foils/ara_d_10.dat')
 
         c = self.chord
-        return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
+        
+        return [[xl*c,yl*c],[xu*c,yu*c]]
     
 if __name__ == "__main__":
     
     f = ARAD_10_Foil(chord=0.1)
-    #f = Foil(chord=0.1, thickness=0.15)
     f.set_trailing_edge(0.01)
     print f
     print f.hash()

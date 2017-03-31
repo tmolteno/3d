@@ -66,18 +66,32 @@ class Foil(object):
         points = seligFile.split('\n')
 
         # Execute every command from the input file
-        x = []
-        y = []
+        xu = []
+        yu = []
+        xl = []
+        yl = []
+        x_prev = 9e99
         import re
         expr = re.compile(r'[0-9.-]+')
         for p in points:
             try:
                 pts = re.findall(expr, p)
-                x.append(float(pts[0]))
-                y.append(float(pts[0]))
+                x0 = float(pts[0])
+                y0 = float(pts[1])
+                if x0 < x_prev:
+                    xu.append(x0)
+                    yu.append(y0)
+                else:
+                    xl.append(x0)
+                    yl.append(y0)
+                x_prev = x0
+
+                    
             except:
                 print p
-        return x,y
+        #print xl,yl
+        #print xu, yu
+        return np.array(xl),np.array(yl),np.array(xu),np.array(yu)
 
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
@@ -103,8 +117,9 @@ class Foil(object):
     def plot(self):
         pt, pb = self.get_points(30, rotation_angle=0.0)
         import matplotlib.pyplot as plt
-        plt.plot(pt[0], pt[1], 'x')
-        plt.plot(pb[0], pb[1], 'o')
+        plt.plot(pt[0], pt[1], 'x', label='top')
+        plt.plot(pb[0], pb[1], 'o', label='bottom')
+        plt.legend()
         plt.show()
 
 '''
