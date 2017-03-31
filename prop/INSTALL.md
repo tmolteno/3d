@@ -5,24 +5,18 @@ should work just fine too.
 
 ## Prereq
 
-    sudo aptitude install python-pip
+    sudo aptitude install python-pip python-matplotlib
     sudo pip install numpy-stl enum enum34
 
 
 ## XFOIL
 
-The package located at [https://github.com/RobotLocomotion/xfoil.git] is much
-better and appears to work correctly (the debian install doesn't and I'm figuring out
-why at the moment. Any help appreciated)
+The package located at [https://github.com/tmolteno/xfoil.git] is much
+better and appears to work correctly
 
-The path to the xfoil is contained in the file xfoil_2.py.
+The path to the xfoil is contained in the file xfoil.py.
 
 
 ## First Run
 
-The results from xfoil are stored in a database (sqlite). The distribution contains a database file (foil_simulator.db)
-If this is missing, or you believe the results stored there are corrupted, you can delete this file and recreate it using
-
-    make db
-
-This avoids recalculation of polars for airfoils already calculated.
+To get started there is a makefile that will build a prop called test_prop.json. The propeller description is contained in that file.

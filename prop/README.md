@@ -20,13 +20,12 @@ The mesh can be cleaned using meshlab to remove duplicate vertices with:
 
 ##  Using OpenSCAD to generate a propeller
 
-OpenSCAD imports the blade STL and generates a prop. The file pyprop.scad generates a three bladed prop (the one shown above).
+OpenSCAD imports the blade STL and generates a prop.
 
 
 ## TODO
 
 * Optimize foils for angle of attack and shape.
-* Allow JSON input of optimization criterion (like free space, torque, RPM and power)
 
 # Creating Props using JavaProp, FreeCAD and OpenSCAD.
 
