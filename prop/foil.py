@@ -55,7 +55,23 @@ class Foil(object):
         y = self.thickness*self.chord*np.ones(n)
         return [[x,-y],[x,y]]
     
-    
+
+    def load_selig(self, filename):
+        ''' Load points from a file and normalize '''
+        fd = open(filename, 'r')
+        seligFile = fd.read()
+        fd.close()
+
+        # all SQL commands (split on ';')
+        points = seligFile.split('\n')
+
+        # Execute every command from the input file
+        x = []
+        y = []
+        for p in points:
+            a,b = (p.split(' '))
+            print a,b
+
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl

@@ -1,4 +1,4 @@
-import foil
+from foil import Foil
 
 class ARAD_10_Foil(Foil):
     '''         ARA-D 10% AIRFOIL
@@ -9,7 +9,7 @@ class ARAD_10_Foil(Foil):
     def hash(self):
         ''' Generate a unique hash for this foil'''
         
-        return "ARAD10 %5.2f,%5.2f,%5.2f, %5.2f" % (self.thickness, self.trailing_edge)
+        return "ARAD10 %5.2f,%5.2f" % (self.thickness, self.trailing_edge)
 
     def __repr__(self):
       return "ch=%f, te=%4.3f, ARAD10 %d" % (self.chord, self.trailing_edge, (self.thickness*100))
