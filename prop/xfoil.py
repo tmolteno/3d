@@ -115,6 +115,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     #test = False
             else:
                 seconds = time.time() - start_time
+                time.sleep(0.01)
                 if seconds > timeout:
                     logger.info("Simulation Terminated!. Taking too long")
 
@@ -151,28 +152,65 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     except Exception:
         return None
 
+
+
+
+
+from multiprocessing import Pool
+
 def get_polars(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False):
-
     polar = None
-        
-    for a in alpha:
-        start_time = time.time()
-        logger.info("alpha={:4.2f}".format(a)), 
-        results = get_polar(airfoil, a, Re, Mach, normalize, iterlim, gen_naca)
-        if results is not None:
-            logger.info("Simulation took {:4.2f} seconds".format(time.time() - start_time))
-            labels = results[1]
-            values = results[0]
-            
-            if (polar is None):
-                polar = {}
-                for label in labels:
-                    polar[label] = []
-            
-            for v in values:
-                for label, value in zip(labels, v):
-                    polar[label].append(value)
+
+    mp = True
+    if (mp):
+        p = Pool()
+    
+        resultList = []
+
+        try:
+            for a in alpha:
+                resultList.append(p.apply_async(get_polar, (airfoil, a, Re, Mach, normalize, iterlim, gen_naca)))
+
+            p.close 
+            p.join
+                
+            for polar_thread in resultList:
+                results = polar_thread.get() # timeout=2000
+                if results is not None:
+                    labels = results[1]
+                    values = results[0]
+                    
+                    if (polar is None):
+                        polar = {}
+                        for label in labels:
+                            polar[label] = []
+                    
+                    for v in values:
+                        for label, value in zip(labels, v):
+                            polar[label].append(value)
+            p.terminate()
+        except KeyboardInterrupt:
+            print 'control-c pressed'
+            p.terminate()
+    else:
+        for a in alpha:
+            start_time = time.time()
+            logger.info("alpha={:4.2f}".format(a)), 
+            results = get_polar(airfoil, a, Re, Mach, normalize, iterlim, gen_naca)
+            if results is not None:
+                logger.info("Simulation took {:4.2f} seconds".format(time.time() - start_time))
+                labels = results[1]
+                values = results[0]
+                
+                if (polar is None):
+                    polar = {}
+                    for label in labels:
+                        polar[label] = []
+                
+                for v in values:
+                    for label, value in zip(labels, v):
+                        polar[label].append(value)
     return polar
 
 def parse_stdout_polar(lines):
