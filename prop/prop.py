@@ -438,6 +438,25 @@ class NACAProp(Prop):
             rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
     
+
+class ARADProp(Prop):
+    ''' Prop that uses ARAD Airfoils
+    '''
+
+    def new_foil(self, r, rpm, twist):
+        import foil_ARA
+        thickness = self.get_foil_thickness(r)
+        chord = self.get_chord(r, rpm, twist)
+        if (chord < 0.0):
+            raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
+        f = foil_ARA.ARADFoil(chord=chord, thickness=thickness / chord)
+        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        
+        #v = self.get_blade_velocity(r, rpm)
+        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
+            rpm=rpm, u_0 = self.param.forward_airspeed)
+        return be
+    
 import logging.config
 import yaml
 
@@ -450,6 +469,7 @@ if __name__ == "__main__":
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--bem', action='store_true', help="Use bem design")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
+    parser.add_argument('--arad', action='store_true', help="Use ARA-D airfoils (slow)")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
     parser.add_argument('--thrust', type=float, default=6.0, help="The thrust (Newtons).")
@@ -465,7 +485,9 @@ if __name__ == "__main__":
 
     # Decode Design Parameters
     param = DesignParameters(args.param)
-    if args.naca:
+    if args.arad:
+        p = ARADProp(param, args.resolution / 1000)
+    elif args.naca:
         p = NACAProp(param, args.resolution / 1000)
     else:
         p = Prop(param, args.resolution / 1000)
