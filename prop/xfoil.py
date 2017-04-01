@@ -104,7 +104,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 if re.search("Point added to stored polar", line):
                     test = False
                 if re.search("VISCAL:  Convergence failed", line):
-                    logger.info("Convergence failed. Trying harder!")
+                    logger.info("Convergence failed a={:4.2f}. Trying harder!".format(a))
 
                     xf.cmd("!")
 
@@ -117,7 +117,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 seconds = time.time() - start_time
                 time.sleep(0.01)
                 if seconds > timeout:
-                    logger.info("Simulation Terminated!. Taking too long")
+                    logger.warning("Simulation Terminated!. a={:4.2f} taking too long".format(a))
 
                     xf.close()
                     raise Exception('Runtime took too long')
@@ -135,7 +135,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         while not re.search("ENDD", output[-1]):
             seconds = time.time() - start_time
             if seconds > timeout:
-                logger.warning("Simulation Terminated!. Taking too long")
+                logger.warning("Simulation Terminated!. a={:4.2f} taking too long".format(a))
 
                 xf.close()
                 raise Exception('Runtime took too long')
