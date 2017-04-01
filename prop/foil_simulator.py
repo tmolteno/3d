@@ -286,4 +286,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid(True)
     plt.xlabel('Angle of Attack')
+    plt.title('{}'.format(f))
     plt.show()
