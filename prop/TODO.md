@@ -7,3 +7,8 @@
 
 * Allow units in the JSON spec. trailing_edge = '0.5 mm' (units are m, mm, cm, m/s, kph, mph)
 
+
+## Performance
+
+* Use multiprocessing for polars
+* Reduce polling CPU time.
