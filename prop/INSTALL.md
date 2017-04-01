@@ -5,7 +5,7 @@ should work just fine too.
 
 ## Prereq
 
-    sudo aptitude install python-pip python-matplotlib
+    sudo aptitude install python-pip python-yaml python-matplotlib
     sudo pip install numpy-stl enum enum34
 
 
