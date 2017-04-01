@@ -14,7 +14,7 @@ all:	bem scad
 
 # Build using the Blade Element Momentum method
 bem:
-	python prop.py --naca --bem  --n 40 --resolution 2.0 --thrust ${THRUST} --param='${TARGET}.json'
+	python prop.py --arad --bem  --n 40 --resolution 2.0 --thrust ${THRUST} --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
