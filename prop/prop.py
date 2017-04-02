@@ -46,7 +46,7 @@ class Prop:
         chord = self.get_chord(r, rpm, twist)
 
         f = foil.Foil(chord=chord, thickness=thickness)
-        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        f.set_trailing_edge(self.param.trailing_edge)
         be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
             rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
@@ -446,7 +446,7 @@ class NACAProp(Prop):
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
         else:
             f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
-        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
         #v = self.get_blade_velocity(r, rpm)
         be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
@@ -465,7 +465,7 @@ class ARADProp(Prop):
         if (chord < 0.0):
             raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
         f = foil_ARA.ARADFoil(chord=chord, thickness=thickness / chord)
-        f.set_trailing_edge(self.param.trailing_edge/(1000.0 * chord))
+        f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
         #v = self.get_blade_velocity(r, rpm)
         be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
