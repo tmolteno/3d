@@ -128,10 +128,19 @@ class Prop:
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 5
-        k = (thickness_end - thickness_root) / (self.param.radius**p - self.param.hub_radius**p)
-        s = thickness_end - k*self.param.radius**p
-        thickness = s + k*r**p
+        p = 2
+        k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
+        s = thickness_end - k*self.param.radius**-p
+        thickness = s + k*r*-p
+        
+        #import matplotlib.pyplot as plt
+        #rpts = np.linspace(self.param.hub_radius, self.param.radius, 40)
+        #plt.plot(rpts, s + k*rpts**-p, label='thickness')
+        #plt.legend()
+        #plt.grid(True)
+        #plt.xlabel('r')
+        #plt.show()
+
         return thickness
 
     def get_max_depth(self,r):
