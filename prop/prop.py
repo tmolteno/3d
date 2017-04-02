@@ -521,7 +521,7 @@ if __name__ == "__main__":
         thrust = param.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
-        print("Total Thrust: {:5.2f}, Torque: {:5.2f}".format(T, Q))
+        print("Total Thrust: {:5.2f}, Torque: {:5.3f}".format(T, Q))
         if (args.auto):
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q

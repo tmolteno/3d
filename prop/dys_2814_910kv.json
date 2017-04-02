@@ -8,7 +8,9 @@
     "motor_volts": 11.0,
     "motor_no_load_current": 1.0,
     "motor_winding_resistance": 0.061,
-
+    
+    "thrust": 8.0,
+    
     "radius": 0.12,
     "tip_chord": 0.009,
     "scimitar_percent": 0.0,
