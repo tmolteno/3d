@@ -106,7 +106,7 @@ class ARADFoil(Foil):
         return "ARAD2 %5.2f,%5.2f" % (self.thickness, self.trailing_edge)
 
     def __repr__(self):
-      return "ch=%f, te=%4.3f, ARAD %d" % (self.chord, self.trailing_edge, (self.thickness*100))
+      return "ARAD ch={:4.2f}, thickness={:4.2f} te={:4.3f}".format(self.chord, self.thickness, self.trailing_edge)
   
   
     def get_shape_points(self, n):
