@@ -11,5 +11,5 @@
 
 ## Performance
 
-* Use multiprocessing for polars
+* [DONE] Use multiprocessing for polars
 * Reduce polling CPU time.
