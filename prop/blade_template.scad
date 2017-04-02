@@ -31,7 +31,7 @@ module blade_inside() {
             cylinder(r = hub_r+0.25, h=100, center=true);
             raw_blade();
         }
-        translate([center_hole/2+1 ,0,-hub_h]) cylinder(d=2, h=hub_h);
+        translate([center_hole/2+1.5 ,0,-hub_h]) cylinder(d=2, h=hub_h);
     }
 }
 
