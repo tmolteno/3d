@@ -119,7 +119,7 @@ class Foil(object):
         return [x2,y2]
 
     def plot(self):
-        pt, pb = self.get_points(30, rotation_angle=0.0)
+        pb, pt = self.get_points(60, rotation_angle=0.0)
         import matplotlib.pyplot as plt
         plt.plot(pt[0], pt[1], 'x', label='top')
         plt.plot(pb[0], pb[1], 'o', label='bottom')

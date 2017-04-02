@@ -529,11 +529,11 @@ if __name__ == "__main__":
                 print("Total Thrust: {:5.2f} (N), Torque: {:5.2f} (Nm)".format(T, Q))
 
         # Print Thrust and Torque as a function of RPM.
-        print("RPM, \t\t THRUST, \t TORQUE")
-        rpm_list = np.linspace(optimum_rpm/3, 2*optimum_rpm, 30)
-        for rpm in rpm_list:
-            torque, thrust = p.get_forces(rpm)
-            print("{:5.3f}, \t {:5.3f}, \t{:5.3f}".format(rpm, thrust, torque))
+        #print("RPM, \t\t THRUST, \t TORQUE")
+        #rpm_list = np.linspace(optimum_rpm/3, 2*optimum_rpm, 30)
+        #for rpm in rpm_list:
+            #torque, thrust = p.get_forces(rpm)
+            #print("{:5.3f}, \t {:5.3f}, \t{:5.3f}".format(rpm, thrust, torque))
 
 
     if (args.mesh):

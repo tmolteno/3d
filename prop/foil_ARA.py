@@ -1,4 +1,6 @@
 from foil import Foil
+from scipy.interpolate import PchipInterpolator
+import numpy as np
 
 class ARAD_6_Foil(Foil):
     '''         ARA-D 20% AIRFOIL
@@ -85,19 +87,19 @@ class ARADFoil(Foil):
     def __init__(self, chord, thickness):
         Foil.__init__(self,chord, thickness)
         if (self.thickness <= 0.06):
-            self.xu, self.yu, self.xl, self.yl = self.load_selig('foils/ara_d_6.dat')
+            self.xl, self.yl, self.xu, self.yu = self.load_selig('foils/ara_d_6.dat')
             self.yu *= self.thickness / 0.06
             self.yl *= self.thickness / 0.06
         elif (self.thickness <= 0.10):
-            self.xu, self.yu, self.xl, self.yl = self.load_selig('foils/ara_d_10.dat')
+            self.xl, self.yl, self.xu, self.yu = self.load_selig('foils/ara_d_10.dat')
             self.yu *= self.thickness / 0.1
             self.yl *= self.thickness / 0.1
         elif (self.thickness <= 0.13):
-            self.xu, self.yu, self.xl, self.yl = self.load_selig('foils/ara_d_13.dat')
+            self.xl, self.yl, self.xu, self.yu = self.load_selig('foils/ara_d_13.dat')
             self.yu *= self.thickness / 0.13
             self.yl *= self.thickness / 0.13
         else:
-            self.xu, self.yu, self.xl, self.yl = self.load_selig('foils/ara_d_20.dat')
+            self.xl, self.yl, self.xu, self.yu= self.load_selig('foils/ara_d_20.dat')
             self.yu *= self.thickness / 0.2
             self.yl *= self.thickness / 0.2
 
@@ -112,8 +114,36 @@ class ARADFoil(Foil):
   
     def get_shape_points(self, n):
         c = self.chord
+        # Interpolate the points 
+        l_interp = PchipInterpolator(self.xl, self.yl)
+        u_interp = PchipInterpolator(self.xu, self.yu)
+
+        n = n*5
+        beta = np.linspace(0, np.pi, n)    # Use cosine spacing of points.
+        x = (1.0 - np.cos(beta))/2
+
+        xl = x
+        xu = x
         
-        return [[self.xl*c,self.yl*c],[self.xu*c,self.yu*c]]
+        yl = l_interp(xl)
+        yu = u_interp(xu)
+
+        if (True):
+            max_x = xu[np.argmax(yu)] #0.3
+            if (max_x > 0.5):
+                max_x = 0.5
+            max_y = np.max(yu)
+            # print np.max(yu), max_y, np.argmax(yu) 
+            
+            xu = xu - max_x
+            xl = xl - max_x
+            
+            yu = yu - max_y
+            yl = yl - max_y
+        
+        yu[0] = yl[0]
+        
+        return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
 
 if __name__ == "__main__":
     
