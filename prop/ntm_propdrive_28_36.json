@@ -10,9 +10,9 @@
     "motor_winding_resistance": 0.16,
     "thrust": 40.0,
 
-    "radius": 0.0625,
+    "radius": 0.1,
     "scimitar_percent": 7.0,
     "trailing_edge": 0.5,
-    "hub_radius": 0.005,
-    "hub_depth": 0.005
+    "hub_radius": 0.006,
+    "hub_depth": 0.008
 }
