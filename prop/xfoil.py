@@ -157,6 +157,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
 
 
 from multiprocessing import Pool
+import signal
 
 def get_polars(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False):
@@ -164,7 +165,9 @@ def get_polars(airfoil, alpha, Re, Mach=None,
 
     mp = True
     if (mp):
+        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
         p = Pool()
+        signal.signal(signal.SIGINT, original_sigint_handler)
     
         resultList = []
 
@@ -172,11 +175,9 @@ def get_polars(airfoil, alpha, Re, Mach=None,
             for a in alpha:
                 resultList.append(p.apply_async(get_polar, (airfoil, a, Re, Mach, normalize, iterlim, gen_naca)))
 
-            p.close 
-            p.join
                 
             for polar_thread in resultList:
-                results = polar_thread.get() # timeout=2000
+                results = polar_thread.get(timeout=1000) # timeout=2000
                 if results is not None:
                     labels = results[1]
                     values = results[0]
@@ -193,6 +194,9 @@ def get_polars(airfoil, alpha, Re, Mach=None,
         except KeyboardInterrupt:
             print 'control-c pressed'
             p.terminate()
+        else:
+            p.close()
+        p.join()
     else:
         for a in alpha:
             start_time = time.time()
@@ -324,7 +328,7 @@ class NonBlockingStreamReader:
         # Start collecting lines from the stream
         self._t.start()
 
-    def readline(self, timeout = None):
+    def readline(self, timeout = 30):
         try:
             if timeout is not None:
                 return self._q.get(block = True, timeout = timeout)

@@ -128,7 +128,7 @@ class Prop:
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 4
+        p = 5
         k = (thickness_end - thickness_root) / (self.param.radius**p - self.param.hub_radius**p)
         s = thickness_end - k*self.param.radius**p
         thickness = s + k*r**p
@@ -399,14 +399,14 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         coeff = np.polyfit(radial_points[::-1], twist_angles, 10)
         twist_angle_poly = np.poly1d(coeff)
         
-        import matplotlib.pyplot as plt
-        plt.plot(radial_points[::-1], twist_angles, label='twist angles')
-        plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
-        plt.legend()
-        plt.grid(True)
-        plt.xlabel('Angle of Attack')
-        plt.show()
-        print("Smoothed Blade Form")
+        #import matplotlib.pyplot as plt
+        #plt.plot(radial_points[::-1], twist_angles, label='twist angles')
+        #plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
+        #plt.legend()
+        #plt.grid(True)
+        #plt.xlabel('Angle of Attack')
+        #plt.show()
+        #print("Smoothed Blade Form")
         
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)

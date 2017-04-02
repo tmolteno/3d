@@ -1,6 +1,6 @@
 # TODO list
 
-* Create an interpolated ARA foil class that can have any aspect ratio.
+* [DONE] Create an interpolated ARA foil class that can have any aspect ratio.
 * Allow trailiing edge specification in ARA foil class
 * Modify trailing edge specification in JSON to be in meters.
 
