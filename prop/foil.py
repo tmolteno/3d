@@ -47,8 +47,8 @@ class Foil(object):
     def __repr__(self):
       return "ch=%f, a=%f" % (self.chord, self.thickness)
   
-    def set_trailing_edge(self, t):
-        self.trailing_edge = t
+    def set_trailing_edge(self, te):
+        self.trailing_edge = te / self.chord
   
     def get_shape_points(self, n):
         ''' Return a list of x,y coordinates for the foil with zero angle of attack

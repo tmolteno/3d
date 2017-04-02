@@ -102,6 +102,7 @@ class ARADFoil(Foil):
             self.xl, self.yl, self.xu, self.yu= self.load_selig('foils/ara_d_20.dat')
             self.yu *= self.thickness / 0.2
             self.yl *= self.thickness / 0.2
+        self.init_te = (self.yu[-1] - self.yl[-1])
 
     def hash(self):
         ''' Generate a unique hash for this foil'''
@@ -124,9 +125,10 @@ class ARADFoil(Foil):
 
         xl = x
         xu = x
-        
-        yl = l_interp(xl)
-        yu = u_interp(xu)
+        y_offset = np.linspace(0, (self.trailing_edge - self.init_te)/2, n)
+
+        yl = l_interp(xl) - y_offset
+        yu = u_interp(xu) + y_offset
 
         if (True):
             max_x = xu[np.argmax(yu)] #0.3
@@ -146,9 +148,10 @@ class ARADFoil(Foil):
         return [[xl[::5]*c,yl[::5]*c],[xu[::5]*c,yu[::5]*c]]
 
 if __name__ == "__main__":
-    
-    f = ARADFoil(chord=0.1, thickness=0.05)
-    f.set_trailing_edge(0.01)
+    chord = 12.0 / 1000 
+    thickness = 1.0 / 1000
+    f = ARADFoil(chord=chord, thickness=thickness/chord)
+    f.set_trailing_edge(0.1 / 1000)
     print f
     print f.hash()
     f.plot()
