@@ -210,7 +210,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Let Xfoil do its magic
         alfa = np.arange(-30, 30, 1.0)
         polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
-                                        iterlim=500, normalize=True)
+                                        iterlim=1000, normalize=True)
         #print polar.keys()
         os.remove(filename)
                 

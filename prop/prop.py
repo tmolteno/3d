@@ -487,7 +487,6 @@ if __name__ == "__main__":
     parser.add_argument('--arad', action='store_true', help="Use ARA-D airfoils (slow)")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
-    parser.add_argument('--thrust', type=float, default=6.0, help="The thrust (Newtons).")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
@@ -514,12 +513,12 @@ if __name__ == "__main__":
     print("\nPROPLY: Automatic propeller Design\n\n")
     print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
     print(param)
-    dv = optimize.dv_from_thrust(args.thrust, param.radius, param.forward_airspeed,)
+    dv = optimize.dv_from_thrust(param.thrust, param.radius, param.forward_airspeed,)
     print("Airspeed at propellers (hovering): %f" % (param.forward_airspeed + dv))
 
     if (args.bem):
         p.n_blades = 2
-        thrust = args.thrust
+        thrust = param.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
         print("Total Thrust: {:5.2f}, Torque: {:5.2f}".format(T, Q))

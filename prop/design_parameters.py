@@ -7,6 +7,7 @@ class DesignParameters:
     def __init__(self, filename=0):
         self.name = "hello world"
         self.radius = 0.0625    # m
+        self.thrust = 2.0    # Newtons
         self.tip_chord = 7.0 / 1000
         self.hub_radius = 5.0 / 1000
         self.trailing_edge = 0.5 / 1000
@@ -35,6 +36,7 @@ class DesignParameters:
         configdict['name'] = self.name
         
         configdict['radius'] = self.radius
+        configdict['thrust'] = self.thrust
         configdict['tip_chord'] = self.tip_chord
         configdict['hub_radius'] = self.hub_radius
         configdict['hub_depth'] = self.hub_depth
@@ -58,6 +60,7 @@ class DesignParameters:
         settings = json.loads(data)
         self.name = settings['name']
 
+        self.thrust = settings['thrust']
         self.radius = settings['radius']
         self.tip_chord = settings['tip_chord']
         self.hub_radius = settings['hub_radius']

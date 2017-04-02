@@ -5,8 +5,6 @@
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
 TARGET=test_prop
-THRUST=2.0
-# 400 g of thrust (4 Newtons)
 
 .PHONY: bem blade scad
 
@@ -14,7 +12,7 @@ all:	bem scad
 
 # Build using the Blade Element Momentum method
 bem:
-	python prop.py --arad --bem  --n 40 --resolution 2.0 --thrust ${THRUST} --param='${TARGET}.json'
+	python prop.py --arad --bem  --n 40 --resolution 2.0 --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
