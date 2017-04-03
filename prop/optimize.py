@@ -82,22 +82,25 @@ def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
 def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
     theta, dv, a_prime = x
     try:
+        if (dv > 30.0):
+            print x
+            return (dv - 150)**3
         if (theta < radians(-5.0)):
             return 1e6
         if (theta > radians(70)):
             return 1e6
         if (a_prime > 0.35):
-            return 1e6
+            return a_prime*1000
         if (a_prime < 0.0):
-            return 1e6
+            return 10 - a_prime*1000
         omega = (rpm/60) * 2 * pi
 
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
         err = ((dv - dv2)/dv2)**2 + ((a_prime - a_prime2)/a_prime2)**2
         err += ((dv - goal)/goal)**2
         return err
-    except ValueError:
-        logging.info("ValueError in iteration")
+    except ValueError as ve:
+        logging.info("ValueError in iteration {}".format(ve))
         return 1e6
 
 def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, dr, u_0, B):

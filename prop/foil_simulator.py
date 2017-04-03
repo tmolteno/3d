@@ -112,19 +112,11 @@ class XfoilSimulatedFoil(SimulatedFoil):
         
 
     def get_cl(self, v, alpha):
-        try:
-            cl, cd = self.get_polars(v)
-        except ValueError:
-            logger.info("Failure to get foil polars")
-            return  2.0 * np.pi * alpha
+        cl, cd = self.get_polars(v)
         return cl(alpha)
 
     def get_cd(self, v, alpha):
-        try:
-            cl, cd = self.get_polars(v)
-        except ValueError:
-            logger.info("Failure to get foil polars")
-            return 0.5
+        cl, cd = self.get_polars(v)
         return cd(alpha)
 
     def get_polars(self, velocity):

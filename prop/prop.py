@@ -124,11 +124,11 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = self.param.hub_depth*0.8
-        thickness_end = 0.7 / 1000
+        thickness_end = 0.8 / 1000
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 1.5
+        p = 1.2
         k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
         s = thickness_end - k*self.param.radius**-p
         thickness = s + k*r**-p
@@ -385,11 +385,11 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                         a_prime = a_prime_test
                         theta = np.radians(th_deg)
                 
-            x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
-                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-            if (fun < 0.01):
-                theta, dv, a_prime = x
+                x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
+                    th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+                    rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                if (fun < 0.01):
+                    theta, dv, a_prime = x
 
             be.set_twist(theta)
             be.set_bem(dv, a_prime)
