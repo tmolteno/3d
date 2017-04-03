@@ -51,9 +51,6 @@ def get_polar(airfoil, alpha, Re, Mach=None,
        gen_naca=False -> Generate airfoil='NACA xxxx(x)' within XFOIL
     """
     # Circumvent different current working directory problems
-    if (Mach is not None):
-        if Mach > 1.0:
-            raise ValueError("Mach number exceeds 1.0")
     
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
@@ -162,6 +159,9 @@ import signal
 def get_polars(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False):
     polar = None
+    if (Mach is not None):
+        if Mach > 1.0:
+            raise ValueError("Mach number exceeds 1.0")
 
     mp = True
     if (mp):
