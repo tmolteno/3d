@@ -56,10 +56,14 @@ def dM(dv, a_prime, r, dr, omega, u_0, rho=1.225):
     return 2*pi*a_prime*dr*omega*r**2*rho*u*(dr + 2*r)
 
 def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
-    dv, a_prime = x
-    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
-    err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
-    return err
+    try:
+        dv, a_prime = x
+        dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+        err = ((dv - dv2)/dv)**2 + ((a_prime - a_prime2)/a_prime2)**2
+        return err
+    except ValueError:
+        logging.info("ValueError in iteration")
+        return 1e6
 
 from scipy.optimize import minimize
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):

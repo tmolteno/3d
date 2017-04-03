@@ -53,7 +53,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     # Circumvent different current working directory problems
     if (Mach is not None):
         if Mach > 1.0:
-            raise Exception("Mach number exceeds 1.0")
+            raise ValueError("Mach number exceeds 1.0")
     
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
@@ -67,14 +67,14 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
 
-    xf.cmd("PANE")  # Load Buffer Airfoil into PANEL, adding extra points if necessary
-    #xf.cmd("GDES")
-    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    xf.cmd("GDES")
+    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     if (not debug):
         # Disable G(raphics) flag in Plotting options
         xf.cmd("PLOP\nG\n\n", autonewline=False)
         
+    xf.cmd("PANE")  # Load Buffer Airfoil into PANEL, adding extra points if necessary
     # Enter OPER menu
     xf.cmd("OPER")
     xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
