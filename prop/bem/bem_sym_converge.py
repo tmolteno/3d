@@ -111,19 +111,22 @@ print("dT_2 = {}".format(dT_2))  # Equivalent to 8.4
 solnT = simplify(solveset(dT - dT_2, dv))
 pprint(solnT)
 
+print("dv #########################################")
 dv_soln = next(iter(solnT))
 dv_soln = simplify(dv_soln.subs(V_rel, u/sin(phi)))
 dv_soln = simplify(dv_soln.subs(tan(phi), u/v))
 dv_soln = simplify(dv_soln.subs(sin(phi), u/sqrt(v**2 + u**2)))
 dv_soln = dv_soln.subs([(u, u_0 + dv), (v, omega*r*(1 - a_prime))])
 print python(simplify(dv_soln))
+
 # Now calcluate the derivative of dv wrt a_prime and dv.
 
+print("Iterative Solution")
 dv_soln_simp = simplify(dv_soln.subs(a_prime, 0))
 pprint(dv_soln_simp) 
 dvdv= diff(dv - dv_soln_simp, dv)
 print dvdv
-print solve(dvdv)
+print solve(dvdv, dv)
 
 print("a_prime #########################################")
 print("dM = {}".format(dM))  # Equivalent to 8.4
