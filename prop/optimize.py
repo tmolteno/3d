@@ -62,26 +62,10 @@ def jac_func2(x, theta, omega, r, dr, u_0, B, foil_simulator):
     return jac(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B)
     
 def iterate_old(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    u = u_0 + dv
-    #print dv, a_prime, u_0, omega, r
-    v = 2.0*omega*r*(1.0 - a_prime)
-    c = foil_simulator.foil.chord
-    #print u, v
-    phi = arctan(u/v)
-    
-    alpha = theta - phi
-    v_rel = sqrt(u**2 + v**2)
-    C_D = foil_simulator.get_cd(v_rel, alpha)
-    C_L = foil_simulator.get_cl(v_rel, alpha)
-    
+    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+
     # These are created from the sympy file bem.sym.py, and are based on a modified
     # Blade Element Momentum method.
-    #dv_new = B*c*u*(-C_D*tan(phi) + C_L)/(8*pi*r*sin(phi)*tan(phi))
-    #a_prime_new =  B*c*(C_D + C_L*tan(phi))/(B*C_D*c + B*C_L*c*tan(phi) + 8*pi*r*sin(phi))
-    ##print dv_new, a_prime_new
-
-    #dv_new = B*c*u*(-C_D*tan(phi) + C_L)/(4*pi*(dr + 2*r)*sin(phi)*tan(phi))
-    #a_prime_new = B*c*(C_D + C_L*tan(phi))/(B*C_D*c + B*C_L*c*tan(phi) + 4*pi*dr*sin(phi) + 8*pi*r*sin(phi))
 
     dv_new = -B*c*(C_D*(dv + u_0) + C_L*omega*r*(a_prime - 1))*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0))
     a_prime_new = -B*c*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)*(C_D*omega*r*(a_prime - 1) - C_L*(dv + u_0))/(4*pi*omega*r*(dr + 2*r)*(dv + u_0))
@@ -160,7 +144,6 @@ def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
     #dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     #err = error(dv, dv2, a_prime, a_prime2)
 
-    print dv, a_prime, err
     return dv, a_prime, err
 
 def initial_simplex_all(x0):

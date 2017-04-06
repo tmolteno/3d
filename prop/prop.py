@@ -372,7 +372,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 phi = np.arctan(u/v)
 
                 theta_guess = np.degrees(phi)
-                print("Rescan around {}".format(theta_guess))
+                logger.info("Rescan around {}".format(theta_guess))
                 opt = 9999.9
                 for th_deg in np.arange(theta_guess-15, theta_guess+15, 0.5):
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
@@ -385,7 +385,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                         dv = dv_test
                         a_prime = a_prime_test
                         theta = np.radians(th_deg)
-                        print "Best Delta", delta, th_deg
+                        logger.info("Best Delta {} at {} deg".format(delta, th_deg))
 
                 
                 #x, fun = optimize.design_for_dv(foil_simulator=be.fs, \

@@ -77,7 +77,7 @@ module top_half() {
         translate([-50,-50,-hub_h/2-20]) cube([100,100,20]);
     }
 }
-for(a = [0 : (360/n_blades) : 360])  rotate(a) translate([hub_r*2,0,-center_r]) rotate([0,270,0]) blade_root();
+for(a = [0 : (360/n_blades) : 360])  rotate(a) translate([hub_r*2,0,-(center_r+0.5)]) rotate([0,270,0]) blade_root();
 //blade_inside();
 //key();
 //hub();
