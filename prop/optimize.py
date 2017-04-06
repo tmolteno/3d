@@ -11,27 +11,18 @@ def C_drag(alpha):
     return 1.28 * sin(alpha)
 
 def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    u = u_0 + dv
-    #print dv, a_prime, u_0, omega, r
-    v = 2.0*omega*r*(1.0 - a_prime)
-    c = foil_simulator.foil.chord
-    phi = arctan(u/v)
-    alpha = theta - phi
-    v_rel = sqrt(u**2 + v**2)
-    C_D = foil_simulator.get_cd(v_rel, alpha)
-    C_L = foil_simulator.get_cl(v_rel, alpha)
+    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     
     dv_new = -B*c*(C_D*(dv + u_0) + C_L*omega*r*(a_prime - 1))*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0))
     
     a_prime_new = -B*c*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)*(C_D*omega*r*(a_prime - 1) - C_L*(dv + u_0))/(4*pi*omega*r*(dr + 2*r)*(dv + u_0))
     
-
     return dv_new, a_prime_new
 
 def precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     u = u_0 + dv
     #print dv, a_prime, u_0, omega, r
-    v = 2.0*omega*r*(1.0 - a_prime)
+    v = omega*r*(1.0 - a_prime)
     c = foil_simulator.foil.chord
     #print u, v
     phi = arctan(u/v)
