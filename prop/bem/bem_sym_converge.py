@@ -121,13 +121,6 @@ print python(simplify(dv_soln))
 
 # Now calcluate the derivative of dv wrt a_prime and dv.
 
-print("Iterative Solution")
-dv_soln_simp = simplify(dv_soln.subs(a_prime, 0))
-pprint(dv_soln_simp) 
-dvdv= diff(dv - dv_soln_simp, dv)
-print dvdv
-print solve(dvdv, dv)
-
 print("a_prime #########################################")
 print("dM = {}".format(dM))  # Equivalent to 8.4
 print("dM_2 = {}".format(dM_2))  # Equivalent to 8.4
@@ -142,6 +135,31 @@ aprime_soln = simplify(aprime_soln.subs(sin(phi), u/sqrt(v**2 + u**2)))
 aprime_soln = aprime_soln.subs([(u, u_0 + dv), (v, omega*r*(1 - a_prime))])
 
 print simplify(aprime_soln)
+
+print("Iterative Solution in 2 DOF")
+
+minfun = ((dv - dv_soln)/dv)**2 + ((a_prime - aprime_soln)/(a_prime+0.01))**2
+print "minfun={}".format(minfun)
+
+dmindv= simplify(diff(minfun, dv))
+print "dmindv={}".format(dmindv)
+dminda= simplify(diff(minfun, a_prime))
+print "dminda={}".format(dminda)
+
+
+#print("Iterative Solution in 3 DOF")
+
+#dv_goal = Symbol('dv_goal', real=True)
+
+#minfun = (dv - dv_goal)**2 + (dv - dv_soln)**2 + (a_prime - aprime_soln)**2
+#print "minfun={}".format(minfun)
+
+#dmindv= diff(minfun, dv)
+#print "dmindv={}".format(dmindv)
+#dminda= diff(minfun, a_prime)
+#print "dminda={}".format(dminda)
+#dmindtheta= diff(minfun, theta)
+#print "dmindtheta={}".format(dmindtheta)
 
 
 #dm_calc = dM.subs([(tan(phi), u/v), (v, omega*r*(1 - a_prime))])

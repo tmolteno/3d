@@ -2,7 +2,7 @@
     "comment": "This is a multistar 1706, running 3S and a 120mm diameter prop",
     "name": "test_prop",
 
-    "thrust": 6.0,
+    "thrust": 3.0,
     "altitude": 0.0,
     "forward_airspeed": 0.0,
 
@@ -11,7 +11,7 @@
     "motor_no_load_current": 0.5,
     "motor_winding_resistance": 0.405,
 
-    "radius": 0.06,
+    "radius": 0.0635,
     "tip_chord": 0.007,
     "scimitar_percent": 0.0,
     "trailing_edge": 0.25,

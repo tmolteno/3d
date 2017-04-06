@@ -124,11 +124,11 @@ class Prop:
             Limited by mechanical strength, or weight issues
         '''
         thickness_root = self.param.hub_depth*0.8
-        thickness_end = 0.8 / 1000
+        thickness_end = 0.9 / 1000
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 1.2
+        p = 0.87
         k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
         s = thickness_end - k*self.param.radius**-p
         thickness = s + k*r**-p
@@ -366,30 +366,33 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
                 th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
-            if (fun > 0.01):
-                try:
-                    theta = self.blade_elements[-1].get_twist()
-                except Exception:
-                    theta = np.radians(7.0)
-                th_old = np.degrees(theta)
-                logger.info("Rescan around {}".format(th_old))
-                opt = 9399 #min(dv_modified - dv, 7.0)
-                for th_deg in np.arange(th_old-12, th_old+20, 1.0):
+            if (fun > 0.03):
+                u = u_0 + dv_goal
+                v = 2.0*omega*r
+                phi = np.arctan(u/v)
+
+                theta_guess = np.degrees(phi)
+                print("Rescan around {}".format(theta_guess))
+                opt = 9999.9
+                for th_deg in np.arange(theta_guess-15, theta_guess+15, 0.5):
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
                         dv_goal=dv_modified, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                    logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
-                    if (err < 0.01) and (abs(dv_test - dv_modified) < opt):
-                        opt = abs(dv_test - dv_modified)
+                    print("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
+                    delta = abs(dv_test - dv_modified)
+                    if (err < 0.01) and (delta < opt):
+                        opt = delta
                         dv = dv_test
                         a_prime = a_prime_test
                         theta = np.radians(th_deg)
+                        print "Best Delta", delta, th_deg
+
                 
-                x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                    th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
-                    rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                if (fun < 0.01):
-                    theta, dv, a_prime = x
+                #x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
+                    #th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+                    #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                #if (fun < 0.01):
+                    #theta, dv, a_prime = x
 
             be.set_twist(theta)
             be.set_bem(dv, a_prime)
@@ -411,17 +414,17 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
-        coeff = np.polyfit(radial_points[::-1], twist_angles, 10)
+        coeff = np.polyfit(radial_points[::-1], twist_angles, 3)
         twist_angle_poly = np.poly1d(coeff)
         
-        #import matplotlib.pyplot as plt
-        #plt.plot(radial_points[::-1], twist_angles, label='twist angles')
-        #plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
-        #plt.legend()
-        #plt.grid(True)
-        #plt.xlabel('Angle of Attack')
-        #plt.show()
-        #print("Smoothed Blade Form")
+        import matplotlib.pyplot as plt
+        plt.plot(radial_points[::-1], twist_angles, label='twist angles')
+        plt.plot(radial_points[::-1], twist_angle_poly(radial_points[::-1]), label='Smoothed twist angles')
+        plt.legend()
+        plt.grid(True)
+        plt.xlabel('Angle of Attack')
+        plt.show()
+        print("Smoothed Blade Form")
         
         for be in self.blade_elements:
             a = twist_angle_poly(be.r)

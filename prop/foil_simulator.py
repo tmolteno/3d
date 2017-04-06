@@ -112,10 +112,17 @@ class XfoilSimulatedFoil(SimulatedFoil):
         
 
     def get_cl(self, v, alpha):
+        Ma = self.foil.Mach(v)
+        if (Ma > 0.97):
+            return 2.0 * np.pi * alpha
         cl, cd = self.get_polars(v)
         return cl(alpha)
 
     def get_cd(self, v, alpha):
+        Ma = self.foil.Mach(v)
+        if (Ma > 0.97):
+            return 1.28 * np.sin(alpha)
+
         cl, cd = self.get_polars(v)
         return cd(alpha)
 
@@ -127,6 +134,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
         if (reynolds < 30000.0):
             reynolds = 30000.0
+        
+        Ma = self.foil.Mach(velocity)
         
         re_str = str(reynolds)
         if re_str in self.polar_poly_cache:
@@ -157,7 +166,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
             return [cl_poly, cd_poly]
         
-        logger.info("Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, self.foil.Mach(velocity)))
+        logger.info("Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, Ma))
         
         ''' Use XFOIL to simulate the performance of this get_shape
         '''
@@ -201,7 +210,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
             
         # Let Xfoil do its magic
         alfa = np.arange(-30, 30, 1.0)
-        polar = xfoil.get_polars(filename, alfa, reynolds, Mach=self.foil.Mach(velocity),
+        polar = xfoil.get_polars(filename, alfa, reynolds, Mach=Ma,
                                         iterlim=1000, normalize=True)
         #print polar.keys()
         os.remove(filename)

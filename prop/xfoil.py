@@ -64,8 +64,8 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
 
-    xf.cmd("GDES")
-    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    #xf.cmd("GDES")
+    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
     xf.cmd("PCOP")
     if (not debug):
         # Disable G(raphics) flag in Plotting options
@@ -160,7 +160,7 @@ def get_polars(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False):
     polar = None
     if (Mach is not None):
-        if Mach > 0.96:
+        if Mach > 0.98:
             raise ValueError("Mach number exceeds 1.0")
 
     mp = True

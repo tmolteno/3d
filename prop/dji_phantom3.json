@@ -9,9 +9,9 @@
     "motor_no_load_current": 0.45,
     "motor_winding_resistance": 0.117,
 
-    "thrust": 14.0,
+    "thrust": 28.0,
 
-    "radius": 0.10,
+    "radius": 0.12,
     "tip_chord": 0.009,
     "scimitar_percent": 0.0,
     "trailing_edge": 0.4,
