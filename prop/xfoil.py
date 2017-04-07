@@ -96,14 +96,20 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         while test:
             line = xf.readline()
             if line:
-                output.append(line)
                 #print line
                 if re.search("Point added to stored polar", line):
                     test = False
-                if re.search("VISCAL:  Convergence failed", line):
+                elif re.search("VISCAL:  Convergence failed", line):
                     logger.info("Convergence failed a={:4.2f}. Trying harder!".format(a))
 
                     xf.cmd("!")
+                elif re.search("MRCHDU: Convergence failed", line):
+                    pass 
+                elif re.search("TRCHEK2: N2 convergence failed.", line):
+                    pass
+                else:
+                    output.append(line)
+
 
                     #test = False
                 #if re.search("TRCHEK2: N2 convergence failed", line):
@@ -220,7 +226,6 @@ def get_polars(airfoil, alpha, Re, Mach=None,
 def parse_stdout_polar(lines):
     """Converts polar 'PLIS' data to array"""    
     def clean_split(s): return re.split('\s+', s.replace('\n',''))[1:]
-
     # Find location of data from ---- divider
     for i, line in enumerate(lines):
         if re.match('\s*---', line):
@@ -228,6 +233,7 @@ def parse_stdout_polar(lines):
     
     # What columns mean
     data_header = clean_split(lines[dividerIndex-1])
+    print data_header
 
     # Clean info lines
     info = ''.join(lines[dividerIndex-4:dividerIndex-2])
@@ -244,6 +250,7 @@ def parse_stdout_polar(lines):
 
     # Extract, clean, convert to array
     datalines = lines[dividerIndex+1:-2]
+    print datalines
     data_array = np.array(
     [clean_split(dataline) for dataline in datalines], dtype='float')
 
