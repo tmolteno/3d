@@ -141,7 +141,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 logger.warning("Simulation Terminated!. a={:4.2f} taking too long".format(a))
 
                 xf.close()
-                raise Exception('Runtime took too long')
+                raise RuntimError('Runtime took too long')
 
             line = xf.readline()
             if line:
@@ -152,7 +152,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         if debug:
             time.sleep(3)
         return parse_stdout_polar(output)
-    except Exception:
+    except RuntimeError:
         return None
 
 
