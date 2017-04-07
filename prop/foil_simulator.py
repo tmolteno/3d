@@ -113,14 +113,14 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
     def get_cl(self, v, alpha):
         Ma = self.foil.Mach(v)
-        if (Ma > 0.97):
+        if (Ma > 0.97 or abs(alpha) > np.radians(30) ):
             return 2.0 * np.pi * alpha
         cl, cd = self.get_polars(v)
         return cl(alpha)
 
     def get_cd(self, v, alpha):
         Ma = self.foil.Mach(v)
-        if (Ma > 0.97):
+        if (Ma > 0.97 or abs(alpha) > np.radians(30) ):
             return 1.28 * np.sin(alpha)
 
         cl, cd = self.get_polars(v)
@@ -158,10 +158,23 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 alpha.append(pol[0])
                 cl.append(pol[1])
                 cd.append(pol[2])
-            cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
-            cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
+    
+            cl_poly = np.poly1d(np.polyfit(alpha, cl, 9))
+            cd_poly = np.poly1d(np.polyfit(alpha, cd, 9))
             conn.commit()
             #conn.close()
+            
+            if (False):
+                import matplotlib.pyplot as plt
+                plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
+                plt.plot(np.degrees(alpha), cd, 'o', label='Cd')
+                plt.plot(np.degrees(alpha), np.array(cl)/np.array(cd), label='Cl/Cd')
+                plt.legend()
+                plt.grid(True)
+                plt.xlabel('Angle of Attack')
+                plt.title('{}'.format(self.foil))
+                plt.show()
+
             self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
 
             return [cl_poly, cd_poly]
@@ -225,14 +238,12 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if len(alfa) < 5:
             logger.warning("Foil didn't simulate.")
             # Try modifying things.
-            alpha = np.radians(np.linspace(-5, 40, 20))
+            alpha = np.radians(np.linspace(-40, 40, 20))
             cl = 2.0 * np.pi * alpha
             cd = 1.28 * np.sin(alpha)
             cl_poly = np.poly1d(np.polyfit(alpha, cl, 4))
             cd_poly = np.poly1d(np.polyfit(alpha, cd, 4))
             return [cl_poly, cd_poly]
-
-            cd = 1.28 * np.sin(alpha)
         else:
             # Insert into database
             conn = self.get_db()
@@ -267,7 +278,7 @@ if __name__ == "__main__":
     f.set_trailing_edge(0.1)
     fs = XfoilSimulatedFoil(f)
     
-    alpha = np.radians(np.linspace(-30, 40, 40))
+    alpha = np.radians(np.linspace(-30, 30, 40))
     v = 3
     cl = []
     cd = []

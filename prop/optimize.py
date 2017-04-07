@@ -11,7 +11,7 @@ def C_drag(alpha):
     return 1.28 * sin(alpha)
 
 def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     
     dv_new = -B*c*(C_D*(dv + u_0) + C_L*omega*r*(a_prime - 1))*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0))
     
@@ -24,14 +24,12 @@ def precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     #print dv, a_prime, u_0, omega, r
     v = omega*r*(1.0 - a_prime)
     c = foil_simulator.foil.chord
-    #print u, v
     phi = arctan(u/v)
-    
     alpha = theta - phi
     v_rel = sqrt(u**2 + v**2)
     C_D = foil_simulator.get_cd(v_rel, alpha)
     C_L = foil_simulator.get_cl(v_rel, alpha)
-    return C_L, C_D, c
+    return C_L, C_D, c, phi
 
 def lsq(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B):
     minfun=(-B*c*sqrt(omega**2*r**2*(-a_prime + 1)**2 + (dv + u_0)**2)*(C_D*omega*r*(-a_prime + 1) + C_L*(dv + u_0))/(4*pi*omega*r*(dr + 2*r)*(dv + u_0)) + a_prime)**2/(a_prime + 0.01)**2 + (B*c*(C_D*(dv + u_0) - C_L*omega*r*(-a_prime + 1))*sqrt(omega**2*r**2*(-a_prime + 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0)) + dv)**2/dv**2
@@ -44,16 +42,16 @@ def jac(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B):
 
 def min_func2(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     return lsq(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B)
 
 def jac_func2(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     return jac(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B)
     
 def iterate_old(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    C_L, C_D, c = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
 
     # These are created from the sympy file bem.sym.py, and are based on a modified
     # Blade Element Momentum method.
@@ -123,7 +121,7 @@ def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
 
     x0 = [dv_goal, 0.01]
     res = minimize(min_func2, x0, jac=jac_func2, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
-        method='SLSQP', bounds=[(0,2*dv_goal),(0.0,0.2)], options={'disp': True, 'maxiter': 1000})
+        method='SLSQP', bounds=[(0,2*dv_goal),(0.0,0.2)], options={'disp': False, 'maxiter': 1000})
         #method='nelder-mead', options={'initial_simplex': initial_simplex_bem(x0), \
             #'xtol': 1e-8, 'disp': False})
     dv, a_prime = res.x
@@ -150,7 +148,7 @@ def initial_simplex_all(x0):
 def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
     theta, dv, a_prime = x
     try:
-        if (theta < radians(-10.0)):
+        if (theta < radians(-5.0)):
             return 1e6
         if (theta > radians(70)):
             return 1e6
@@ -169,11 +167,14 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
         return 1e6
 
 def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, dr, u_0, B):
-    x0 = [th_guess, dv_guess, a_prime_guess] # theta, dv, a_prime
-    res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
+    C_L, C_D, c, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
+    print  C_L, C_D, c, degrees(phi)
+    x0 = [th_guess, dv_goal, a_prime_guess] # theta, dv, a_prime
+    res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
+        method='SLSQP', bounds=((phi-3,phi+10), (dv_goal/2,2*dv_goal),(0.001,0.1)), options={'disp': True, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
-          method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
-              'xatol': 1e-7, 'disp': True, 'maxiter': 10000})
+          #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
+              #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})
     if (res.fun > 0.1):
         # Restart optimization around previous best
         #x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime

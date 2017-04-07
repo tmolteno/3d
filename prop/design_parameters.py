@@ -83,7 +83,7 @@ class DesignParameters:
         f.close()
 
     def __repr__(self):
-        return "Design Parameters: r={:5.2f}, u_0={}".format(self.radius, self.forward_airspeed)
+        return "Design Parameters: r={:5.3f}, u_0={}".format(self.radius, self.forward_airspeed)
 
 if __name__ == "__main__":
     d = DesignParameters()
