@@ -182,6 +182,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 return [cl_poly, cd_poly]
             else:
                 c.execute("DELETE FROM simulation WHERE (id=?)", (sim_id,))
+                conn.commit()
             
         logger.info("Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, Ma))
         
