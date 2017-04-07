@@ -141,13 +141,23 @@ print("Iterative Solution in 2 DOF")
 minfun = ((dv - dv_soln)/dv)**2 + ((a_prime - aprime_soln)/(a_prime+0.01))**2
 print "minfun={}".format(minfun)
 
-dmindv= simplify(diff(minfun, dv))
+dmindv= (diff(minfun, dv))
 print "dmindv={}".format(dmindv)
-dminda= simplify(diff(minfun, a_prime))
+dminda= (diff(minfun, a_prime))
 print "dminda={}".format(dminda)
 
 
-#print("Iterative Solution in 3 DOF")
+print("Iterative Solution in 2 DOF - Fixed dv")
+
+solnTh = simplify(solveset(dT - dT_2, c))
+pprint(solnTh)
+
+c_soln = next(iter(solnTh))
+c_soln = simplify(c_soln.subs(V_rel, u/sin(phi)))
+c_soln = simplify(c_soln.subs(tan(phi), u/v))
+#dv_soln = simplify(dv_soln.subs(sin(phi), u/sqrt(v**2 + u**2)))
+#dv_soln = dv_soln.subs([(u, u_0 + dv), (v, omega*r*(1 - a_prime))])
+pprint(simplify(c_soln))
 
 #dv_goal = Symbol('dv_goal', real=True)
 
