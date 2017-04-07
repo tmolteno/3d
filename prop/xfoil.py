@@ -109,13 +109,6 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     pass
                 else:
                     output.append(line)
-
-
-                    #test = False
-                #if re.search("TRCHEK2: N2 convergence failed", line):
-                    #xf.cmd("INIT")
-                    #print "Convergence failed at alpha=%f. Initializing boundary layer" % a
-                    #test = False
             else:
                 seconds = time.time() - start_time
                 time.sleep(0.01)
@@ -123,13 +116,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                     logger.warning("Simulation Terminated!. a={:4.2f} taking too long".format(a))
 
                     xf.close()
-                    raise Exception('Runtime took too long')
-                
-        
-                #if (re.search("CPCALC: Local speed too large.", line)):
-                    #print "CPCALC: Local speed too large" % a
-                    #test = False
-
+                    raise RuntimeError('Runtime took too long')
         # List polar and send recognizable end marker
         xf.cmd("PLIS\nENDD\n\n", autonewline=False)
         
@@ -141,7 +128,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 logger.warning("Simulation Terminated!. a={:4.2f} taking too long".format(a))
 
                 xf.close()
-                raise RuntimError('Runtime took too long')
+                raise RuntimeError('Runtime took too long')
 
             line = xf.readline()
             if line:
@@ -200,6 +187,7 @@ def get_polars(airfoil, alpha, Re, Mach=None,
         except KeyboardInterrupt:
             print 'control-c pressed'
             p.terminate()
+            raise Exception("Sismulation Terminated by user")
         else:
             p.close()
         p.join()
@@ -233,7 +221,7 @@ def parse_stdout_polar(lines):
     
     # What columns mean
     data_header = clean_split(lines[dividerIndex-1])
-    #print data_header
+    logger.info(data_header)
 
     # Clean info lines
     info = ''.join(lines[dividerIndex-4:dividerIndex-2])
@@ -250,7 +238,7 @@ def parse_stdout_polar(lines):
 
     # Extract, clean, convert to array
     datalines = lines[dividerIndex+1:-2]
-    #print datalines
+    logger.info(datalines)
     data_array = np.array(
     [clean_split(dataline) for dataline in datalines], dtype='float')
 
