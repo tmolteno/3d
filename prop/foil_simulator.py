@@ -165,7 +165,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 conn.commit()
                 #conn.close()
                 
-                if (True):
+                if (False):
                     import matplotlib.pyplot as plt
                     plt.plot(np.degrees(alpha), cl_poly(np.array(alpha)), label='Cl fit')
                     plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
@@ -181,6 +181,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
                 return [cl_poly, cd_poly]
             else:
+                logger.info("Cleaning up simulation with only {} points.".format(len(alpha)))
                 c.execute("DELETE FROM simulation WHERE (id=?)", (sim_id,))
                 conn.commit()
             

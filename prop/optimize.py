@@ -1,14 +1,16 @@
+'''
+   Proply Core Optimisation Routines
+   
+   Authon: Tim Molteno (c) 2017.
+'''
 from numpy import pi, sin, cos, tan, arctan, degrees, sqrt, radians, arange, zeros, array
 
 import logging
 logger = logging.getLogger(__name__)
 
-def C_lift(alpha):
-    Clo = 2.0 * pi * alpha 
-    return Clo
-
-def C_drag(alpha):
-    return 1.28 * sin(alpha)
+def rpm2omega(rpm):
+    rps = rpm / 60.0
+    return 2*pi*rps
 
 def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
@@ -21,7 +23,6 @@ def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
 
 def precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     u = u_0 + dv
-    #print dv, a_prime, u_0, omega, r
     v = omega*r*(1.0 - a_prime)
     c = foil_simulator.foil.chord
     phi = arctan(u/v)
@@ -106,6 +107,7 @@ def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
         logging.info("ValueError in iteration")
         return 1e6
 
+
 from scipy.optimize import minimize, fixed_point
 
 def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
@@ -115,12 +117,8 @@ def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     return array([dv2, a_prime2])
 
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
-
-    rps = rpm / 60.0
-    omega = rps * 2 * pi
-
     x0 = [dv_goal, 0.01]
-    res = minimize(min_func2, x0, jac=jac_func2, args=(theta, omega, r, dr, u_0, B, foil_simulator), \
+    res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm)s, r, dr, u_0, B, foil_simulator), \
         method='SLSQP', bounds=[(0,2*dv_goal),(0.0,0.2)], options={'disp': False, 'maxiter': 1000})
         #method='nelder-mead', options={'initial_simplex': initial_simplex_bem(x0), \
             #'xtol': 1e-8, 'disp': False})
@@ -130,8 +128,8 @@ def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
     #x0 = [dv, a_prime]
     #res = fixed_point(fp_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), maxiter=10000)
     #dv, a_prime = res
-    #dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
-    #err = error(dv, dv2, a_prime, a_prime2)
+    #dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)s
+    #err = error(dv, dv2, a_prime, a_prime2)s
 
     return dv, a_prime, err
 
@@ -156,9 +154,8 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
             return a_prime*1000
         if (a_prime < 0.0):
             return 10 - a_prime*1000
-        omega = (rpm/60) * 2 * pi
-
-        dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+s
+        dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
         err += ((dv - goal)/goal)**2
         return err
