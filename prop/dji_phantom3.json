@@ -9,7 +9,7 @@
     "motor_no_load_current": 0.45,
     "motor_winding_resistance": 0.117,
 
-    "thrust": 28.0,
+    "thrust": 18.0,
 
     "radius": 0.12,
     "tip_chord": 0.009,
