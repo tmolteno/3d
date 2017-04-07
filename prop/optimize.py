@@ -118,7 +118,7 @@ def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
 
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
     x0 = [dv_goal, 0.01]
-    res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm)s, r, dr, u_0, B, foil_simulator), \
+    res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm), r, dr, u_0, B, foil_simulator), \
         method='SLSQP', bounds=[(0,2*dv_goal),(0.0,0.2)], options={'disp': False, 'maxiter': 1000})
         #method='nelder-mead', options={'initial_simplex': initial_simplex_bem(x0), \
             #'xtol': 1e-8, 'disp': False})
@@ -154,7 +154,7 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
             return a_prime*1000
         if (a_prime < 0.0):
             return 10 - a_prime*1000
-s
+
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
         err += ((dv - goal)/goal)**2
