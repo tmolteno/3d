@@ -13,3 +13,8 @@
 
 * [DONE] Use multiprocessing for polars
 * Reduce polling CPU time.
+
+
+# Design Enhancements
+
+* Move to an optimizer where dv is constrained, and chord and alpha are the optimization variables, and the goal is to minimize  a_prime.
