@@ -368,7 +368,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             theta, dv, a_prime = x
             if (fun > 0.03):
                 u = u_0 + dv_goal
-                v = 2.0*omega*r
+                v = omega*r
                 phi = np.arctan(u/v)
 
                 theta_guess = np.degrees(phi)

@@ -33,8 +33,9 @@ class BladeElement:
         self.u_0 = u_0
 
     def get_zero_cl_angle(self):
-        self.zero_lift_angle = self.fs.get_zero_cl_angle(self.velocity)
-        return self.zero_lift_angle
+        return 0.0 
+        #self.zero_lift_angle = self.fs.get_zero_cl_angle(self.velocity)
+        #return self.zero_lift_angle
 
     def set_twist(self, twist):
         self._twist = twist
@@ -66,7 +67,7 @@ class BladeElement:
         self.a_prime = a_prime
         
         u = self.u_0 + dv
-        v = 2.0*self.omega*self.r*(1.0 - self.a_prime)
+        v = self.omega*self.r*(1.0 - self.a_prime)
         self.velocity = np.sqrt(u**2 + v**2)
 
 

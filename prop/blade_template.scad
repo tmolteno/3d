@@ -23,7 +23,7 @@ $fn=31;
 center_r = center_hole / 2;
 key_r = hub_diameter / 3.5;
 hub_h = hub_height + 2;
-hub_r = hub_diameter / 2 + 0.5;
+hub_r = hub_diameter / 2 + 1;
 
 module blade_inside() {
     hull() {
@@ -38,9 +38,11 @@ module blade_inside() {
 module key() {
     translate([center_hole/2-key_r*cos(120)+1, 0,0]) hull() {
         for(a =  [120:120:350]) {
-            rotate(a) translate([key_r,0,-hub_h]) cylinder(d=1, h=hub_h);
+            rotate(a) translate([key_r,0,-hub_h]) sphere(d=1);
+            rotate(a) translate([key_r,0,0]) sphere(d=1);
         }
-       translate([0 ,0,-hub_h]) cylinder(d=2, h=hub_h);
+       translate([0 ,0,-hub_h]) sphere(d=1);
+       translate([0 ,0, 0]) sphere(d=1);
     }
     blade_inside();
 }

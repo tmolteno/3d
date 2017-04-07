@@ -160,8 +160,8 @@ def get_polars(airfoil, alpha, Re, Mach=None,
              normalize=True, iterlim=None, gen_naca=False):
     polar = None
     if (Mach is not None):
-        if Mach > 0.98:
-            raise ValueError("Mach number exceeds 1.0")
+        if Mach > 1.0:
+            raise ValueError("Mach number ({}) exceeds 1.0".format(Mach))
 
     mp = True
     if (mp):
