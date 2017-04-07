@@ -158,27 +158,31 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 alpha.append(pol[0])
                 cl.append(pol[1])
                 cd.append(pol[2])
-    
-            cl_poly = np.poly1d(np.polyfit(alpha, cl, 9))
-            cd_poly = np.poly1d(np.polyfit(alpha, cd, 9))
-            conn.commit()
-            #conn.close()
+            if (len(alpha) > 20):
+                
+                cl_poly = np.poly1d(np.polyfit(alpha, cl, 9))
+                cd_poly = np.poly1d(np.polyfit(alpha, cd, 9))
+                conn.commit()
+                #conn.close()
+                
+                if (True):
+                    import matplotlib.pyplot as plt
+                    plt.plot(np.degrees(alpha), cl_poly(np.array(alpha)), label='Cl fit')
+                    plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
+                    plt.plot(np.degrees(alpha), cd, 'o', label='Cd')
+                    plt.plot(np.degrees(alpha), np.array(cl)/np.array(cd), label='Cl/Cd')
+                    plt.legend()
+                    plt.grid(True)
+                    plt.xlabel('Angle of Attack')
+                    plt.title('{}'.format(self.foil))
+                    plt.show()
+
+                self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
+
+                return [cl_poly, cd_poly]
+            else:
+                c.execute("DELETE FROM simulation WHERE (id=?)", (sim_id,))
             
-            if (False):
-                import matplotlib.pyplot as plt
-                plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
-                plt.plot(np.degrees(alpha), cd, 'o', label='Cd')
-                plt.plot(np.degrees(alpha), np.array(cl)/np.array(cd), label='Cl/Cd')
-                plt.legend()
-                plt.grid(True)
-                plt.xlabel('Angle of Attack')
-                plt.title('{}'.format(self.foil))
-                plt.show()
-
-            self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
-
-            return [cl_poly, cd_poly]
-        
         logger.info("Simulating Foil {}, at Re={} Ma={:5.2f}".format(self.foil, reynolds, Ma))
         
         ''' Use XFOIL to simulate the performance of this get_shape
