@@ -233,7 +233,7 @@ def parse_stdout_polar(lines):
     
     # What columns mean
     data_header = clean_split(lines[dividerIndex-1])
-    print data_header
+    #print data_header
 
     # Clean info lines
     info = ''.join(lines[dividerIndex-4:dividerIndex-2])
@@ -250,7 +250,7 @@ def parse_stdout_polar(lines):
 
     # Extract, clean, convert to array
     datalines = lines[dividerIndex+1:-2]
-    print datalines
+    #print datalines
     data_array = np.array(
     [clean_split(dataline) for dataline in datalines], dtype='float')
 
