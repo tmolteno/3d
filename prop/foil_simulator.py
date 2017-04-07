@@ -165,17 +165,17 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 conn.commit()
                 #conn.close()
                 
-                if (False):
-                    import matplotlib.pyplot as plt
-                    plt.plot(np.degrees(alpha), cl_poly(np.array(alpha)), label='Cl fit')
-                    plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
-                    plt.plot(np.degrees(alpha), cd, 'o', label='Cd')
-                    plt.plot(np.degrees(alpha), np.array(cl)/np.array(cd), label='Cl/Cd')
-                    plt.legend()
-                    plt.grid(True)
-                    plt.xlabel('Angle of Attack')
-                    plt.title('{}'.format(self.foil))
-                    plt.show()
+                #if (False):
+                    #import matplotlib.pyplot as plt
+                    #plt.plot(np.degrees(alpha), cl_poly(np.array(alpha)), label='Cl fit')
+                    #plt.plot(np.degrees(alpha), cl, 'x', label='Cl')
+                    #plt.plot(np.degrees(alpha), cd, 'o', label='Cd')
+                    #plt.plot(np.degrees(alpha), np.array(cl)/np.array(cd), label='Cl/Cd')
+                    #plt.legend()
+                    #plt.grid(True)
+                    #plt.xlabel('Angle of Attack')
+                    #plt.title('{}'.format(self.foil))
+                    #plt.show()
 
                 self.polar_poly_cache[re_str] =  [cl_poly, cd_poly]
 
