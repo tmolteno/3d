@@ -126,7 +126,12 @@ class XfoilSimulatedFoil(SimulatedFoil):
         cl, cd = self.get_polars(v)
         return cd(alpha)
 
-    def get_polars(self, velocity):
+    def get_mach(self, velocity):
+        # Round the Mach number to the neares 0.05
+        Ma = np.round(self.foil.Mach(velocity)*2, 1)/2
+        return Ma
+    
+    def get_reynolds(self, velocity):
         Re = self.foil.Reynolds(velocity)
         re_space = np.round(np.geomspace(30000, 2e6, 20), -4)
         idx = np.argmin(abs(re_space - Re))
@@ -134,16 +139,11 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
         if (reynolds < 30000.0):
             reynolds = 30000.0
-        
-        # Round the Mach number to the neares 0.05
-        Ma = np.round(self.foil.Mach(velocity)*2, 1)/2
-        
-        re_str = str(reynolds)
-        if re_str in self.polar_poly_cache:
-            return self.polar_poly_cache[re_str]
+            
+        return reynolds
 
-        logger.info("get_polars(Re={:6.2g}, reynolds={})".format(Re, reynolds))
-        # Check if we're in the databse
+    def get_from_db(self, velocity, reynolds, Ma):
+        sim_id = None
         conn = self.get_db()
         c = conn.cursor()
         c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?) AND (s.mach = ?)", (self.foil_id, reynolds, Ma))
@@ -151,6 +151,23 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if (result != None):
             # Read from database
             sim_id = result[0]
+        conn.commit()
+        return sim_id
+            
+    def get_polars(self, velocity):
+        
+        reynolds = self.get_reynolds(velocity)
+        Ma = self.get_mach(velocity)
+        
+        re_str = str(reynolds)
+        if re_str in self.polar_poly_cache:
+            return self.polar_poly_cache[re_str]
+
+        # Check if we're in the databse
+        sim_id = self.get_from_db(velocity, reynolds, Ma)
+        if (sim_id != None):
+            conn = self.get_db()
+            c = conn.cursor()
             logger.info("retrieving from database sim_id=%d, %f" % (sim_id, reynolds))
             alpha = []
             cl = []
@@ -263,7 +280,6 @@ class XfoilSimulatedFoil(SimulatedFoil):
                 c.execute("INSERT INTO polar(sim_id, alpha, cl, cd, cdp, cm, Top_Xtr, Bot_Xtr) VALUES (?,?,?,?,?,?,?,?)", 
                           (sim_id, a, cl[i], cd[i], cdp[i], cm[i], top_xtr[i], bot_xtr[i]))
             conn.commit()
-            #conn.close()
         
         return self.get_polars(velocity)
 
