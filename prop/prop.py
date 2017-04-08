@@ -359,22 +359,22 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         dv = dv_goal  # start guess
         a_prime = 0.001  # start guess
         prev_twist = 0.0
+
         for r in radial_points:
+            u = u_0 + dv_goal
+            v = omega*r
+            theta_guess = np.arctan(u/v)
+            
             dv_modified = dv_goal*self.tip_loss(r)
             be = self.new_foil(r, optimum_rpm, prev_twist)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+                th_guess=theta_guess, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.03):
-                u = u_0 + dv_goal
-                v = omega*r
-                phi = np.arctan(u/v)
-
-                theta_guess = np.degrees(phi)
                 logger.info("Rescan around {}".format(theta_guess))
                 opt = 9999.9
-                for th_deg in np.arange(theta_guess-15, theta_guess+15, 0.5):
+                for th_deg in np.arange(np.degrees(theta_guess)-5, np.degrees(theta_guess)+15, 0.5):
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
                         dv_goal=dv_modified, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
@@ -520,7 +520,7 @@ if __name__ == "__main__":
     print("Airspeed at propellers (hovering): %f" % (param.forward_airspeed + dv))
 
     if (args.bem):
-        p.n_blades = 2
+        p.n_blades = 3
         thrust = param.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
