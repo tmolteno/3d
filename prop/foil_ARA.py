@@ -86,6 +86,7 @@ class ARADFoil(Foil):
     ''' Interpolate between thickness 0.06 and 0.2 '''
     def __init__(self, chord, thickness):
         Foil.__init__(self,chord, thickness)
+        t = np.array([0.06, 0.10, 0.13, 0.2])
         if (self.thickness <= 0.06):
             self.xl, self.yl, self.xu, self.yu = self.load_selig('foils/ara_d_6.dat')
             self.yu *= self.thickness / 0.06
@@ -109,8 +110,9 @@ class ARADFoil(Foil):
         return "ARAD2 %5.2f,%5.2f" % (self.thickness, self.trailing_edge)
 
     def __repr__(self):
-      return "ARAD ch={:5.1f}mm, thickness={:4.2f}%  depth={:4.2}mm te={:4.3f}".format(self.chord*1000, self.thickness*100, \
-          (self.chord*self.thickness)*1000, self.trailing_edge)
+        hsh = self.hash()
+        return "ARAD ch={:5.1f}mm, thickness={:4.2f}%  depth={:4.2}mm te={:4.3f} hsh={}".format(self.chord*1000, self.thickness*100, \
+            (self.chord*self.thickness)*1000, self.trailing_edge, hsh)
   
   
     def get_shape_points(self, n):
