@@ -135,7 +135,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
         if (reynolds < 30000.0):
             reynolds = 30000.0
         
-        Ma = self.foil.Mach(velocity)
+        # Round the Mach number to the neares 0.05
+        Ma = np.round(self.foil.Mach(velocity)*2, 1)/2
         
         re_str = str(reynolds)
         if re_str in self.polar_poly_cache:
@@ -145,7 +146,7 @@ class XfoilSimulatedFoil(SimulatedFoil):
         # Check if we're in the databse
         conn = self.get_db()
         c = conn.cursor()
-        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?)", (self.foil_id, reynolds, ))
+        c.execute("SELECT s.id FROM simulation s WHERE (s.foil_id=?) AND (s.reynolds = ?) AND (s.mach = ?)", (self.foil_id, reynolds, Ma))
         result = c.fetchone()
         if (result != None):
             # Read from database
@@ -254,8 +255,8 @@ class XfoilSimulatedFoil(SimulatedFoil):
             # Insert into database
             conn = self.get_db()
             c = conn.cursor()
-            c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, reynolds, self.foil.Mach(velocity)))
-            c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?)", (self.foil_id, reynolds, ))
+            c.execute("INSERT INTO simulation(foil_id, reynolds, mach) VALUES (?,?, ?)", (self.foil_id, reynolds, Ma))
+            c.execute("SELECT id FROM simulation WHERE (foil_id=?) AND (reynolds=?) AND (mach=?)", (self.foil_id, reynolds, Ma ))
             sim_id = c.fetchone()[0]
 
             for i, a in enumerate(alfa):
