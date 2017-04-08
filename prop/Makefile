@@ -6,7 +6,7 @@
 ##
 TARGET=test_prop
 
-.PHONY: bem blade scad
+.PHONY: bem blade scad push pull
 
 all:	bem scad
 
@@ -25,6 +25,12 @@ sym:
 # Erases the database, so don't do this by mistake.
 db:
 	rm foil_simulator.db
+
+pull:
+	rsync -zv tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db .
+
+push:
+	rsync -zv foil_simulator.db tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db
 
 .SECONDARY:
 
