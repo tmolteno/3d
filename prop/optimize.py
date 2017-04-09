@@ -27,6 +27,7 @@ def precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     c = foil_simulator.foil.chord
     phi = arctan(u/v)
     alpha = theta - phi
+    #print alpha
     v_rel = sqrt(u**2 + v**2)
     C_D = foil_simulator.get_cd(v_rel, alpha)
     C_L = foil_simulator.get_cl(v_rel, alpha)
@@ -115,16 +116,13 @@ def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
     x0 = [dv_goal, 0.01]
     constraints = [
-        {'type': 'ineq', 'fun': lambda x: x[0] - dv_goal/2},
-        {'type': 'ineq', 'fun': lambda x: 2*dv_goal - x[0]},
+        {'type': 'ineq', 'fun': lambda x: x[0]},
+        {'type': 'ineq', 'fun': lambda x: 3*dv_goal - x[0]},
         {'type': 'ineq', 'fun': lambda x: x[1]},
         {'type': 'ineq', 'fun': lambda x: 0.3 - x[1]}]
     res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm), r, dr, u_0, B, foil_simulator), \
         method='SLSQP', constraints=constraints, options={'disp': False, 'maxiter': 1000})
-        #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
-        #method='nelder-mead', options={'initial_simplex': initial_simplex_bem(x0), \
-            #'xtol': 1e-8, 'disp': False})
-    if (res.success == False):
+    if (res.fun > 0.1):
         res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm), r, dr, u_0, B, foil_simulator), \
             method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 2000})
     dv, a_prime = res.x
