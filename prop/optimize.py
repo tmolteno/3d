@@ -96,10 +96,6 @@ def initial_simplex_bem(x0):
 
 def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    if (a_prime > 0.35):
-        return a_prime*1000
-    if (a_prime < 0.0):
-        return 10 - a_prime*1000
     try:
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
         return error(dv, dv2, a_prime, a_prime2)
@@ -118,19 +114,22 @@ def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
 
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
     x0 = [dv_goal, 0.01]
+    constraints = [
+        {'type': 'ineq', 'fun': lambda x: x[0] - dv_goal/2},
+        {'type': 'ineq', 'fun': lambda x: 2*dv_goal - x[0]},
+        {'type': 'ineq', 'fun': lambda x: x[1]},
+        {'type': 'ineq', 'fun': lambda x: 0.3 - x[1]}]
     res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm), r, dr, u_0, B, foil_simulator), \
-        method='SLSQP', bounds=[(0,2*dv_goal),(0.0,0.2)], options={'disp': False, 'maxiter': 1000})
+        method='SLSQP', constraints=constraints, options={'disp': False, 'maxiter': 1000})
+        #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         #method='nelder-mead', options={'initial_simplex': initial_simplex_bem(x0), \
             #'xtol': 1e-8, 'disp': False})
+    if (res.success == False):
+        res = minimize(min_func2, x0, jac=jac_func2, args=(theta, rpm2omega(rpm), r, dr, u_0, B, foil_simulator), \
+            method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 2000})
     dv, a_prime = res.x
     err = res.fun
     
-    #x0 = [dv, a_prime]
-    #res = fixed_point(fp_func, x0, args=(theta, omega, r, dr, u_0, B, foil_simulator), maxiter=10000)
-    #dv, a_prime = res
-    #dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)s
-    #err = error(dv, dv2, a_prime, a_prime2)s
-
     return dv, a_prime, err
 
 def initial_simplex_all(x0):
@@ -146,15 +145,6 @@ def initial_simplex_all(x0):
 def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
     theta, dv, a_prime = x
     try:
-        if (theta < radians(-5.0)):
-            return 1e6
-        if (theta > radians(70)):
-            return 1e6
-        if (a_prime > 0.35):
-            return a_prime*1000
-        if (a_prime < 0.0):
-            return 10 - a_prime*1000
-
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
         err += ((dv - goal)/(dv + goal))**2
@@ -175,8 +165,8 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
         {'type': 'ineq', 'fun': lambda x: x[2]},
         {'type': 'ineq', 'fun': lambda x: 0.2 - x[2]}]
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
+        #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         method='SLSQP', constraints=constraints, options={'disp': True, 'maxiter': 1000})
-        #method='SLSQP', bounds=((phi-radians(8),phi+radians(10)), (dv_goal/2,2*dv_goal),(0.0,0.1)), options={'disp': True, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
           #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
               #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})

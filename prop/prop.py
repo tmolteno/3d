@@ -178,6 +178,7 @@ class Prop:
         thrust = 0.0
         for be in self.blade_elements:
             be.rpm = rpm
+            dv_goal = be.dv
             dv, a_prime, err = be.bem(self.n_blades)
 
             if (err < 0.01):
@@ -190,9 +191,10 @@ class Prop:
                     dv, a_prime, dT, dM, dT/dM))
 
             else:
-                logger.warning("r={}: BEM did not converge {} {} {}".format(be.r, be.dv, dv, a_prime, err))
-                be.dv = 1.0
-                be.a_prime = 0.0
+                logger.warning("r={}: BEM did not converge {} {} {}".format(be.r, be.dv, dv_goal, a_prime, err))
+                if (err > 0.5):
+                    be.dv = 1.0
+                    be.a_prime = 0.0
 
         return torque, thrust
 
@@ -343,7 +345,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         e = (self.n_blades*(self.param.radius - r*0.95))/(2.0*r*np.sin(phi))
         F = 2.0 * np.arccos(np.exp(-e)) / np.pi
         
-        hub_loss = (np.exp(-(self.param.radius/(10.0*r + self.param.hub_radius))**3))
+        hub_loss = np.cos(phi)
         return F*hub_loss 
         
     def design_bem(self, optimum_torque, optimum_rpm, thrust):
