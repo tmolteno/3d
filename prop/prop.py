@@ -339,8 +339,12 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         torque, thrust = self.get_forces(optimum_rpm)
         return torque
 
-    def tip_loss(self, r):
-        return (np.exp(-(self.param.radius/(10.0*r))**3))
+    def tip_loss(self, r, phi):
+        e = (self.n_blades*(self.param.radius - r*0.95))/(2.0*r*np.sin(phi))
+        F = 2.0 * np.arccos(np.exp(-e)) / np.pi
+        
+        hub_loss = (np.exp(-(self.param.radius/(10.0*r + self.param.hub_radius))**3))
+        return F*hub_loss 
         
     def design_bem(self, optimum_torque, optimum_rpm, thrust):
         self.blade_elements = []
@@ -360,20 +364,30 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         a_prime = 0.001  # start guess
         prev_twist = 0.0
 
+        #import matplotlib.pyplot as plt
+        #phi_all = np.arctan((u_0 + dv_goal)/(omega*radial_points))
+        #plt.plot(radial_points, self.tip_loss(radial_points, 0.1), label='tip loss')
+        #plt.plot(radial_points, phi_all, label='phi')
+        #plt.plot(radial_points, np.cos(phi_all), label='cos(phi)')
+        #plt.legend()
+        #plt.grid(True)
+        #plt.xlabel('radius')
+        #plt.show()
+        #return None
         for r in radial_points:
             u = u_0 + dv_goal
             v = omega*r
-            theta_guess = np.arctan(u/v)
+            phi = np.arctan(u/v)
             
-            dv_modified = dv_goal*self.tip_loss(r)
+            dv_modified = dv_goal*self.tip_loss(r, phi)
             be = self.new_foil(r, optimum_rpm, prev_twist)
             x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.03):
-                logger.info("Rescan around {}".format(theta_guess))
+                logger.info("Rescan around {}".format(np.degrees(phi)))
                 opt = 9999.9
-                for th_deg in np.arange(np.degrees(theta_guess)-5, np.degrees(theta_guess)+15, 0.5):
+                for th_deg in np.arange(np.degrees(phi)-5, np.degrees(phi)+15, 0.5):
                     dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
                         dv_goal=dv_modified, theta = np.radians(th_deg), \
                         rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
