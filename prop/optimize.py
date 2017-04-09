@@ -3,7 +3,7 @@
    
    Authon: Tim Molteno (c) 2017.
 '''
-from numpy import pi, sin, cos, tan, arctan, degrees, sqrt, radians, arange, zeros, array
+from numpy import pi, sin, cos, tan, arctan, degrees, sqrt, radians, arange, zeros, array, log
 
 import logging
 logger = logging.getLogger(__name__)
@@ -157,18 +157,18 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
-        err += ((dv - goal)/goal)**2
-        return err
+        err += ((dv - goal)/(dv + goal))**2
+        return log(err)
     except ValueError as ve:
         logging.info("ValueError in iteration {}".format(ve))
         return 1e6
 
-def design_for_dv(foil_simulator, th_guess, dv_guess, a_prime_guess, dv_goal, rpm, r, dr, u_0, B):
+def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
     C_L, C_D, c, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
     print  C_L, C_D, c, degrees(phi)
-    x0 = [th_guess, dv_goal, a_prime_guess] # theta, dv, a_prime
+    x0 = [phi, dv_goal, 0.001] # theta, dv, a_prime
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
-        method='SLSQP', bounds=((phi-3,phi+10), (dv_goal/2,2*dv_goal),(0.001,0.1)), options={'disp': True, 'maxiter': 1000})
+        method='SLSQP', bounds=((phi-8,phi+10), (dv_goal/2,2*dv_goal),(0.001,0.1)), options={'disp': True, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
           #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
               #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})

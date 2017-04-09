@@ -367,8 +367,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             
             dv_modified = dv_goal*self.tip_loss(r)
             be = self.new_foil(r, optimum_rpm, prev_twist)
-            x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                th_guess=theta_guess, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
             theta, dv, a_prime = x
             if (fun > 0.03):
@@ -520,7 +519,7 @@ if __name__ == "__main__":
     print("Airspeed at propellers (hovering): %f" % (param.forward_airspeed + dv))
 
     if (args.bem):
-        p.n_blades = 3
+        p.n_blades = param.blades
         thrust = param.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)

@@ -8,6 +8,9 @@
     "motor_winding_resistance": 0.207,
     
     "radius": 0.0625,
+    "thrust": 5.0,
+    "blades": 5,
+
     "tip_chord": 0.005,
     "scimitar_percent": 7.0,
     "trailing_edge": 0.5,

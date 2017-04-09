@@ -8,6 +8,7 @@ class DesignParameters:
         self.name = "hello world"
         self.radius = 0.0625    # m
         self.thrust = 2.0    # Newtons
+        self.blades = 2    
         self.tip_chord = 7.0 / 1000
         self.hub_radius = 5.0 / 1000
         self.trailing_edge = 0.5 / 1000
@@ -37,6 +38,7 @@ class DesignParameters:
         
         configdict['radius'] = self.radius
         configdict['thrust'] = self.thrust
+        configdict['blades'] = self.blades
         configdict['tip_chord'] = self.tip_chord
         configdict['hub_radius'] = self.hub_radius
         configdict['hub_depth'] = self.hub_depth
@@ -61,6 +63,7 @@ class DesignParameters:
         self.name = settings['name']
 
         self.thrust = settings['thrust']
+        self.blades = settings['blades']
         self.radius = settings['radius']
         self.tip_chord = settings['tip_chord']
         self.hub_radius = settings['hub_radius']

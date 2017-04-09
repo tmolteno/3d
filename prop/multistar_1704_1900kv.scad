@@ -1,7 +1,7 @@
 center_hole = 5;
  hub_diameter = 10.000000;
  hub_height = 5.000000;
- n_blades = 2;
+ n_blades = 3;
  blade_name = "multistar_1704_1900kv_blade.stl";
 /*
  * The parameters for the prop are added to this template by the design programme.

@@ -10,6 +10,7 @@
     "motor_winding_resistance": 0.117,
 
     "thrust": 8.0,
+    "blades": 2,
 
     "radius": 0.12,
     "tip_chord": 0.009,
