@@ -158,7 +158,7 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
         dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
         err += ((dv - goal)/(dv + goal))**2
-        return log(err)
+        return (err)
     except ValueError as ve:
         logging.info("ValueError in iteration {}".format(ve))
         return 1e6
@@ -166,13 +166,22 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
     C_L, C_D, c, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
     print  C_L, C_D, c, degrees(phi)
-    x0 = [phi, dv_goal, 0.001] # theta, dv, a_prime
+    x0 = [phi, dv_goal, 0.002] # theta, dv, a_prime
+    constraints = [
+        {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
+        {'type': 'ineq', 'fun': lambda x: (phi+radians(10)) - x[0]},
+        {'type': 'ineq', 'fun': lambda x: x[1] - dv_goal/2},
+        {'type': 'ineq', 'fun': lambda x: 2*dv_goal - x[1]},
+        {'type': 'ineq', 'fun': lambda x: x[2]},
+        {'type': 'ineq', 'fun': lambda x: 0.2 - x[2]}]
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
-        method='SLSQP', bounds=((phi-8,phi+10), (dv_goal/2,2*dv_goal),(0.001,0.1)), options={'disp': True, 'maxiter': 1000})
+        method='SLSQP', constraints=constraints, options={'disp': True, 'maxiter': 1000})
+        #method='SLSQP', bounds=((phi-radians(8),phi+radians(10)), (dv_goal/2,2*dv_goal),(0.0,0.1)), options={'disp': True, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
           #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
               #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})
-    #if (res.fun > 0.1):
+    if (res.fun > 0.1):
+        res.x[0] = phi
         ## Restart optimization around previous best
         ##x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
         #x0 = [radians(5), dv_goal, 0.01] # theta, dv, a_prime
