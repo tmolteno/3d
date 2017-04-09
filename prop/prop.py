@@ -504,7 +504,7 @@ if __name__ == "__main__":
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--arad', action='store_true', help="Use ARA-D airfoils (slow)")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
-    parser.add_argument('--resolution', type=float, default=6.0, help="The spacing between foil (mm).")
+    parser.add_argument('--resolution', type=int, default=40, help="The number of blade elements.")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
@@ -517,22 +517,25 @@ if __name__ == "__main__":
 
     # Decode Design Parameters
     param = DesignParameters(args.param)
+    resolution_m = (param.radius - param.hub_radius) / args.resolution
     if args.arad:
-        p = ARADProp(param, args.resolution / 1000)
+        p = ARADProp(param, resolution_m)
     elif args.naca:
-        p = NACAProp(param, args.resolution / 1000)
+        p = NACAProp(param, resolution_m)
     else:
-        p = Prop(param, args.resolution / 1000)
+        p = Prop(param, resolution_m)
 
     m = motor_model.Motor(Kv = param.motor_Kv, I0 = param.motor_no_load_current, Rm = param.motor_winding_resistance)
     optimum_torque, optimum_rpm = m.get_Qmax(param.motor_volts)
     power = m.get_Pmax(param.motor_volts)
     
     print("\nPROPLY: Automatic propeller Design\n\n")
-    print("Optimum Motor Torque %f at %f RPM, power=%f" % (optimum_torque, optimum_rpm, power))
+    print("Optimum Motor Torque {:5.3f} Nm at {:5.1f} RPM, power={:5.1f} Watts".format(optimum_torque, optimum_rpm, power))
+    print("Spanwise resolution (mm) {:4.2f}".format(resolution_m*1000))
     print(param)
     dv = optimize.dv_from_thrust(param.thrust, param.radius, param.forward_airspeed,)
-    print("Airspeed at propellers (hovering): %f" % (param.forward_airspeed + dv))
+    print("Airspeed at propellers (hovering): {:4.2f} m/s".format(param.forward_airspeed + dv))
+    print("\n\n")
 
     if (args.bem):
         p.n_blades = param.blades
