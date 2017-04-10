@@ -113,14 +113,14 @@ class XfoilSimulatedFoil(SimulatedFoil):
 
     def get_cl(self, v, alpha):
         Ma = self.foil.Mach(v)
-        if (Ma > 0.97 or abs(alpha) > np.radians(30) ):
+        if (Ma > 0.97 or abs(alpha) >= np.radians(30) ):
             return 2.0 * np.pi * alpha
         cl, cd = self.get_polars(v)
         return cl(alpha)
 
     def get_cd(self, v, alpha):
         Ma = self.foil.Mach(v)
-        if (Ma > 0.97 or abs(alpha) > np.radians(30) ):
+        if (Ma > 0.97 or abs(alpha) >= np.radians(30) ):
             return 1.28 * np.sin(alpha)
 
         cl, cd = self.get_polars(v)
