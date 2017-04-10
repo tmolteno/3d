@@ -69,6 +69,13 @@ class Prop:
             k/r = tip_chord
             c = k / r
         '''
+        k = self.param.tip_chord * self.param.radius
+        c = k / r
+        
+        upper_limit = (2.0*np.pi*r / (self.n_blades+2.0))/np.cos(twist)
+
+        c = np.minimum(c,upper_limit)
+        return c
         if (self.max_chord_poly is None):
             x = np.linspace(0.001, self.param.radius, 36)
             k = self.param.tip_chord * self.param.radius
@@ -78,18 +85,18 @@ class Prop:
 
             y = np.minimum(y,upper_limit)
 
-            coeff = np.polyfit(x, y, 11)
+            coeff = np.polyfit(x, y, 3)
             self.max_chord_poly = np.poly1d(coeff)
             
-            #import matplotlib.pyplot as plt
-            #rpts = np.linspace(0, self.param.radius, 40)
-            #plt.plot(rpts, self.max_chord_poly(rpts), label='max_chord')
-            #plt.plot(x, y, 'x', label='points')
-            #plt.legend()
-            #plt.grid(True)
-            #plt.xlabel('r')
-            #plt.ylabel('Chord')
-            #plt.show()
+            import matplotlib.pyplot as plt
+            rpts = np.linspace(0, self.param.radius, 40)
+            plt.plot(rpts, self.max_chord_poly(rpts), label='max_chord')
+            plt.plot(x, y, 'x', label='points')
+            plt.legend()
+            plt.grid(True)
+            plt.xlabel('r')
+            plt.ylabel('Chord')
+            plt.show()
 
 
         return self.max_chord_poly(r)
@@ -160,14 +167,14 @@ class Prop:
             y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
             self.max_depth_interpolator = PchipInterpolator(x, y)
 
-            #import matplotlib.pyplot as plt
-            #rpts = np.linspace(0, self.param.radius, 40)
-            #plt.plot(rpts, self.max_depth_interpolator(rpts), label='max depth')
-            #plt.plot(x, y, 'x', label='points')
-            #plt.legend()
-            #plt.grid(True)
-            #plt.xlabel('r')
-            #plt.show()
+            import matplotlib.pyplot as plt
+            rpts = np.linspace(0, self.param.radius, 40)
+            plt.plot(rpts, self.max_depth_interpolator(rpts), label='max depth')
+            plt.plot(x, y, 'x', label='points')
+            plt.legend()
+            plt.grid(True)
+            plt.xlabel('r')
+            plt.show()
 
 
         return self.max_depth_interpolator(r)
@@ -361,6 +368,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         dr = abs(radial_points[0]-radial_points[1])
         
         twist_angles = []
+        chords = []
         theta = 0.0  # start guess
         dv = dv_goal  # start guess
         a_prime = 0.001  # start guess
@@ -412,6 +420,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             be.set_twist(theta)
             be.set_bem(dv, a_prime)
             twist_angles.append(theta)
+            chords.append(be.foil.chord)
             
             dT = be.dT()
             dM = be.dM()
@@ -426,6 +435,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             
         self.blade_elements.reverse()
         twist_angles.reverse()
+        chords.reverse()
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
@@ -435,6 +445,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         import matplotlib.pyplot as plt
         plt.plot(radial_points[::-1], np.degrees(twist_angles), label='twist angles')
         plt.plot(radial_points[::-1], np.degrees(twist_angle_poly(radial_points[::-1])), label='Smoothed twist angles')
+        plt.plot(radial_points[::-1], np.array(chords)*1000, label='Chords (mm)')
         plt.legend()
         plt.grid(True)
         plt.xlabel('Radius (m)')
