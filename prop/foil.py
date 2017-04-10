@@ -57,8 +57,8 @@ class Foil(object):
         y = self.thickness*self.chord*np.ones(n)
         return [[x,-y],[x,y]]
     
-
-    def load_selig(self, filename):
+    @staticmethod
+    def load_selig(filename):
         ''' Load points from a file and normalize '''
         fd = open(filename, 'r')
         seligFile = fd.read()
@@ -198,7 +198,7 @@ class NACA4(Foil):
         xl = x + yt*np.sin(theta)
         yl = yc - yt*np.cos(theta)
         
-        if (True):
+        if (False):
             # Translate to a system where 0,0 is the max_x, max_y (these are defined by p and t)
             # max(yt) = 0.5, occurs at x=.2998
             # max(dyc) = p

@@ -5,6 +5,7 @@
 ## To build another prop, just type make TARGET=multistar_1704_1900kv
 ##
 TARGET=test_prop
+RESOLUTION=30
 
 .PHONY: bem blade scad push pull
 
@@ -12,7 +13,7 @@ all:	bem scad
 
 # Build using the Blade Element Momentum method
 bem:
-	python prop.py --arad --bem  --n 40 --resolution 20 --param='${TARGET}.json'
+	python prop.py --arad --bem  --n 40 --resolution ${RESOLUTION} --param='${TARGET}.json'
 	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${TARGET}.stl
