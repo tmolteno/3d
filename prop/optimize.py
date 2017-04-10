@@ -169,14 +169,11 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
           #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
               #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})
     if (res.fun > 0.1):
-        res.x[0] = phi
+        x0 = [phi, dv_goal, 0.02] # theta, dv, a_prime
         ## Restart optimization around previous best
-        ##x0 = [res.x[0], dv_goal, res.x[2]] # theta, dv, a_prime
-        #x0 = [radians(5), dv_goal, 0.01] # theta, dv, a_prime
-
-        #res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
-            #method='Nelder-Mead', options={'xatol': 1e-8, 'disp': True, 'maxiter': 1000})
-            ##method='BFGS', options={'gtol': 1e-8, 'eps': 1e-5, 'disp': True, 'maxiter': 1000})
+        res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
+            method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
+        
     logger.info("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
     return res.x, res.fun
 
