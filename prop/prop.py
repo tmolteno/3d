@@ -303,25 +303,6 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         f.close()
 
 
-    def design_torque(self, optimum_torque, optimum_rpm, aoa):
-        self.blade_elements = []
-        # Calculate the chord distribution, from geometry and clearence
-        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm / 60.0)
-        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
-        for r in radial_points:
-            be = self.new_foil(r, optimum_rpm, aoa)
-            be.set_alpha(be.get_zero_cl_angle())
-            print be
-
-            self.blade_elements.append(be)
-        # 
-        # Calculate the thickness distribution
-        
-        # Get foil polars
-        # Assign angle of attack to be optimium
-        torque, thrust = self.get_forces(optimum_rpm)
-        return torque
-
     def tip_loss(self, r, phi):
         e = (self.n_blades*(self.param.radius - r*0.95))/(2.0*r*np.sin(phi))
         F = 2.0 * np.arccos(np.exp(-e)) / np.pi
@@ -401,8 +382,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             total_thrust += dT
             total_torque += dM
             
-            print("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
-            print be
+            logger.info("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
+            print(be)
 
             self.blade_elements.append(be)
             prev_twist = theta
@@ -434,6 +415,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         plt.grid(True)
         plt.xlabel('Radius (m)')
         plt.ylabel('Twist (degrees)')
+        #plt.savefig()
         plt.show()
         print("Smoothed Blade Form")
         
@@ -494,13 +476,14 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop blade.')
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
-    parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
+    parser.add_argument('--n', type=int, default=40, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--bem', action='store_true', help="Use bem design")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--arad', action='store_true', help="Use ARA-D airfoils (slow)")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=int, default=40, help="The number of blade elements.")
+    parser.add_argument('--dir', default='.', help="The directory for output files")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
@@ -556,12 +539,11 @@ if __name__ == "__main__":
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)
       
-    blade_stl_filename = param.name + "_blade.stl"
+    blade_stl_filename = "{}/{}_blade.stl".format(args.dir,param.name)
     p.gen_stl(blade_stl_filename, args.n)
     
-    scad_filename = param.name + ".scad"
+    scad_filename = "{}/{}.scad".format(args.dir,param.name)
     p.gen_scad(scad_filename)
-    
-    p.gen_removable_blade_scad(param.name + "_removable.scad")
+    p.gen_removable_blade_scad("{}/{}_removable.scad".format(args.dir,param.name))
 
     

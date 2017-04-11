@@ -6,6 +6,7 @@
 ##
 TARGET=test_prop
 RESOLUTION=30
+BUILDIR=build
 
 .PHONY: bem blade scad push pull
 
@@ -13,12 +14,13 @@ all:	bem scad
 
 # Build using the Blade Element Momentum method
 bem:
-	python prop.py --arad --bem  --n 40 --resolution ${RESOLUTION} --param='${TARGET}.json'
-	meshlabserver -i ${TARGET}_blade.stl -o ${TARGET}_blade.stl -s meshclean.mlx
+	mkdir -p ${BUILDIR}
+	python prop.py --arad --bem  --n 40 --resolution ${RESOLUTION} --dir=${BUILDIR} --param='props/${TARGET}.json'
+	meshlabserver -i ${BUILDIR}/${TARGET}_blade.stl -o ${BUILDIR}/${TARGET}_blade.stl -s meshclean.mlx
 
-scad:	${TARGET}.stl
+scad:	${BUILDIR}/${TARGET}.stl
 	
-blade:  ${TARGET}_removable.stl
+blade:  ${BUILDIR}/${TARGET}_removable.stl
 
 sym:
 	python naca_sym.py

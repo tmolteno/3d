@@ -4,4 +4,5 @@
 *.gcode
 *.log
 *.log.*
+build/**
 
