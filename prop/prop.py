@@ -30,8 +30,6 @@ class Prop:
         self.n_blades = 2
         self.max_depth_interpolator = None
         self.scimitar_interpolator = None
-        self.max_chord_poly = None
-        
 
     def get_chord(self, r, rpm, twist):
         '''
@@ -74,32 +72,8 @@ class Prop:
         
         upper_limit = (2.0*np.pi*r / (self.n_blades+2.0))/np.cos(twist)
 
-        c = np.minimum(c,upper_limit)
+        c = min(c,upper_limit)
         return c
-        if (self.max_chord_poly is None):
-            x = np.linspace(0.001, self.param.radius, 36)
-            k = self.param.tip_chord * self.param.radius
-            y = k / x
-            
-            upper_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
-
-            y = np.minimum(y,upper_limit)
-
-            coeff = np.polyfit(x, y, 3)
-            self.max_chord_poly = np.poly1d(coeff)
-            
-            import matplotlib.pyplot as plt
-            rpts = np.linspace(0, self.param.radius, 40)
-            plt.plot(rpts, self.max_chord_poly(rpts), label='max_chord')
-            plt.plot(x, y, 'x', label='points')
-            plt.legend()
-            plt.grid(True)
-            plt.xlabel('r')
-            plt.ylabel('Chord')
-            plt.show()
-
-
-        return self.max_chord_poly(r)
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -161,10 +135,10 @@ class Prop:
             hub_depth = self.param.hub_depth
             max_depth = 12.0 / 1000
             max_r = self.param.radius / 3.0
-            end_depth = 5.0 / 1000
+            end_depth = 10.0 / 1000
 
-            x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
-            y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+            x = np.array([0, hub_r/2, hub_r, 1.5*hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
+            y = np.array([hub_depth, hub_depth, hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
             self.max_depth_interpolator = PchipInterpolator(x, y)
 
             import matplotlib.pyplot as plt
@@ -439,13 +413,23 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
+        chords = np.array(chords)
         coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
         twist_angle_poly = np.poly1d(coeff)
+
+        from smooth import smooth
+
+        #coeff = np.polyfit(radial_points[::-1], chords, 4)
+        #chord_poly = np.poly1d(coeff)
+        c_points = np.concatenate((np.array([0, self.param.hub_radius/2]), radial_points[::-1]))
+        extra_chords = np.concatenate((np.array([self.param.hub_depth, self.param.hub_depth]), chords))
+        chord_poly = PchipInterpolator(c_points, smooth(extra_chords))
         
         import matplotlib.pyplot as plt
         plt.plot(radial_points[::-1], np.degrees(twist_angles), label='twist angles')
         plt.plot(radial_points[::-1], np.degrees(twist_angle_poly(radial_points[::-1])), label='Smoothed twist angles')
-        plt.plot(radial_points[::-1], np.array(chords)*1000, label='Chords (mm)')
+        plt.plot(c_points, extra_chords*1000, label='Extra Chords (mm)')
+        plt.plot(c_points, chord_poly(c_points)*1000, label='Chords smoothed')
         plt.legend()
         plt.grid(True)
         plt.xlabel('Radius (m)')
@@ -454,8 +438,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         print("Smoothed Blade Form")
         
         for be in self.blade_elements:
-            a = twist_angle_poly(be.r)
-            be.set_twist(a)
+            be.set_chord(chord_poly(be.r))
+            be.set_twist(twist_angle_poly(be.r))
             print be
 
             
