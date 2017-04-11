@@ -10,7 +10,7 @@ import motor_model
 
 from blade_element import BladeElement
 from design_parameters import DesignParameters
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import PchipInterpolator, interp1d
 
 import os
 import logging
@@ -137,9 +137,9 @@ class Prop:
             max_r = self.param.radius / 3.0
             end_depth = 10.0 / 1000
 
-            x = np.array([0, hub_r/2, hub_r, 1.5*hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
-            y = np.array([hub_depth, hub_depth, hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
-            self.max_depth_interpolator = PchipInterpolator(x, y)
+            x = np.array([0, hub_r/2, hub_r, 1.1*hub_r, 1.5*hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
+            y = np.array([hub_depth, hub_depth, hub_depth, hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+            self.max_depth_interpolator = interp1d(x, y, 'linear')
 
             import matplotlib.pyplot as plt
             rpts = np.linspace(0, self.param.radius, 40)
@@ -421,8 +421,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
 
         #coeff = np.polyfit(radial_points[::-1], chords, 4)
         #chord_poly = np.poly1d(coeff)
-        c_points = np.concatenate((np.array([0, self.param.hub_radius/2]), radial_points[::-1]))
-        extra_chords = np.concatenate((np.array([self.param.hub_depth, self.param.hub_depth]), chords))
+        c_points = np.concatenate((np.array([0, self.param.hub_radius/2, 0.9* self.param.hub_radius]), radial_points[::-1]))
+        extra_chords = np.concatenate((0.9*np.array([self.param.hub_depth, self.param.hub_depth, self.param.hub_depth]), chords))
         chord_poly = PchipInterpolator(c_points, smooth(extra_chords))
         
         import matplotlib.pyplot as plt
