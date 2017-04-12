@@ -28,10 +28,10 @@ db:
 	rm foil_simulator.db
 
 pull:
-	rsync -zv tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db .
+	rsync -zv --progress tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db .
 
 push:
-	rsync -zv foil_simulator.db tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db
+	rsync -zv --progress foil_simulator.db tim@electron.otago.ac.nz:/freenas/temp/foil_simulator.db
 
 .SECONDARY:
 
