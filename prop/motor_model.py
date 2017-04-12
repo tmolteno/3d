@@ -44,15 +44,14 @@ class Motor:
         return power
 
 def symbolic_stuff():
-    from sympy import Symbol, pi, sqrt, pprint, solve, Eq
+    from sympy import Symbol, pi, sqrt, pprint, solve, Eq, solveset, refine
 
 
-    Kv = Symbol('Kv')  
-    Rm = Symbol('Rm')  # Winding Resistance
-    V = Symbol('V')
-    Ip = Symbol('Ip') # Peak Current
-    I = Symbol('I') # Peak Current
-    I0 = Symbol('I0') # No load current
+    Kv = Symbol('Kv', real=True, positive=True)  
+    Rm = Symbol('Rm', real=True, positive=True)  # Winding Resistance
+    V = Symbol('V', real=True, positive=True)
+    I = Symbol('I', real=True, positive=True) # Peak Current
+    I0 = Symbol('I0', real=True, positive=True) # No load current
 
 
     # Torque Constant
@@ -65,8 +64,8 @@ def symbolic_stuff():
     Q = Kq*(I - I0)
 
     # RPM at voltage V and torque q_in
-    q_in = Symbol('q_in', real=True)
-    rpm_in = Symbol('rpm_in', real=True)
+    q_in = Symbol('q_in', real=True, positive=True)
+    rpm_in = Symbol('rpm_in', real=True, positive=True)
     eqns = (Eq(Q, q_in))
     soln = solve(eqns, I, exclude=[I0])
     pprint(eqns)
@@ -92,7 +91,15 @@ def symbolic_stuff():
     print "Current at Max Efficiency: {}".format(Imax)
     print "RPM at Max Efficiency    : {}".format(RPMmax)
     print "Torque at Max Efficiency : {}".format(Qmax)
-  
+    
+    I_max = Symbol('I_max', real=True, positive=True)
+    
+    eqns = (Imax - I_max)
+    pprint( eqns)
+    IOsoln = refine(solve(eqns, I0))
+    print "No-load-current : {}".format(IOsoln)
+    IOsoln = refine(solveset(eqns, I0))
+    print "No-load-current : {}".format(IOsoln)
 
 if __name__ == "__main__":
     
@@ -114,6 +121,6 @@ if __name__ == "__main__":
     plt.ylabel('Efficiency')
     plt.xlabel('Torque (Nm)')
     plt.savefig('multistar_17041900kv.png')
-    plt.show()
+    #plt.show()
 
     symbolic_stuff()

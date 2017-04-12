@@ -10,7 +10,7 @@ import motor_model
 
 from blade_element import BladeElement
 from design_parameters import DesignParameters
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import PchipInterpolator, interp1d
 
 import os
 import logging
@@ -30,8 +30,6 @@ class Prop:
         self.n_blades = 2
         self.max_depth_interpolator = None
         self.scimitar_interpolator = None
-        self.max_chord_poly = None
-        
 
     def get_chord(self, r, rpm, twist):
         '''
@@ -74,32 +72,8 @@ class Prop:
         
         upper_limit = (2.0*np.pi*r / (self.n_blades+2.0))/np.cos(twist)
 
-        c = np.minimum(c,upper_limit)
+        c = min(c,upper_limit)
         return c
-        if (self.max_chord_poly is None):
-            x = np.linspace(0.001, self.param.radius, 36)
-            k = self.param.tip_chord * self.param.radius
-            y = k / x
-            
-            upper_limit = (2.0*np.pi*x / (self.n_blades+2.0))/np.cos(twist)
-
-            y = np.minimum(y,upper_limit)
-
-            coeff = np.polyfit(x, y, 3)
-            self.max_chord_poly = np.poly1d(coeff)
-            
-            import matplotlib.pyplot as plt
-            rpts = np.linspace(0, self.param.radius, 40)
-            plt.plot(rpts, self.max_chord_poly(rpts), label='max_chord')
-            plt.plot(x, y, 'x', label='points')
-            plt.legend()
-            plt.grid(True)
-            plt.xlabel('r')
-            plt.ylabel('Chord')
-            plt.show()
-
-
-        return self.max_chord_poly(r)
 
     def get_scimitar_offset(self,r):
         ''' How much forward or aft of the centerline to place the foil
@@ -135,7 +109,7 @@ class Prop:
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 0.87
+        p = 0.5
         k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
         s = thickness_end - k*self.param.radius**-p
         thickness = s + k*r**-p
@@ -159,13 +133,13 @@ class Prop:
         if (self.max_depth_interpolator is None):
             hub_r = self.param.hub_radius
             hub_depth = self.param.hub_depth
-            max_depth = 12.0 / 1000
+            max_depth = self.param.hub_depth*3
             max_r = self.param.radius / 3.0
-            end_depth = 5.0 / 1000
+            end_depth = self.param.hub_depth*2
 
-            x = np.array([0, hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
-            y = np.array([hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
-            self.max_depth_interpolator = PchipInterpolator(x, y)
+            x = np.array([0, hub_r/2, hub_r, 1.1*hub_r, 1.5*hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
+            y = np.array([hub_depth, hub_depth, hub_depth, hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
+            self.max_depth_interpolator = interp1d(x, y, 'linear')
 
             import matplotlib.pyplot as plt
             rpts = np.linspace(0, self.param.radius, 40)
@@ -329,25 +303,6 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         f.close()
 
 
-    def design_torque(self, optimum_torque, optimum_rpm, aoa):
-        self.blade_elements = []
-        # Calculate the chord distribution, from geometry and clearence
-        forward_travel_per_rev = self.param.forward_airspeed / (optimum_rpm / 60.0)
-        radial_points = np.linspace(self.param.hub_radius, self.param.radius, self.radial_steps)
-        for r in radial_points:
-            be = self.new_foil(r, optimum_rpm, aoa)
-            be.set_alpha(be.get_zero_cl_angle())
-            print be
-
-            self.blade_elements.append(be)
-        # 
-        # Calculate the thickness distribution
-        
-        # Get foil polars
-        # Assign angle of attack to be optimium
-        torque, thrust = self.get_forces(optimum_rpm)
-        return torque
-
     def tip_loss(self, r, phi):
         e = (self.n_blades*(self.param.radius - r*0.95))/(2.0*r*np.sin(phi))
         F = 2.0 * np.arccos(np.exp(-e)) / np.pi
@@ -427,8 +382,8 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             total_thrust += dT
             total_torque += dM
             
-            print("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
-            print be
+            logger.info("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
+            print(be)
 
             self.blade_elements.append(be)
             prev_twist = theta
@@ -439,23 +394,34 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         # Now smooth the twist angles
         # Now smooth the optimum angles of attack
         twist_angles = np.array(twist_angles)
+        chords = np.array(chords)
         coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
         twist_angle_poly = np.poly1d(coeff)
+
+        from smooth import smooth
+
+        #coeff = np.polyfit(radial_points[::-1], chords, 4)
+        #chord_poly = np.poly1d(coeff)
+        c_points = np.concatenate((np.array([0, self.param.hub_radius/2, 0.9* self.param.hub_radius]), radial_points[::-1]))
+        extra_chords = np.concatenate((0.9*np.array([self.param.hub_depth, self.param.hub_depth, self.param.hub_depth]), chords))
+        chord_poly = PchipInterpolator(c_points, smooth(extra_chords))
         
         import matplotlib.pyplot as plt
         plt.plot(radial_points[::-1], np.degrees(twist_angles), label='twist angles')
         plt.plot(radial_points[::-1], np.degrees(twist_angle_poly(radial_points[::-1])), label='Smoothed twist angles')
-        plt.plot(radial_points[::-1], np.array(chords)*1000, label='Chords (mm)')
+        plt.plot(c_points, extra_chords*1000, label='Extra Chords (mm)')
+        plt.plot(c_points, chord_poly(c_points)*1000, label='Chords smoothed')
         plt.legend()
         plt.grid(True)
         plt.xlabel('Radius (m)')
         plt.ylabel('Twist (degrees)')
+        #plt.savefig()
         plt.show()
         print("Smoothed Blade Form")
         
         for be in self.blade_elements:
-            a = twist_angle_poly(be.r)
-            be.set_twist(a)
+            be.set_chord(chord_poly(be.r))
+            be.set_twist(twist_angle_poly(be.r))
             print be
 
             
@@ -510,13 +476,14 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Design a prop blade.')
     parser.add_argument('--param', default='prop_design.json', help="Propeller design parameters.")
-    parser.add_argument('--n', type=int, default=20, help="The number of points in the top and bottom of the foil")
+    parser.add_argument('--n', type=int, default=40, help="The number of points in the top and bottom of the foil")
     parser.add_argument('--mesh', action='store_true', help="Generate a GMSH mesh")
     parser.add_argument('--bem', action='store_true', help="Use bem design")
     parser.add_argument('--auto', action='store_true', help="Use auto design torque")
     parser.add_argument('--arad', action='store_true', help="Use ARA-D airfoils (slow)")
     parser.add_argument('--naca', action='store_true', help="Use NACA airfoils (slow)")
     parser.add_argument('--resolution', type=int, default=40, help="The number of blade elements.")
+    parser.add_argument('--dir', default='.', help="The directory for output files")
     parser.add_argument('--stl-file', default='prop.stl', help="The STL filename to generate.")
     args = parser.parse_args()
     
@@ -572,12 +539,11 @@ if __name__ == "__main__":
     if (args.mesh):
       p.gen_mesh('gmsh.vtu', args.n)
       
-    blade_stl_filename = param.name + "_blade.stl"
+    blade_stl_filename = "{}/{}_blade.stl".format(args.dir,param.name)
     p.gen_stl(blade_stl_filename, args.n)
     
-    scad_filename = param.name + ".scad"
+    scad_filename = "{}/{}.scad".format(args.dir,param.name)
     p.gen_scad(scad_filename)
-    
-    p.gen_removable_blade_scad(param.name + "_removable.scad")
+    p.gen_removable_blade_scad("{}/{}_removable.scad".format(args.dir,param.name))
 
     

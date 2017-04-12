@@ -37,6 +37,9 @@ class BladeElement:
         #self.zero_lift_angle = self.fs.get_zero_cl_angle(self.velocity)
         #return self.zero_lift_angle
 
+    def set_chord(self, c):
+        self.foil.modify_chord(c)
+
     def set_twist(self, twist):
         self._twist = twist
 

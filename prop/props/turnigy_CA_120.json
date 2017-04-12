@@ -1,0 +1,28 @@
+{
+    "comment": "https://hobbyking.com/en_us/turnigy-ca120-150kv-brushless-outrunner-100cc-equiv.html",
+    "name": "turnigy_CA_120",
+
+    "altitude": 0.0,
+    "forward_airspeed": 25.0,
+
+    "motor_Kv": 150,
+    "motor_volts": 21.0,
+    "motor_no_load_current": 13.0,
+    "motor_winding_resistance": 0.005,
+
+    "blades": 2,
+    "thrust": 200.0,
+
+    "radius": 0.35,
+    "tip_chord": 0.07,
+    "scimitar_percent": 0.0,
+    "trailing_edge": 2.0,
+    "hub_radius": 0.05,
+    "hub_depth": 0.05,
+
+    "exclude_zone": [
+        {"x":0.005, "z":0.005},
+        {"x":0.006, "z":0.01},
+        {"x":0.02, "z":0.012}
+    ]
+}
