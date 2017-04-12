@@ -109,7 +109,7 @@ class Prop:
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 0.87
+        p = 0.5
         k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
         s = thickness_end - k*self.param.radius**-p
         thickness = s + k*r**-p
@@ -133,9 +133,9 @@ class Prop:
         if (self.max_depth_interpolator is None):
             hub_r = self.param.hub_radius
             hub_depth = self.param.hub_depth
-            max_depth = 12.0 / 1000
+            max_depth = self.param.hub_depth*3
             max_r = self.param.radius / 3.0
-            end_depth = 10.0 / 1000
+            end_depth = self.param.hub_depth*2
 
             x = np.array([0, hub_r/2, hub_r, 1.1*hub_r, 1.5*hub_r, max_r, 0.9*self.param.radius, self.param.radius] )
             y = np.array([hub_depth, hub_depth, hub_depth, hub_depth, 1.1*hub_depth, max_depth, 1.2*end_depth, end_depth] )
