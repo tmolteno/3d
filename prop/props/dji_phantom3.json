@@ -13,11 +13,11 @@
     "blades": 2,
 
     "radius": 0.12,
-    "tip_chord": 0.009,
+    "tip_chord": 0.012,
     "scimitar_percent": 0.0,
     "trailing_edge": 0.4,
     "hub_radius": 0.007,
-    "hub_depth": 0.007,
+    "hub_depth": 0.012,
 
     "exclude_zone": [
         {"x":0.009, "z":0.005},

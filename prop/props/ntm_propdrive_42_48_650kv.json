@@ -1,0 +1,21 @@
+{
+    "name": "ntm_propdrive_42_48_650kv",
+    
+    "altitude": 0.0,
+    "forward_airspeed": 40.0,
+    
+    "motor_Kv": 650,
+    "motor_volts": 16.7,
+    "motor_no_load_current": 0.4,
+    "motor_winding_resistance": 0.023,
+ 
+    "thrust": 40.0,
+    "blades": 2,
+
+    "radius": 0.2,
+    "tip_chord": 0.01,
+    "scimitar_percent": 7.0,
+    "trailing_edge": 0.5,
+    "hub_radius": 0.011,
+    "hub_depth": 0.015
+}
