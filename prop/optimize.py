@@ -184,7 +184,7 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
         omega = rpm2omega(rpm)
         dv2, a_prime2 = iterate(foil_simulator, chord, dv, a_prime, theta, omega, r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
-        err += ((dv2 - goal)/(dv2 + goal))**2
+        err += 10*((dv2 - goal)/(dv2 + goal))**2
         torque = dM(dv, a_prime, r, dr, omega, u_0)
         thrust = dT(dv, r, dr, u_0)
         eff = abs(thrust / torque)
@@ -198,7 +198,7 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 
 def optimize_all(foil_simulator, dv_goal, rpm, r, dr, u_0, B, maxchord):
     C_L, C_D, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
-    print  C_L, C_D, degrees(phi)
+    print  C_L, C_D, degrees(phi), dv_goal
     x0 = [phi, dv_goal, 0.002, foil_simulator.foil.chord] # theta, dv, a_prime
     constraints = [
         {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
