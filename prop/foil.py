@@ -20,8 +20,8 @@ class Foil(object):
     def modify_chord(self, c):
         old_chord = self.chord
         self.chord = c
-        self.thickness = self.thickness*old_chord / c
-        self.trailing_edge = self.trailing_edge*old_chord / c
+        #self.thickness = self.thickness*old_chord / c
+        #self.trailing_edge = self.trailing_edge*old_chord / c
 
     ''' Calculate Reynolds number from air density rho
         and kinematic ciscoscity (nu)

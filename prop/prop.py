@@ -304,13 +304,14 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
 
 
     def tip_loss(self, r, phi):
-        e = (self.n_blades*(self.param.radius - r*0.95))/(2.0*r*np.sin(phi))
-        F = 2.0 * np.arccos(np.exp(-e)) / np.pi
+        f = (self.n_blades*(self.param.radius - r*.96))/(2.0*r*np.sin(phi))
+        tip_loss = 2.0 * np.arccos(np.exp(-f)) / np.pi
         
-        hub_loss = np.cos(phi)
-        return F*hub_loss 
+        f = (self.n_blades*(r - self.param.hub_radius))/(2.0*r*np.sin(phi))
+        hub_loss = 2.0 * np.arccos(np.exp(-f)) / np.pi
+        return tip_loss*hub_loss 
         
-    def design_bem(self, optimum_torque, optimum_rpm, thrust):
+    def full_optimize(self, optimum_torque, optimum_rpm, thrust):
         self.blade_elements = []
         u_0 = self.param.forward_airspeed
 
@@ -329,15 +330,15 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         a_prime = 0.001  # start guess
         prev_twist = 0.0
 
-        #import matplotlib.pyplot as plt
-        #phi_all = np.arctan((u_0 + dv_goal)/(omega*radial_points))
-        #plt.plot(radial_points, self.tip_loss(radial_points, 0.1), label='tip loss')
-        #plt.plot(radial_points, phi_all, label='phi')
-        #plt.plot(radial_points, np.cos(phi_all), label='cos(phi)')
-        #plt.legend()
-        #plt.grid(True)
-        #plt.xlabel('radius')
-        #plt.show()
+        import matplotlib.pyplot as plt
+        phi_all = np.arctan((u_0 + dv_goal)/(omega*radial_points))
+        plt.plot(radial_points, self.tip_loss(radial_points, 0.1), label='tip loss')
+        plt.plot(radial_points, phi_all, label='phi')
+        plt.plot(radial_points, np.cos(phi_all), label='cos(phi)')
+        plt.legend()
+        plt.grid(True)
+        plt.xlabel('radius')
+        plt.show()
         #return None
         for r in radial_points:
             u = u_0 + dv_goal
@@ -346,31 +347,34 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             
             dv_modified = dv_goal*self.tip_loss(r, phi)
             be = self.new_foil(r, optimum_rpm, prev_twist)
-            x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
-                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-            theta, dv, a_prime = x
-            if (fun > 0.03):
-                logger.info("Rescan around {}".format(np.degrees(phi)))
-                opt = 9999.9
-                for th_deg in np.arange(np.degrees(phi)-5, np.degrees(phi)+15, 0.5):
-                    dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
-                        dv_goal=dv_modified, theta = np.radians(th_deg), \
-                        rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                    logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
-                    delta = abs(dv_test - dv_modified)
-                    if (err < 0.01) and (delta < opt):
-                        opt = delta
-                        dv = dv_test
-                        a_prime = a_prime_test
-                        theta = np.radians(th_deg)
-                        logger.info("Best Delta {} at {} deg".format(delta, th_deg))
+            #x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
+                #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+            x, fun = optimize.optimize_all(foil_simulator=be.fs, dv_goal=dv_modified, \
+                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0, maxchord = self.get_max_chord(r, prev_twist))
+            theta, dv, a_prime, chord = x
+            be.set_chord(chord)
+            #if (fun > 0.03):
+                #logger.info("Rescan around {}".format(np.degrees(phi)))
+                #opt = 9999.9
+                #for th_deg in np.arange(np.degrees(phi)-5, np.degrees(phi)+15, 0.5):
+                    #dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
+                        #dv_goal=dv_modified, theta = np.radians(th_deg), \
+                        #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                    #logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
+                    #delta = abs(dv_test - dv_modified)
+                    #if (err < 0.01) and (delta < opt):
+                        #opt = delta
+                        #dv = dv_test
+                        #a_prime = a_prime_test
+                        #theta = np.radians(th_deg)
+                        #logger.info("Best Delta {} at {} deg".format(delta, th_deg))
 
                 
-                #x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                    #th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
-                    #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                #if (fun < 0.01):
-                    #theta, dv, a_prime = x
+                ##x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
+                    ##th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+                    ##rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                ##if (fun < 0.01):
+                    ##theta, dv, a_prime = x
 
             be.set_twist(theta)
             be.set_bem(dv, a_prime)
@@ -427,6 +431,124 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             
         torque, thrust = self.get_forces(optimum_rpm)
         return torque, thrust
+        
+    #def design_bem(self, optimum_torque, optimum_rpm, thrust):
+        #self.blade_elements = []
+        #u_0 = self.param.forward_airspeed
+
+        #dv_goal = optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
+        #radial_points = np.linspace(self.param.radius, self.param.hub_radius, self.radial_steps)
+
+        #total_thrust = 0.0
+        #total_torque = 0.0
+        #omega = (optimum_rpm /  60.0) * 2.0 * np.pi
+        #dr = abs(radial_points[0]-radial_points[1])
+        
+        #twist_angles = []
+        #chords = []
+        #theta = 0.0  # start guess
+        #dv = dv_goal  # start guess
+        #a_prime = 0.001  # start guess
+        #prev_twist = 0.0
+
+        ##import matplotlib.pyplot as plt
+        ##phi_all = np.arctan((u_0 + dv_goal)/(omega*radial_points))
+        ##plt.plot(radial_points, self.tip_loss(radial_points, 0.1), label='tip loss')
+        ##plt.plot(radial_points, phi_all, label='phi')
+        ##plt.plot(radial_points, np.cos(phi_all), label='cos(phi)')
+        ##plt.legend()
+        ##plt.grid(True)
+        ##plt.xlabel('radius')
+        ##plt.show()
+        ##return None
+        #for r in radial_points:
+            #u = u_0 + dv_goal
+            #v = omega*r
+            #phi = np.arctan(u/v)
+            
+            #dv_modified = dv_goal*self.tip_loss(r, phi)
+            #be = self.new_foil(r, optimum_rpm, prev_twist)
+            #x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
+                #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+            #theta, dv, a_prime = x
+            #if (fun > 0.03):
+                #logger.info("Rescan around {}".format(np.degrees(phi)))
+                #opt = 9999.9
+                #for th_deg in np.arange(np.degrees(phi)-5, np.degrees(phi)+15, 0.5):
+                    #dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
+                        #dv_goal=dv_modified, theta = np.radians(th_deg), \
+                        #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                    #logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
+                    #delta = abs(dv_test - dv_modified)
+                    #if (err < 0.01) and (delta < opt):
+                        #opt = delta
+                        #dv = dv_test
+                        #a_prime = a_prime_test
+                        #theta = np.radians(th_deg)
+                        #logger.info("Best Delta {} at {} deg".format(delta, th_deg))
+
+                
+                ##x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
+                    ##th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
+                    ##rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+                ##if (fun < 0.01):
+                    ##theta, dv, a_prime = x
+
+            #be.set_twist(theta)
+            #be.set_bem(dv, a_prime)
+            #twist_angles.append(theta)
+            #chords.append(be.foil.chord)
+            
+            #dT = be.dT()
+            #dM = be.dM()
+            #total_thrust += dT
+            #total_torque += dM
+            
+            #logger.info("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
+            #print(be)
+
+            #self.blade_elements.append(be)
+            #prev_twist = theta
+            
+        #self.blade_elements.reverse()
+        #twist_angles.reverse()
+        #chords.reverse()
+        ## Now smooth the twist angles
+        ## Now smooth the optimum angles of attack
+        #twist_angles = np.array(twist_angles)
+        #chords = np.array(chords)
+        #coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
+        #twist_angle_poly = np.poly1d(coeff)
+
+        #from smooth import smooth
+
+        ##coeff = np.polyfit(radial_points[::-1], chords, 4)
+        ##chord_poly = np.poly1d(coeff)
+        #c_points = np.concatenate((np.array([0, self.param.hub_radius/2, 0.9* self.param.hub_radius]), radial_points[::-1]))
+        #extra_chords = np.concatenate((0.9*np.array([self.param.hub_depth, self.param.hub_depth, self.param.hub_depth]), chords))
+        #chord_poly = PchipInterpolator(c_points, smooth(extra_chords))
+        
+        #import matplotlib.pyplot as plt
+        #plt.plot(radial_points[::-1], np.degrees(twist_angles), label='twist angles')
+        #plt.plot(radial_points[::-1], np.degrees(twist_angle_poly(radial_points[::-1])), label='Smoothed twist angles')
+        #plt.plot(c_points, extra_chords*1000, label='Extra Chords (mm)')
+        #plt.plot(c_points, chord_poly(c_points)*1000, label='Chords smoothed')
+        #plt.legend()
+        #plt.grid(True)
+        #plt.xlabel('Radius (m)')
+        #plt.ylabel('Twist (degrees)')
+        ##plt.savefig()
+        #plt.show()
+        #print("Smoothed Blade Form")
+        
+        #for be in self.blade_elements:
+            #be.set_chord(chord_poly(be.r))
+            #be.set_twist(twist_angle_poly(be.r))
+            #print be
+
+            
+        #torque, thrust = self.get_forces(optimum_rpm)
+        #return torque, thrust
         
 
 class NACAProp(Prop):
@@ -520,7 +642,7 @@ if __name__ == "__main__":
         p.n_blades = param.blades
         thrust = param.thrust
         goal_torque = optimum_torque*1.5
-        Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+        Q, T = p.full_optimize(optimum_torque, optimum_rpm, thrust=thrust)
         print("Total Thrust: {:5.2f}, Torque: {:5.3f}".format(T, Q))
         if (args.auto):
             while Q > goal_torque:

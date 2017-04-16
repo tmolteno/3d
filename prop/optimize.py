@@ -187,9 +187,9 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
         err += ((dv2 - goal)/(dv2 + goal))**2
         torque = dM(dv, a_prime, r, dr, omega, u_0)
         thrust = dT(dv, r, dr, u_0)
-        eff = thrust / torque
-        err += eff/100.0
-        print x, err
+        eff = abs(thrust / torque)
+        err += 50.0/eff
+        #print x, err, eff
         return (err)
     except ValueError as ve:
         logging.info("ValueError in iteration {}".format(ve))
@@ -210,18 +210,9 @@ def optimize_all(foil_simulator, dv_goal, rpm, r, dr, u_0, B, maxchord):
         {'type': 'ineq', 'fun': lambda x: x[3]},
         {'type': 'ineq', 'fun': lambda x: maxchord - x[3]}]
     res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
-        #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         method='SLSQP', constraints=constraints, options={'disp': True, 'maxiter': 1000})
-        #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
-          #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
-              #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})
-    #if (res.fun > 0.1):
-        #x0 = [phi, dv_goal, 0.02] # theta, dv, a_prime
-        ### Restart optimization around previous best
-        #res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
-            #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         
-    logger.info("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
+    logger.info("dv: {}, goal: {} a_prime={}, chord={}".format(res.x[1], dv_goal, res.x[2], res.x[3]))
     return res.x, res.fun
 
 
