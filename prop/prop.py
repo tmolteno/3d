@@ -307,7 +307,7 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         f = (self.n_blades*(self.param.radius - r*.96))/(2.0*r*np.sin(phi))
         tip_loss = 2.0 * np.arccos(np.exp(-f)) / np.pi
         
-        f = (self.n_blades*(r - self.param.hub_radius))/(2.0*r*np.sin(phi))
+        f = (self.n_blades*(r - self.param.hub_radius*0.95))/(2.0*r*np.sin(phi))
         hub_loss = 2.0 * np.arccos(np.exp(-f)) / np.pi
         return tip_loss*hub_loss 
         
