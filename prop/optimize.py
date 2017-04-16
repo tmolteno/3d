@@ -12,8 +12,8 @@ def rpm2omega(rpm):
     rps = rpm / 60.0
     return 2*pi*rps
 
-def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+def iterate(foil_simulator, c, dv, a_prime, theta, omega, r, dr, u_0, B):
+    C_L, C_D, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
     
     dv_new = -B*c*(C_D*(dv + u_0) + C_L*omega*r*(a_prime - 1))*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0))
     
@@ -24,14 +24,13 @@ def iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
 def precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
     u = u_0 + dv
     v = omega*r*(1.0 - a_prime)
-    c = foil_simulator.foil.chord
     phi = arctan(u/v)
     alpha = theta - phi
     #print alpha
     v_rel = sqrt(u**2 + v**2)
     C_D = foil_simulator.get_cd(v_rel, alpha)
     C_L = foil_simulator.get_cl(v_rel, alpha)
-    return C_L, C_D, c, phi
+    return C_L, C_D, phi
 
 def lsq(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B):
     minfun=(-B*c*sqrt(omega**2*r**2*(-a_prime + 1)**2 + (dv + u_0)**2)*(C_D*omega*r*(-a_prime + 1) + C_L*(dv + u_0))/(4*pi*omega*r*(dr + 2*r)*(dv + u_0)) + a_prime)**2/(a_prime + 0.01)**2 + (B*c*(C_D*(dv + u_0) - C_L*omega*r*(-a_prime + 1))*sqrt(omega**2*r**2*(-a_prime + 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0)) + dv)**2/dv**2
@@ -44,20 +43,21 @@ def jac(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B):
 
 def min_func2(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
-    return lsq(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    return lsq(C_L, C_D, foil_simulator.foil.chord, dv, a_prime, theta, omega, r, dr, u_0, B)
 
 def jac_func2(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
-    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
-    return jac(C_L, C_D, c, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    return jac(C_L, C_D, foil_simulator.foil.chord, dv, a_prime, theta, omega, r, dr, u_0, B)
     
 def iterate_old(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B):
-    C_L, C_D, c, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    C_L, C_D, phi = precalc(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
 
     # These are created from the sympy file bem.sym.py, and are based on a modified
     # Blade Element Momentum method.
-
+    c = foil_simulator.foil.chord
+    
     dv_new = -B*c*(C_D*(dv + u_0) + C_L*omega*r*(a_prime - 1))*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)/(4*pi*(dr + 2*r)*(dv + u_0))
     a_prime_new = -B*c*sqrt(omega**2*r**2*(a_prime - 1)**2 + (dv + u_0)**2)*(C_D*omega*r*(a_prime - 1) - C_L*(dv + u_0))/(4*pi*omega*r*(dr + 2*r)*(dv + u_0))
 
@@ -98,7 +98,7 @@ def initial_simplex_bem(x0):
 def min_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
     try:
-        dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+        dv2, a_prime2 = iterate(foil_simulator, foil_simulator.foil.chord, dv, a_prime, theta, omega, r, dr, u_0, B)
         return error(dv, dv2, a_prime, a_prime2)
     except ValueError:
         logging.info("ValueError in iteration")
@@ -110,7 +110,7 @@ from scipy.optimize import minimize, fixed_point
 def fp_func(x, theta, omega, r, dr, u_0, B, foil_simulator):
     dv, a_prime = x
     #print x
-    dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, omega, r, dr, u_0, B)
+    dv2, a_prime2 = iterate(foil_simulator, foil_simulator.foil.chord, dv, a_prime, theta, omega, r, dr, u_0, B)
     return array([dv2, a_prime2])
 
 def bem_iterate(foil_simulator, dv_goal, theta, rpm, r, dr, u_0, B):
@@ -140,20 +140,20 @@ def initial_simplex_all(x0):
     return ret
         
 ''' Get a desired dv, by modifying alpha '''
-def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
+def min_dv(x, goal, rpm, r, dr, u_0, B, foil_simulator):
     theta, dv, a_prime = x
     try:
-        dv2, a_prime2 = iterate(foil_simulator, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
+        dv2, a_prime2 = iterate(foil_simulator, foil_simulator.foil.chord, dv, a_prime, theta, rpm2omega(rpm), r, dr, u_0, B)
         err = error(dv, dv2, a_prime, a_prime2)
-        err += ((dv - goal)/(dv + goal))**2
+        err += ((dv2 - goal)/(dv2 + goal))**2
         return (err)
     except ValueError as ve:
         logging.info("ValueError in iteration {}".format(ve))
         return 1e6
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
-    C_L, C_D, c, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
-    print  C_L, C_D, c, degrees(phi)
+    C_L, C_D, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
+    print  C_L, C_D, degrees(phi)
     x0 = [phi, dv_goal, 0.002] # theta, dv, a_prime
     constraints = [
         {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
@@ -162,7 +162,7 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
         {'type': 'ineq', 'fun': lambda x: 2*dv_goal - x[1]},
         {'type': 'ineq', 'fun': lambda x: x[2]},
         {'type': 'ineq', 'fun': lambda x: 0.2 - x[2]}]
-    res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
+    res = minimize(min_dv, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
         #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         method='SLSQP', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
@@ -171,8 +171,55 @@ def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
     if (res.fun > 0.1):
         x0 = [phi, dv_goal, 0.02] # theta, dv, a_prime
         ## Restart optimization around previous best
-        res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
+        res = minimize(min_dv, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
             method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
+        
+    logger.info("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
+    return res.x, res.fun
+
+''' Get a desired dv, maximize the efficiency by changing chord and modifying alpha '''
+def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
+    theta, dv, a_prime, chord = x
+    try:
+        omega = rpm2omega(rpm)
+        dv2, a_prime2 = iterate(foil_simulator, chord, dv, a_prime, theta, omega, r, dr, u_0, B)
+        err = error(dv, dv2, a_prime, a_prime2)
+        err += ((dv2 - goal)/(dv2 + goal))**2
+        torque = dM(dv, a_prime, r, dr, omega, u_0)
+        thrust = dT(dv, r, dr, u_0)
+        eff = thrust / torque
+        err += eff/100.0
+        print x, err
+        return (err)
+    except ValueError as ve:
+        logging.info("ValueError in iteration {}".format(ve))
+        return 1e6
+
+
+def optimize_all(foil_simulator, dv_goal, rpm, r, dr, u_0, B, maxchord):
+    C_L, C_D, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
+    print  C_L, C_D, degrees(phi)
+    x0 = [phi, dv_goal, 0.002, foil_simulator.foil.chord] # theta, dv, a_prime
+    constraints = [
+        {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
+        {'type': 'ineq', 'fun': lambda x: (phi+radians(10)) - x[0]},
+        {'type': 'ineq', 'fun': lambda x: x[1] - dv_goal/2},
+        {'type': 'ineq', 'fun': lambda x: 2*dv_goal - x[1]},
+        {'type': 'ineq', 'fun': lambda x: x[2]},
+        {'type': 'ineq', 'fun': lambda x: 0.2 - x[2]},
+        {'type': 'ineq', 'fun': lambda x: x[3]},
+        {'type': 'ineq', 'fun': lambda x: maxchord - x[3]}]
+    res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-10, \
+        #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
+        method='SLSQP', constraints=constraints, options={'disp': True, 'maxiter': 1000})
+        #method='BFGS', options={'gtol': 1e-6, 'eps': [1e-3, 1e-2, 1e-6], 'disp': True, 'maxiter': 1000})
+          #method='Nelder-Mead', options={'initial_simplex': initial_simplex_all(x0), \
+              #'xatol': 1e-7, 'disp': False, 'maxiter': 10000})
+    #if (res.fun > 0.1):
+        #x0 = [phi, dv_goal, 0.02] # theta, dv, a_prime
+        ### Restart optimization around previous best
+        #res = minimize(min_all, x0, args=(dv_goal, rpm, r, dr, u_0, B, foil_simulator), tol=1e-8, \
+            #method='COBYLA', constraints=constraints, options={'disp': True, 'maxiter': 1000})
         
     logger.info("dv: {}, goal: {} a_prime={}".format(res.x[1], dv_goal, res.x[2]))
     return res.x, res.fun
