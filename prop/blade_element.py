@@ -114,7 +114,9 @@ class BladeElement:
         return lower_line, upper_line
 
     def __repr__(self):
-        return "BladeElement(r={:5.3f}, twist={:5.2f}, z={:4.1f}, foil[{}], dv={})".format(self.r, np.degrees(self._twist), np.degrees(self.get_zero_cl_angle()), self.foil, self.dv)
+        dt = self.dT()
+        dm = self.dM()
+        return "BladeElement(r={:5.3f}, twist={:5.2f}, foil[{}], dv={:4.1f}, eff={:4.1f})".format(self.r, np.degrees(self._twist), self.foil, self.dv, dt/dm)
 
 if __name__ == "__main__":
 
