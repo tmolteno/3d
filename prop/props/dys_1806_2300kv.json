@@ -14,8 +14,8 @@
 
     "radius": 0.0635,
     "tip_chord": 0.007,
-    "scimitar_percent": 10.0,
+    "scimitar_percent": -5.0,
     "trailing_edge": 0.25,
-    "hub_radius": 0.005,
-    "hub_depth": 0.005
+    "hub_radius": 0.0065,
+    "hub_depth": 0.006
 }
