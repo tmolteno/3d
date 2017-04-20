@@ -1,13 +1,13 @@
 {
-    "name": "multistar_1704_1900kv",
+    "name": "dys_1806_2300kv",
     
     "altitude": 0.0,
     "forward_airspeed": 0.0,
     
-    "motor_Kv": 1900,
+    "motor_Kv": 2300,
     "motor_volts": 11.0,
-    "motor_no_load_current": 0.5,
-    "motor_winding_resistance": 0.405,
+    "motor_no_load_current": 0.6,
+    "motor_winding_resistance": 0.19,
     
     "thrust": 5.0,
     "blades": 3,
