@@ -23,7 +23,7 @@ module prop() {
             for(angle = [0 : (360/n_blades) : 360]) {
                 rotate(angle) blade();
             }
-            translate([0,0,-hub_height]) cylinder(d=hub_diameter+0.1, h=hub_height);
+            translate([0,0,-hub_height+y_max]) cylinder(d=hub_diameter+0.1, h=hub_height);
             }
         }
        cylinder(d = center_hole, h=55, center=true);
