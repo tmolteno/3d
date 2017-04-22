@@ -280,7 +280,7 @@ class Prop:
         stl.add_line(top_edge)
         
         stl.gen_stl(filename)
-        return y0, y1
+        return y0*scale, y1*scale
 
     def gen_scad(self, filename, y0, y1):
         ''' Create an OpenSCAD file for the propeller
