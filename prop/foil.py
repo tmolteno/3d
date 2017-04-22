@@ -117,7 +117,31 @@ class Foil(object):
         
         return [[xl-mean_x,yl-max_y],[xu-mean_x,yu-max_y]]
 
+    
+    ''' Return the lowest and highest point in the foil '''
+    def get_bounding_box(self, theta):
+        pl, pu = self.get_points(50, theta)
+        xu, yu = pu
+        xl, yl = pl
+
+        x = np.concatenate([xl, xu])
+        y = np.concatenate([yl, yu])
         
+        return np.min(x), np.max(x), np.min(y), np.max(y)
+    
+    def get_max_chord(self, x_limit, y_limit, theta):
+        ''' Find the largest chord that could fit the foil into a box'''
+        x0, x1, y0, y1 = self.get_bounding_box(theta)
+        print("get_bounding_box({},{},{},{},".format(x0, x1, y0, y1))
+        dy = y1 - y0
+        dx = x1 - x0
+        
+        print("get_max_chord({},{},{}) dx={}, dy={}".format( x_limit, y_limit, theta, dx, dy))
+        y_scale = y_limit/dy
+        x_scale = x_limit/dx
+        
+        return self.chord*min(x_scale, y_scale)
+    
     def rotate(self, x, y, theta):
         ''' Rotate the points to the angle of attack around'''
         x2 = x*np.cos(theta) + y*np.sin(theta)

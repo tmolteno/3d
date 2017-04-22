@@ -31,23 +31,36 @@ class Prop:
         self.max_depth_interpolator = None
         self.scimitar_interpolator = None
 
-    def get_chord(self, r, rpm, twist):
-        '''
-            depth = chord * sin(twist)
-        '''
-        angle = min(np.pi/2, twist)
-        depth_limited_chord = np.abs(self.get_max_depth(r) / (np.sin(angle) + 1e-6))
-        return min(self.get_max_chord(r, angle), depth_limited_chord)
+    #def get_chord(self, r, rpm, twist):
+        #'''
+            #depth = chord * sin(twist)
+        #'''
+        #angle = min(np.pi/2, twist)
+        #depth_limited_chord = np.abs(self.get_max_depth(r) / (np.sin(angle) + 1e-6))
+        #return min(self.get_max_chord(r, angle), depth_limited_chord)
 
-    def new_foil(self, r, rpm, twist):
+    def new_blade_element(self, foilclass, r, rpm, twist):
+        y_limit = self.get_max_depth(r)
+        x_limit = self.get_max_chord(r, twist)
         thickness = self.get_foil_thickness(r)
-        chord = self.get_chord(r, rpm, twist)
-
-        f = foil.Foil(chord=chord, thickness=thickness)
-        f.set_trailing_edge(self.param.trailing_edge)
+        print(x_limit, y_limit, thickness)
+        
+        f = foilclass(chord=x_limit, thickness=thickness/x_limit)
+        print(f)
+        f.set_trailing_edge(self.param.trailing_edge/1000.0)
+        
+        c_max = f.get_max_chord(x_limit, y_limit, twist) # Assumes that the foil chord is 1.0
+        print("Max Chord {}".format(c_max))
+        f.modify_chord(c_max)
+        
         be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
             rpm=rpm, u_0 = self.param.forward_airspeed)
         return be
+    
+
+
+    def new_foil(self, r, rpm, twist):
+        return self.new_blade_element(foil.Foil, r, rpm, twist)
 
 
     def get_air_velocity_at_prop(self, torque, rpm, rho=1.225):
@@ -556,20 +569,21 @@ class NACAProp(Prop):
     '''
 
     def new_foil(self, r, rpm, twist):
-        thickness = self.get_foil_thickness(r)
-        chord = self.get_chord(r, rpm, twist)
-        if (chord < 0.0):
-            raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
-        if (r < 0.01):
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
-        else:
-            f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
-        f.set_trailing_edge(self.param.trailing_edge/1000.0)
+        return self.new_blade_element(foil.NACA4, r, rpm, twist)
+        #thickness = self.get_foil_thickness(r)
+        #chord = self.get_chord(r, rpm, twist)
+        #if (chord < 0.0):
+            #raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
+        #if (r < 0.01):
+            #f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
+        #else:
+            #f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
+        #f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
-        #v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
-            rpm=rpm, u_0 = self.param.forward_airspeed)
-        return be
+        ##v = self.get_blade_velocity(r, rpm)
+        #be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
+            #rpm=rpm, u_0 = self.param.forward_airspeed)
+        #return be
     
 
 class ARADProp(Prop):
@@ -578,17 +592,18 @@ class ARADProp(Prop):
 
     def new_foil(self, r, rpm, twist):
         import foil_ARA
-        thickness = self.get_foil_thickness(r)
-        chord = self.get_chord(r, rpm, twist)
-        if (chord < 0.0):
-            raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
-        f = foil_ARA.ARADFoil(chord=chord, thickness=thickness / chord)
-        f.set_trailing_edge(self.param.trailing_edge/1000.0)
+        return self.new_blade_element(foil_ARA.ARADFoil, r, rpm, twist)
+        #thickness = self.get_foil_thickness(r)
+        #chord = self.get_chord(r, rpm, twist)
+        #if (chord < 0.0):
+            #raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
+        #f = foil_ARA.ARADFoil(chord=chord, thickness=thickness / chord)
+        #f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
-        #v = self.get_blade_velocity(r, rpm)
-        be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
-            rpm=rpm, u_0 = self.param.forward_airspeed)
-        return be
+        ##v = self.get_blade_velocity(r, rpm)
+        #be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
+            #rpm=rpm, u_0 = self.param.forward_airspeed)
+        #return be
     
 import logging.config
 import yaml
