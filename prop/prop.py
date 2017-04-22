@@ -43,10 +43,8 @@ class Prop:
         y_limit = self.get_max_depth(r)
         x_limit = self.get_max_chord(r, twist)
         thickness = self.get_foil_thickness(r)
-        print(x_limit, y_limit, thickness)
         
         f = foilclass(chord=x_limit, thickness=thickness/x_limit)
-        print(f)
         f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
         c_max = f.get_max_chord(x_limit, y_limit, twist) # Assumes that the foil chord is 1.0
@@ -252,6 +250,10 @@ class Prop:
         
         bottom_edge = []
         top_edge = []
+        
+        hub_element = self.blade_elements[0]
+        x0, x1, y0, y1 = hub_element.foil.get_bounding_box(hub_element.get_twist())
+        
         for be in self.blade_elements:
             line_l, line_u = be.get_foil_points(n,  self.get_scimitar_offset(be.r))
             
@@ -278,8 +280,9 @@ class Prop:
         stl.add_line(top_edge)
         
         stl.gen_stl(filename)
+        return y0, y1
 
-    def gen_scad(self, filename):
+    def gen_scad(self, filename, y0, y1):
         ''' Create an OpenSCAD file for the propeller
         '''
         blade_stl_filename = self.param.name + '_blade.stl'
@@ -288,7 +291,8 @@ class Prop:
 hub_diameter = %f;\n \
 hub_height = %f;\n \
 n_blades = %d;\n \
-blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, blade_stl_filename))
+y_max = %f;\n \
+blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename))
         
         template_file = open('pyprop_template.scad', 'r')
         template = template_file.read()
@@ -362,8 +366,13 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
             be = self.new_foil(r, optimum_rpm, prev_twist)
             #x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
                 #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
+            
+            y_limit = self.get_max_depth(r)
+            x_limit = self.get_max_chord(r, prev_twist)
+            maxchord = be.foil.get_max_chord(x_limit, y_limit, prev_twist) # Assumes that the foil chord is 1.0
+
             x, fun = optimize.optimize_all(foil_simulator=be.fs, dv_goal=dv_modified, \
-                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0, maxchord = self.get_max_chord(r, prev_twist))
+                rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0, maxchord = maxchord)
             theta, dv, a_prime, chord = x
             be.set_chord(chord)
             #if (fun > 0.03):
@@ -677,10 +686,10 @@ if __name__ == "__main__":
       p.gen_mesh('gmsh.vtu', args.n)
       
     blade_stl_filename = "{}/{}_blade.stl".format(args.dir,param.name)
-    p.gen_stl(blade_stl_filename, args.n)
+    y0, y1 = p.gen_stl(blade_stl_filename, args.n)
     
     scad_filename = "{}/{}.scad".format(args.dir,param.name)
-    p.gen_scad(scad_filename)
+    p.gen_scad(scad_filename, y0, y1)
     p.gen_removable_blade_scad("{}/{}_removable.scad".format(args.dir,param.name))
 
     
