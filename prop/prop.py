@@ -17,6 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import optimize
+import textwrap
 
 class Prop:
     '''
@@ -31,13 +32,6 @@ class Prop:
         self.max_depth_interpolator = None
         self.scimitar_interpolator = None
 
-    #def get_chord(self, r, rpm, twist):
-        #'''
-            #depth = chord * sin(twist)
-        #'''
-        #angle = min(np.pi/2, twist)
-        #depth_limited_chord = np.abs(self.get_max_depth(r) / (np.sin(angle) + 1e-6))
-        #return min(self.get_max_chord(r, angle), depth_limited_chord)
 
     def new_blade_element(self, foilclass, r, rpm, twist):
         y_limit = self.get_max_depth(r)
@@ -47,7 +41,7 @@ class Prop:
         f = foilclass(chord=x_limit, thickness=thickness/x_limit)
         f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
-        c_max = f.get_max_chord(x_limit, y_limit, twist) # Assumes that the foil chord is 1.0
+        c_max = f.get_max_chord(x_limit, y_limit, twist)
         print("Max Chord {}".format(c_max))
         f.modify_chord(c_max)
         
@@ -283,7 +277,6 @@ class Prop:
         return y0*scale, y1*scale
 
     def gen_scad(self, filename, y0, y1, ccw=False):
-        import textwrap
         ''' Create an OpenSCAD file for the propeller
         '''
         blade_stl_filename = self.param.name + '_blade.stl'
@@ -304,26 +297,25 @@ class Prop:
                 import(blade_name);
             }
 
-            $fn=121;
-
-            module prop() {
+            module hub() {
                 difference() {
-                    intersection() {
-                        union() {
-                        for(angle = [0 : (360/n_blades) : 360]) {
-                            rotate(angle) blade();
-                        }
-                        translate([0,0,-hub_height+y_max]) cylinder(d=hub_diameter+0.1, h=hub_height);
-                        }
+                    cylinder(d=hub_diameter+0.1, h=hub_height, $fn=61);
+                    cylinder(d = center_hole, h=55, center=true, $fn=31);
+                }
+            }
+            module prop() {
+                union() {
+                    for(angle = [0 : (360/n_blades) : 360]) {
+                        rotate(angle) blade();
                     }
-                cylinder(d = center_hole, h=55, center=true);
+                    translate([0,0,-hub_height+y_max]) hub();
                 }
             }
             """))
         if (ccw):
-            f.write("prop();\n")
-        else:
             f.write("mirror([1,0,0]) prop();\n")
+        else:
+            f.write("prop();\n")
         f.close()
 
     def gen_removable_blade_scad(self, filename):
@@ -483,123 +475,6 @@ class Prop:
         torque, thrust = self.get_forces(optimum_rpm)
         return torque, thrust
         
-    #def design_bem(self, optimum_torque, optimum_rpm, thrust):
-        #self.blade_elements = []
-        #u_0 = self.param.forward_airspeed
-
-        #dv_goal = optimize.dv_from_thrust(thrust, R=self.param.radius, u_0=u_0)
-        #radial_points = np.linspace(self.param.radius, self.param.hub_radius, self.radial_steps)
-
-        #total_thrust = 0.0
-        #total_torque = 0.0
-        #omega = (optimum_rpm /  60.0) * 2.0 * np.pi
-        #dr = abs(radial_points[0]-radial_points[1])
-        
-        #twist_angles = []
-        #chords = []
-        #theta = 0.0  # start guess
-        #dv = dv_goal  # start guess
-        #a_prime = 0.001  # start guess
-        #prev_twist = 0.0
-
-        ##import matplotlib.pyplot as plt
-        ##phi_all = np.arctan((u_0 + dv_goal)/(omega*radial_points))
-        ##plt.plot(radial_points, self.tip_loss(radial_points, 0.1), label='tip loss')
-        ##plt.plot(radial_points, phi_all, label='phi')
-        ##plt.plot(radial_points, np.cos(phi_all), label='cos(phi)')
-        ##plt.legend()
-        ##plt.grid(True)
-        ##plt.xlabel('radius')
-        ##plt.show()
-        ##return None
-        #for r in radial_points:
-            #u = u_0 + dv_goal
-            #v = omega*r
-            #phi = np.arctan(u/v)
-            
-            #dv_modified = dv_goal*self.tip_loss(r, phi)
-            #be = self.new_foil(r, optimum_rpm, prev_twist)
-            #x, fun = optimize.design_for_dv(foil_simulator=be.fs, dv_goal=dv_modified, \
-                #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-            #theta, dv, a_prime = x
-            #if (fun > 0.03):
-                #logger.info("Rescan around {}".format(np.degrees(phi)))
-                #opt = 9999.9
-                #for th_deg in np.arange(np.degrees(phi)-5, np.degrees(phi)+15, 0.5):
-                    #dv_test, a_prime_test, err = optimize.bem_iterate(foil_simulator=be.fs, \
-                        #dv_goal=dv_modified, theta = np.radians(th_deg), \
-                        #rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                    #logger.info("err={:5.4f}, th={:4.2f}, dv={:4.2f}, a'={:5.4f}".format(err, th_deg, dv_test, a_prime_test))
-                    #delta = abs(dv_test - dv_modified)
-                    #if (err < 0.01) and (delta < opt):
-                        #opt = delta
-                        #dv = dv_test
-                        #a_prime = a_prime_test
-                        #theta = np.radians(th_deg)
-                        #logger.info("Best Delta {} at {} deg".format(delta, th_deg))
-
-                
-                ##x, fun = optimize.design_for_dv(foil_simulator=be.fs, \
-                    ##th_guess=theta, dv_guess=dv, a_prime_guess=a_prime, dv_goal=dv_modified, \
-                    ##rpm = optimum_rpm, B = self.n_blades, r = r, dr=dr, u_0 = u_0)
-                ##if (fun < 0.01):
-                    ##theta, dv, a_prime = x
-
-            #be.set_twist(theta)
-            #be.set_bem(dv, a_prime)
-            #twist_angles.append(theta)
-            #chords.append(be.foil.chord)
-            
-            #dT = be.dT()
-            #dM = be.dM()
-            #total_thrust += dT
-            #total_torque += dM
-            
-            #logger.info("r={} theta={}, dv={}, a_prime={}, thrust={}, torque={}, eff={} ".format(r, np.degrees(theta), dv, a_prime, dT, dM, dT/dM))
-            #print(be)
-
-            #self.blade_elements.append(be)
-            #prev_twist = theta
-            
-        #self.blade_elements.reverse()
-        #twist_angles.reverse()
-        #chords.reverse()
-        ## Now smooth the twist angles
-        ## Now smooth the optimum angles of attack
-        #twist_angles = np.array(twist_angles)
-        #chords = np.array(chords)
-        #coeff = np.polyfit(radial_points[::-1], twist_angles, 4)
-        #twist_angle_poly = np.poly1d(coeff)
-
-        #from smooth import smooth
-
-        ##coeff = np.polyfit(radial_points[::-1], chords, 4)
-        ##chord_poly = np.poly1d(coeff)
-        #c_points = np.concatenate((np.array([0, self.param.hub_radius/2, 0.9* self.param.hub_radius]), radial_points[::-1]))
-        #extra_chords = np.concatenate((0.9*np.array([self.param.hub_depth, self.param.hub_depth, self.param.hub_depth]), chords))
-        #chord_poly = PchipInterpolator(c_points, smooth(extra_chords))
-        
-        #import matplotlib.pyplot as plt
-        #plt.plot(radial_points[::-1], np.degrees(twist_angles), label='twist angles')
-        #plt.plot(radial_points[::-1], np.degrees(twist_angle_poly(radial_points[::-1])), label='Smoothed twist angles')
-        #plt.plot(c_points, extra_chords*1000, label='Extra Chords (mm)')
-        #plt.plot(c_points, chord_poly(c_points)*1000, label='Chords smoothed')
-        #plt.legend()
-        #plt.grid(True)
-        #plt.xlabel('Radius (m)')
-        #plt.ylabel('Twist (degrees)')
-        ##plt.savefig()
-        #plt.show()
-        #print("Smoothed Blade Form")
-        
-        #for be in self.blade_elements:
-            #be.set_chord(chord_poly(be.r))
-            #be.set_twist(twist_angle_poly(be.r))
-            #print be
-
-            
-        #torque, thrust = self.get_forces(optimum_rpm)
-        #return torque, thrust
         
 
 class NACAProp(Prop):
@@ -608,20 +483,6 @@ class NACAProp(Prop):
 
     def new_foil(self, r, rpm, twist):
         return self.new_blade_element(foil.NACA4, r, rpm, twist)
-        #thickness = self.get_foil_thickness(r)
-        #chord = self.get_chord(r, rpm, twist)
-        #if (chord < 0.0):
-            #raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
-        #if (r < 0.01):
-            #f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.00, p=0.4)
-        #else:
-            #f = foil.NACA4(chord=chord, thickness=thickness / chord, m=0.06, p=0.4)
-        #f.set_trailing_edge(self.param.trailing_edge/1000.0)
-        
-        ##v = self.get_blade_velocity(r, rpm)
-        #be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
-            #rpm=rpm, u_0 = self.param.forward_airspeed)
-        #return be
     
 
 class ARADProp(Prop):
@@ -631,17 +492,6 @@ class ARADProp(Prop):
     def new_foil(self, r, rpm, twist):
         import foil_ARA
         return self.new_blade_element(foil_ARA.ARADFoil, r, rpm, twist)
-        #thickness = self.get_foil_thickness(r)
-        #chord = self.get_chord(r, rpm, twist)
-        #if (chord < 0.0):
-            #raise Exception("Chord {} < 0, twist={} deg".format(chord, np.degrees(twist)))
-        #f = foil_ARA.ARADFoil(chord=chord, thickness=thickness / chord)
-        #f.set_trailing_edge(self.param.trailing_edge/1000.0)
-        
-        ##v = self.get_blade_velocity(r, rpm)
-        #be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
-            #rpm=rpm, u_0 = self.param.forward_airspeed)
-        #return be
     
 import logging.config
 import yaml
@@ -700,7 +550,7 @@ if __name__ == "__main__":
         if (args.auto):
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
-                Q, T = p.design_bem(optimum_torque, optimum_rpm, thrust=thrust)
+                Q, T =p.full_optimize(optimum_torque, optimum_rpm, thrust=thrust)
                 print("Total Thrust: {:5.2f} (N), Torque: {:5.2f} (Nm)".format(T, Q))
 
         # Print Thrust and Torque as a function of RPM.
