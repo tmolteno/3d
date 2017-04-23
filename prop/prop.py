@@ -282,23 +282,48 @@ class Prop:
         stl.gen_stl(filename)
         return y0*scale, y1*scale
 
-    def gen_scad(self, filename, y0, y1):
+    def gen_scad(self, filename, y0, y1, ccw=False):
+        import textwrap
         ''' Create an OpenSCAD file for the propeller
         '''
         blade_stl_filename = self.param.name + '_blade.stl'
         f=open(filename,"w")
-        f.write("center_hole = 5;\n \
-hub_diameter = %f;\n \
-hub_height = %f;\n \
-n_blades = %d;\n \
-y_max = %f;\n \
-blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename))
+        f.write(textwrap.dedent(
+            """
+            center_hole = 5;
+            hub_diameter = {};
+            hub_height = {};
+            n_blades = {};
+            y_max = {};
+            blade_name = "{}";
+            """.format(self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename)))
         
-        template_file = open('pyprop_template.scad', 'r')
-        template = template_file.read()
-        template_file.close()
-        
-        f.write(template)
+        f.write(textwrap.dedent(
+            """
+            module blade() {
+                import(blade_name);
+            }
+
+            $fn=121;
+
+            module prop() {
+                difference() {
+                    intersection() {
+                        union() {
+                        for(angle = [0 : (360/n_blades) : 360]) {
+                            rotate(angle) blade();
+                        }
+                        translate([0,0,-hub_height+y_max]) cylinder(d=hub_diameter+0.1, h=hub_height);
+                        }
+                    }
+                cylinder(d = center_hole, h=55, center=true);
+                }
+            }
+            """))
+        if (ccw):
+            f.write("prop();\n")
+        else:
+            f.write("mirror([1,0,0]) prop();\n")
         f.close()
 
     def gen_removable_blade_scad(self, filename):
@@ -306,12 +331,16 @@ blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*100
         '''
         blade_stl_filename = self.param.name + '_blade.stl'
         f=open(filename,"w")
-        f.write("center_hole = 5;\n \
-hub_diameter = %f;\n \
-hub_height = %f;\n \
-n_blades = %d;\n \
-blade_name = \"%s\";\n"  % (self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, blade_stl_filename))
-        
+        f.write(textwrap.dedent(
+            """
+            center_hole = 5;
+            hub_diameter = {};
+            hub_height = {};
+            n_blades = {};
+            y_max = {};
+            blade_name = "{}";
+            """.format(self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename)))
+
         template_file = open('blade_template.scad', 'r')
         template = template_file.read()
         template_file.close()
