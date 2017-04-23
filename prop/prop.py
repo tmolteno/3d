@@ -276,20 +276,25 @@ class Prop:
         stl.gen_stl(filename)
         return y0*scale, y1*scale
 
-    def gen_scad(self, filename, y0, y1, ccw=False):
-        ''' Create an OpenSCAD file for the propeller
-        '''
+    def gen_scad_header(self, f, y0, y1):
         blade_stl_filename = self.param.name + '_blade.stl'
-        f=open(filename,"w")
         f.write(textwrap.dedent(
             """
             center_hole = 5;
             hub_diameter = {};
             hub_height = {};
             n_blades = {};
+            y_min = {};
             y_max = {};
             blade_name = "{}";
-            """.format(self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename)))
+            """.format(self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y0, y1, blade_stl_filename)))
+        
+        
+    def gen_scad(self, filename, y0, y1, ccw=False):
+        ''' Create an OpenSCAD file for the propeller
+        '''
+        f=open(filename,"w")
+        self.gen_scad_header(f, y0, y1)
         
         f.write(textwrap.dedent(
             """
@@ -300,7 +305,7 @@ class Prop:
             module hub() {
                 difference() {
                     cylinder(d=hub_diameter+0.1, h=hub_height, $fn=61);
-                    cylinder(d = center_hole, h=55, center=true, $fn=31);
+                    cylinder(d=center_hole, h=55, center=true, $fn=31);
                 }
             }
             module prop() {
@@ -318,20 +323,11 @@ class Prop:
             f.write("prop();\n")
         f.close()
 
-    def gen_removable_blade_scad(self, filename):
+    def gen_removable_blade_scad(self, filename, y0, y1, ccw=False):
         ''' Create an OpenSCAD file for the propeller
         '''
-        blade_stl_filename = self.param.name + '_blade.stl'
         f=open(filename,"w")
-        f.write(textwrap.dedent(
-            """
-            center_hole = 5;
-            hub_diameter = {};
-            hub_height = {};
-            n_blades = {};
-            y_max = {};
-            blade_name = "{}";
-            """.format(self.param.hub_radius*2000, self.param.hub_depth*1000.0, self.n_blades, y1, blade_stl_filename)))
+        self.gen_scad_header(f, y0, y1)
 
         template_file = open('blade_template.scad', 'r')
         template = template_file.read()
@@ -569,6 +565,6 @@ if __name__ == "__main__":
     
     scad_filename = "{}/{}.scad".format(args.dir,param.name)
     p.gen_scad(scad_filename, y0, y1)
-    p.gen_removable_blade_scad("{}/{}_removable.scad".format(args.dir,param.name))
+    p.gen_removable_blade_scad("{}/{}_removable.scad".format(args.dir,param.name), y0, y1)
 
     
