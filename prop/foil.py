@@ -106,16 +106,15 @@ class Foil(object):
     def get_points(self, n, rotation_angle):
         pl, pu = self.get_shape_points(n)
         xl, yl = pl
-        #print xl
         xu, yu = pu
-        xl,yl = self.rotate(xl,yl, rotation_angle)
-        xu,yu = self.rotate(xu,yu, rotation_angle)
         
-        max_y = 0 # np.max(yu)
-        mean_x = 0 # 0.67*(np.max(xu)-np.min(xu))
-        #print("Mean={0} {1}".format(np.mean(xu), np.mean(xl)))
+        y0 = 0.0
+        x0 = 0.67*(np.max(xu)-np.min(xu))
         
-        return [[xl-mean_x,yl-max_y],[xu-mean_x,yu-max_y]]
+        xl,yl = self.rotate(xl-x0, yl-y0, rotation_angle)
+        xu,yu = self.rotate(xu-x0, yu-y0, rotation_angle)
+        
+        return [[xl,yl],[xu,yu]]
 
     
     ''' Return the lowest and highest point in the foil '''

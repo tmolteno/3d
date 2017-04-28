@@ -83,10 +83,10 @@ class BladeElement:
         yu, zu = pu
         x = np.zeros(n) + r
 
-        y_offset = np.mean(np.append(yl,yu))
+        #y_offset = np.mean(np.append(yl,yu))
         
-        yl -= y_offset
-        yu -= y_offset
+        #yl -= y_offset
+        #yu -= y_offset
         
         scimitar_angle = math.atan(scimitar_offset / r)
         

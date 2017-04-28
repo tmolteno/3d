@@ -4,15 +4,15 @@
     "altitude": 0.0,
     "forward_airspeed": 0.0,
 
-    "motor_Kv": 960,
+    "motor_Kv": 800,
     "motor_volts": 14.8,
     "motor_no_load_current": 0.45,
     "motor_winding_resistance": 0.117,
 
-    "thrust": 8.0,
+    "thrust": 12.0,
     "blades": 2,
 
-    "radius": 0.12,
+    "radius": 0.114,
     "tip_chord": 0.012,
     "scimitar_percent": 0.0,
     "trailing_edge": 0.4,
