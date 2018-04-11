@@ -1,0 +1,28 @@
+{
+    "comment": "This is a paraglider motor",
+    "name": "silly_plane",
+
+    "altitude": 0.0,
+    "forward_airspeed": 0.0,
+
+    "motor_Kv": 50,
+    "motor_volts": 100.0,
+    "motor_no_load_current": 7.5,
+    "motor_winding_resistance": 40e-3,
+
+    "blades": 3,
+    "thrust": 3.0,
+
+    "radius": 0.6,
+    "tip_chord": 0.1,
+    "scimitar_percent": -5.0,
+    "trailing_edge": 1.0,
+    "hub_radius": 0.05,
+    "hub_depth": 0.05,
+
+    "exclude_zone": [
+        {"x":0.05, "z":0.05},
+        {"x":0.06, "z":0.1},
+        {"x":0.2, "z":0.12}
+    ]
+}
