@@ -248,7 +248,7 @@ class XfoilSimulatedFoil(PlateSimulatedFoil):
         # Let Xfoil do its magic
         alfa = np.arange(-30, 30, 1.0)
         polar = xfoil.get_polars(filename, alfa, reynolds, Mach=Ma,
-                                        iterlim=1000, normalize=True)
+                                        iterlim=200, normalize=True)
         #print polar.keys()
         os.remove(filename)
                 
