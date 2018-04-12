@@ -109,15 +109,15 @@ class Prop:
         ''' Allowed foil thickness as a function of radius (m) 
             Limited by mechanical strength, or weight issues
         '''
-        thickness_root = self.param.hub_depth*0.8
-        thickness_end = 0.9 / 1000
+        thickness_root = self.param.hub_depth*1.0
+        thickness_end = self.param.hub_depth*0.1
         # Solve s + kr^3 = end && s + kh^3 = start
         # Subtract kr^3 - k h^3 = (end - start) => k = (end - start) / (r^3 - h^3)
         # s = end - kr^3
-        p = 0.5
-        k = (thickness_end - thickness_root) / (self.param.radius**-p - self.param.hub_radius**-p)
-        s = thickness_end - k*self.param.radius**-p
-        thickness = s + k*r**-p
+        p = 0.3
+        k = (thickness_root - thickness_end ) / (self.param.hub_radius**p - self.param.radius**p)
+        s = thickness_end - k*self.param.radius**p
+        thickness = s + k*r**(p)
         
         #import matplotlib.pyplot as plt
         #rpts = np.linspace(self.param.hub_radius, self.param.radius, 40)
@@ -149,7 +149,9 @@ class Prop:
             import matplotlib.pyplot as plt
             rpts = np.linspace(0, self.param.radius, 40)
             plt.plot(rpts, self.max_depth_interpolator(rpts), label='max depth')
+            plt.plot(rpts, self.get_foil_thickness(rpts), label='foil thickness')
             plt.plot(x, y, 'x', label='points')
+            
             plt.legend()
             plt.grid(True)
             plt.xlabel('r')

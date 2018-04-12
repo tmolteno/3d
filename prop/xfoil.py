@@ -34,7 +34,7 @@ from Queue import Queue, Empty
 
 
 def get_polar(airfoil, alpha, Re, Mach=None,
-             normalize=True, iterlim=None, gen_naca=False, debug=False, timeout=30):
+             normalize=True, iterlim=None, gen_naca=False, debug=False, timeout=10):
     """
     Convenience function that returns polar for specified airfoil and
     Reynolds number for a single angle of attack
@@ -55,23 +55,23 @@ def get_polar(airfoil, alpha, Re, Mach=None,
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
 
-    if normalize:
-        xf.cmd("NORM")
     # Generate NACA or load from file
     if gen_naca:
         xf.cmd(airfoil)
     else:
         xf.cmd('LOAD {}\n\n'.format(airfoil),
                autonewline=False)
-
-    #xf.cmd("GDES")
-    #xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
-    xf.cmd("PCOP")
     if (not debug):
         # Disable G(raphics) flag in Plotting options
         xf.cmd("PLOP\nG\n\n", autonewline=False)
+
+    if normalize:
+        xf.cmd("NORM")
+    xf.cmd("GDES")
+    xf.cmd("CADD\n\n1\n\n\n", autonewline=False)
+    xf.cmd("PCOP")
         
-    xf.cmd("PANE")  # Load Buffer Airfoil into PANEL, adding extra points if necessary
+    #xf.cmd("PANE")  # Load Buffer Airfoil into PANEL, adding extra points if necessary
     # Enter OPER menu
     xf.cmd("OPER")
     xf.cmd("VPAR\nVACC 0.0\nN 6\n\n", autonewline=False)
@@ -187,7 +187,7 @@ def get_polars(airfoil, alpha, Re, Mach=None,
         except KeyboardInterrupt:
             print 'control-c pressed'
             p.terminate()
-            raise Exception("Sismulation Terminated by user")
+            raise Exception("Simulation Terminated by user")
         else:
             p.close()
         p.join()

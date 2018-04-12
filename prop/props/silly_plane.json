@@ -1,17 +1,17 @@
 {
-    "comment": "This is a paraglider motor",
+    "comment": "This is a paraglider motor MP202/80 KV28",
     "name": "silly_plane",
 
     "altitude": 0.0,
-    "forward_airspeed": 0.0,
+    "forward_airspeed": 40.0,
 
-    "motor_Kv": 50,
+    "motor_Kv": 55,
     "motor_volts": 100.0,
-    "motor_no_load_current": 7.5,
-    "motor_winding_resistance": 40e-3,
+    "motor_no_load_current": 7,
+    "motor_winding_resistance": 0.35e-3,
 
-    "blades": 3,
-    "thrust": 3.0,
+    "blades": 2,
+    "thrust": 30.0,
 
     "radius": 0.6,
     "tip_chord": 0.1,
