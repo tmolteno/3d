@@ -42,7 +42,7 @@ class Prop:
         f.set_trailing_edge(self.param.trailing_edge/1000.0)
         
         c_max = f.get_max_chord(x_limit, y_limit, twist)
-        print("Max Chord {}".format(c_max))
+        print(("Max Chord {}".format(c_max)))
         f.modify_chord(c_max)
         
         be = BladeElement(r, dr=self.radial_resolution, foil=f, twist=twist, \
@@ -467,7 +467,7 @@ class Prop:
         for be in self.blade_elements:
             be.set_chord(chord_poly(be.r))
             be.set_twist(twist_angle_poly(be.r))
-            print be
+            print(be)
 
             
         torque, thrust = self.get_forces(optimum_rpm)
@@ -532,11 +532,11 @@ if __name__ == "__main__":
     power = m.get_Pmax(param.motor_volts)
     
     print("\nPROPLY: Automatic propeller Design\n\n")
-    print("Optimum Motor Torque {:5.3f} Nm at {:5.1f} RPM, power={:5.1f} Watts".format(optimum_torque, optimum_rpm, power))
-    print("Spanwise resolution (mm) {:4.2f}".format(resolution_m*1000))
+    print(("Optimum Motor Torque {:5.3f} Nm at {:5.1f} RPM, power={:5.1f} Watts".format(optimum_torque, optimum_rpm, power)))
+    print(("Spanwise resolution (mm) {:4.2f}".format(resolution_m*1000)))
     print(param)
     dv = optimize.dv_from_thrust(param.thrust, param.radius, param.forward_airspeed,)
-    print("Airspeed at propellers (hovering): {:4.2f} m/s".format(param.forward_airspeed + dv))
+    print(("Airspeed at propellers (hovering): {:4.2f} m/s".format(param.forward_airspeed + dv)))
     print("\n\n")
 
     if (args.bem):
@@ -544,12 +544,12 @@ if __name__ == "__main__":
         thrust = param.thrust
         goal_torque = optimum_torque*1.5
         Q, T = p.full_optimize(optimum_torque, optimum_rpm, thrust=thrust)
-        print("Total Thrust: {:5.2f}, Torque: {:5.3f}".format(T, Q))
+        print(("Total Thrust: {:5.2f}, Torque: {:5.3f}".format(T, Q)))
         if (args.auto):
             while Q > goal_torque:
                 thrust *= 0.95 * goal_torque/Q
                 Q, T =p.full_optimize(optimum_torque, optimum_rpm, thrust=thrust)
-                print("Total Thrust: {:5.2f} (N), Torque: {:5.2f} (Nm)".format(T, Q))
+                print(("Total Thrust: {:5.2f} (N), Torque: {:5.2f} (Nm)".format(T, Q)))
 
         # Print Thrust and Torque as a function of RPM.
         #print("RPM, \t\t THRUST, \t TORQUE")

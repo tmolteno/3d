@@ -153,7 +153,7 @@ def min_dv(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 
 def design_for_dv(foil_simulator, dv_goal, rpm, r, dr, u_0, B):
     C_L, C_D, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
-    print  C_L, C_D, degrees(phi)
+    print(C_L, C_D, degrees(phi))
     x0 = [phi, dv_goal, 0.002] # theta, dv, a_prime
     constraints = [
         {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
@@ -198,7 +198,7 @@ def min_all(x, goal, rpm, r, dr, u_0, B, foil_simulator):
 
 def optimize_all(foil_simulator, dv_goal, rpm, r, dr, u_0, B, maxchord):
     C_L, C_D, phi = precalc(foil_simulator, dv_goal, 0, 0, (rpm/60) * 2 * pi, r, dr, u_0, B)
-    print  C_L, C_D, degrees(phi), dv_goal
+    print(C_L, C_D, degrees(phi), dv_goal)
     x0 = [phi, dv_goal, 0.002, foil_simulator.foil.chord] # theta, dv, a_prime
     constraints = [
         {'type': 'ineq', 'fun': lambda x: x[0] - (phi-radians(8))},
@@ -241,10 +241,10 @@ def prop_design(R0 = 2.0/100, R = 10.0/100, tip_chord = 0.01, dr = 0.005, u_0 = 
             #print dv, a_prime
             #dv, a_prime = iterate(fs, dv, a_prime, theta, omega, r, dr, u_0, B)
         dv, a_prime, err = bem_iterate(fs, 5.0, theta, rpm, r, dr, u_0, B)
-        print dv, a_prime, err
+        print(dv, a_prime, err)
         x, fun = design_for_dv(foil_simulator=fs, th_guess=0, dv_guess=5, a_prime_guess=0.01, dv_goal=5.0,  rpm = rpm, B = B, r = r, dr=dr, u_0 = u_0)
         theta, dv, a_prime = x
-        print("r={}, theta={}, dv={}, a_prime={} \t:err={} ".format(r*100, degrees(theta), dv, a_prime, fun))
+        print(("r={}, theta={}, dv={}, a_prime={} \t:err={} ".format(r*100, degrees(theta), dv, a_prime, fun)))
 
 if __name__=="__main__":
     prop_design()

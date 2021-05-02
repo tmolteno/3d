@@ -14,7 +14,7 @@ script out there. (I've seen a good MATLAB implementation, but it still relied
 on files for output, and was not interactive.)
 """
 
-from __future__ import division
+
 import subprocess as subp
 import numpy as np
 import os.path
@@ -25,7 +25,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 
 
 '''
@@ -185,7 +185,7 @@ def get_polars(airfoil, alpha, Re, Mach=None,
                             polar[label].append(value)
             p.terminate()
         except KeyboardInterrupt:
-            print 'control-c pressed'
+            print('control-c pressed')
             p.terminate()
             raise Exception("Simulation Terminated by user")
         else:
@@ -338,6 +338,6 @@ import foil
 
 if __name__ == "__main__":
     polar = get_polar("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
-    print polar
+    print(polar)
     polars = get_polars("NACA 2215", np.arange(-30,30,3), 5E4, Mach=.06, gen_naca=True, show_seconds=20)
-    print polars['CL']
+    print(polars['CL'])

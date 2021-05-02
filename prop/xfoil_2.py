@@ -14,7 +14,7 @@ script out there. (I've seen a good MATLAB implementation, but it still relied
 on files for output, and was not interactive.)
 """
 
-from __future__ import division
+
 import subprocess as subp
 import numpy as np
 import os.path
@@ -22,7 +22,7 @@ import re
 import time
 
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 
 
 '''
@@ -49,7 +49,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
        gen_naca=False -> Generate airfoil='NACA xxxx(x)' within XFOIL
     """
     # Circumvent different current working directory problems
-    print alpha, 
+    print(alpha, end=' ') 
     path = os.path.dirname(os.path.realpath(__file__))
     xf = Xfoil(path)
 
@@ -107,7 +107,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
             else:
                 seconds = time.time() - start_time
                 if seconds > 30.0:
-                    print "Termination under way. Taking too long"
+                    print("Termination under way. Taking too long")
 
                     xf.close()
                     raise Exception('Runtime took too long')
@@ -116,7 +116,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
                 #if (re.search("CPCALC: Local speed too large.", line)):
                     #print "CPCALC: Local speed too large" % a
                     #test = False
-        print("Simulation took {} seconds".format(time.time() - start_time))
+        print(("Simulation took {} seconds".format(time.time() - start_time)))
         # List polar and send recognizable end marker
         xf.cmd("PLIS\nENDD\n\n", autonewline=False)
         
@@ -125,7 +125,7 @@ def get_polar(airfoil, alpha, Re, Mach=None,
         while not re.search("ENDD", output[-1]):
             seconds = time.time() - start_time
             if seconds > 30.0:
-                print "Termination under way. Taking too long"
+                print("Termination under way. Taking too long")
 
                 xf.close()
                 raise Exception('Runtime took too long')
@@ -287,6 +287,6 @@ import foil
 
 if __name__ == "__main__":
     polar = get_polar("NACA 2215", 5, 5E4, Mach=.06, gen_naca=True, show_seconds=20)
-    print polar
+    print(polar)
     polars = get_polars("NACA 2215", np.arange(-30,30,3), 5E4, Mach=.06, gen_naca=True, show_seconds=20)
-    print polars['CL']
+    print(polars['CL'])

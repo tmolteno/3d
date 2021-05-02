@@ -13,8 +13,8 @@ yc2 = (m / ((1.0 - p)**2)) * (1.0 - 2.0*p + 2*p*x - x**2)
 pprint(simplify(yc))
 pprint(simplify(yc2))
 
-print "dyc=%s" % simplify(diff(yc,x))
-print "dyc[x > p]=(%s)[x > p]" % simplify(diff(yc2,x))
+print("dyc=%s" % simplify(diff(yc,x)))
+print("dyc[x > p]=(%s)[x > p]" % simplify(diff(yc2,x)))
 
 
 
@@ -27,7 +27,7 @@ yt = 5.0*t*(0.2969*sqrt(x) + \
 
 pprint(yt)
 
-print solve(diff(yt,x), x)
+print(solve(diff(yt,x), x))
 
 #x = 0.3
 #yt = 5.0*t*(0.2969*sqrt(x) + \
@@ -38,4 +38,4 @@ print solve(diff(yt,x), x)
 #print yt
 
 
-print solve(diff(yc,x), x)
+print(solve(diff(yc,x), x))

@@ -96,8 +96,8 @@ class XfoilSimulatedFoil(PlateSimulatedFoil):
                     try:
                         logger.info(command)
                         c.execute(command)
-                    except sqlite3.OperationalError, msg:
-                        print "Command skipped: ", msg
+                    except sqlite3.OperationalError as msg:
+                        print("Command skipped: ", msg)
             conn_global.commit()
 
         return conn_global
@@ -394,7 +394,7 @@ if __name__ == "__main__":
     cl = np.array(cl)
     cd = np.array(cd)
     z = fs.get_zero_cl_angle(v)
-    print "Zero angle %f " % np.degrees(z)
+    print("Zero angle %f " % np.degrees(z))
     
     import matplotlib.pyplot as plt
     plt.plot(np.degrees(alpha), cl, label='Cl')

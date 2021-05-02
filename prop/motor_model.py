@@ -47,15 +47,19 @@ def symbolic_stuff():
     from sympy import Symbol, pi, sqrt, pprint, solve, Eq, solveset, refine
 
 
-    Kv = Symbol('Kv', real=True, positive=True)  
+    Kv = Symbol('Kv', real=True, positive=True)  # Kv measured in RPM per volt back_emf - Kv * V
     Rm = Symbol('Rm', real=True, positive=True)  # Winding Resistance
     V = Symbol('V', real=True, positive=True)
     I = Symbol('I', real=True, positive=True) # Peak Current
     I0 = Symbol('I0', real=True, positive=True) # No load current
+    V0 = Symbol('V0', real=True, positive=True) # No load voltage
 
-
+    rpm2omega = pi / 30   # multiply RPM by this value to get angular frequency omega
+    
+    Kv_SI = Kv * rpm2omega  # Kv in  rad/s per volt.
+    
     # Torque Constant
-    Kq = 30 / (pi * Kv)
+    Kq = 1 / Kv_SI
 
 
     # RPM at current I
@@ -69,11 +73,11 @@ def symbolic_stuff():
     eqns = (Eq(Q, q_in))
     soln = solve(eqns, I, exclude=[I0])
     pprint(eqns)
-    print("RPM at torque Q: {}".format(RPM.subs(I, soln[0])))
+    print(("RPM at torque Q: {}".format(RPM.subs(I, soln[0]))))
     # Efficiency
 
     eta = (V - I*Rm)*(I - I0)/(V*I)
-    print("efficiency={}".format(eta))
+    print(("efficiency={}".format(eta)))
 
     # Current at Max Efficiency
 
@@ -88,18 +92,18 @@ def symbolic_stuff():
     RPMmax = Kv*( V - Imax*Rm)
 
 
-    print "Current at Max Efficiency: {}".format(Imax)
-    print "RPM at Max Efficiency    : {}".format(RPMmax)
-    print "Torque at Max Efficiency : {}".format(Qmax)
+    print("Current at Max Efficiency: {}".format(Imax))
+    print("RPM at Max Efficiency    : {}".format(RPMmax))
+    print("Torque at Max Efficiency : {}".format(Qmax))
     
     I_max = Symbol('I_max', real=True, positive=True)
     
     eqns = (Imax - I_max)
     pprint( eqns)
     IOsoln = refine(solve(eqns, I0))
-    print "No-load-current : {}".format(IOsoln)
+    print("No-load-current : {}".format(IOsoln))
     IOsoln = refine(solveset(eqns, I0))
-    print "No-load-current : {}".format(IOsoln)
+    print("No-load-current : {}".format(IOsoln))
 
 if __name__ == "__main__":
     
@@ -111,7 +115,7 @@ if __name__ == "__main__":
     #q, rpm = m.get_Qmax(v)
     import matplotlib.pyplot as plt
     plt.plot(q, e, label='Efficiency')
-    plt.plot(q, m.get_rpm(q), label='RPM')
+    #plt.plot(q, m.get_rpm(q), label='RPM')
     #plt.plot(v, q, label='Q_max')
     #plt.plot(v, rpm/1000, label='RPM')
     #plt.plot(v, m.get_Pmax(v), label='P_max')

@@ -296,8 +296,8 @@ if __name__ == "__main__":
         f = ARADFoil(chord=chord, thickness=t/chord)
         #f = ARADFoil(chord=chord, thickness=t/chord)
         f.set_trailing_edge(0.1 / 1000)
-        print f
-        print f.hash()
+        print(f)
+        print(f.hash())
         pb, pt = f.get_points(60, rotation_angle=0.0)
         plt.plot(pt[0], pt[1], '.', label='top')
         plt.plot(pb[0], pb[1], '.', label='bottom')

@@ -29,7 +29,7 @@ v = Symbol('v') # velocity of air at prop
 '''
 thrust = (Pt0**Rational(2,3))*(2*rho*A)**Rational(1,3)
 pprint(thrust)
-print thrust
+print(thrust)
 
 t2 = 2*rho*A*v**2 
 
@@ -37,4 +37,4 @@ t2 = 2*rho*A*v**2
     The Air velocity depends on the thrust.
 '''
 v = sqrt(thrust / (2*rho*A))
-print simplify(v)
+print(simplify(v))

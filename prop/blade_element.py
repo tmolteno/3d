@@ -122,5 +122,5 @@ if __name__ == "__main__":
 
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4, angle_of_attack=8.0 * np.pi / 180.0)
     f.set_trailing_edge(0.01)
-    print f.hash()
+    print(f.hash())
     f.plot()

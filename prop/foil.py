@@ -131,11 +131,11 @@ class Foil(object):
     def get_max_chord(self, x_limit, y_limit, theta):
         ''' Find the largest chord that could fit the foil into a box'''
         x0, x1, y0, y1 = self.get_bounding_box(theta)
-        print("get_bounding_box({},{},{},{},".format(x0, x1, y0, y1))
+        print(("get_bounding_box({},{},{},{},".format(x0, x1, y0, y1)))
         dy = y1 - y0
         dx = x1 - x0
         
-        print("get_max_chord({},{},{}) dx={}, dy={}".format( x_limit, y_limit, theta, dx, dy))
+        print(("get_max_chord({},{},{}) dx={}, dy={}".format( x_limit, y_limit, theta, dx, dy)))
         y_scale = y_limit/dy
         x_scale = x_limit/dx
         
@@ -252,7 +252,7 @@ if __name__ == "__main__":
     f = NACA4(chord=0.1, thickness=0.15, m=0.06, p=0.4)
     #f = Foil(chord=0.1, thickness=0.15)
     f.set_trailing_edge(0.01)
-    print f
-    print f.hash()
+    print(f)
+    print(f.hash())
     f.plot()
     

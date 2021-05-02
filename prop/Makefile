@@ -15,7 +15,7 @@ all:	bem scad
 # Build using the Blade Element Momentum method
 bem:
 	mkdir -p ${BUILDIR}
-	python prop.py --arad --bem  --n 40 --resolution ${RESOLUTION} --dir=${BUILDIR} --param='props/${TARGET}.json'
+	python3 prop.py --arad --bem  --n 40 --resolution ${RESOLUTION} --dir=${BUILDIR} --param='props/${TARGET}.json'
 	meshlabserver -i ${BUILDIR}/${TARGET}_blade.stl -o ${BUILDIR}/${TARGET}_blade.stl -s meshclean.mlx
 
 scad:	${BUILDIR}/${TARGET}.stl
