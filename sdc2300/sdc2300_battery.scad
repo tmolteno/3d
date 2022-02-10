@@ -16,10 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-$fn = 37;
-pick_length = 16;
-tip_radius = 2;
-hold_radius = 11;
+c_cell_diameter = 25.5;
+c_cell_length = 50.0;
+
+total_length = 2*c_cell_length;
 
 module b18650() {
     cylinder(d=18, h=65);
@@ -27,9 +27,34 @@ module b18650() {
 }
 
 module m8(len) {
-    cylinder(d=8, h=len);
-    translate([0,0,len]) cylinder(d=12, h=5, $fn=6);
+    cylinder(d=14.38, h=5.3, $fn=6);
+    translate([0,0,5.3]) cylinder(d=8, h=len);
 }
 
-b18650();
-translate([0,0,67]) m8(20);
+
+module sdc2300_battery() {
+    difference() {
+        cylinder(d=c_cell_diameter, h=total_length, $fn=81);
+        union () {
+            //cylinder(d=10, h=3*total_length, center=true, $fn=41);
+            cylinder(d=18, h=30, center=true, $fn=41);
+        }
+    }
+}
+
+module hollow() {
+    union () {
+        b18650();
+        translate([0,0,65]) m8(30);
+    }
+}
+
+module sdc_2300_holder() {
+    difference() {
+        sdc2300_battery();
+
+        hollow();
+    }
+}
+
+sdc_2300_holder();
