@@ -21,7 +21,7 @@ $fn = 101;
 c_cell_diameter = 25.5;
 c_cell_length = 50.0;
 
-clearance_d = 0.5;
+clearance_d = 0.75;
 
 total_length = 2*c_cell_length;
 
@@ -31,8 +31,8 @@ module b18650() {
 }
 
 module m8(len) {
-    cylinder(d=14.38*1.01, h=5.3, $fn=6);
-    translate([0,0,5.3]) cylinder(d=8, h=len);
+    cylinder(d=14.38 + 1, h=5.3, $fn=6);
+    translate([0,0,5.3]) cylinder(d=8+clearance_d, h=len);
 }
 
 
