@@ -19,15 +19,17 @@
 c_cell_diameter = 25.5;
 c_cell_length = 50.0;
 
+clearance_d = 0.5;
+
 total_length = 2*c_cell_length;
 
 module b18650() {
-    cylinder(d=18, h=65);
+    cylinder(d=18+clearance_d, h=65);
     translate([0,0,65]) cylinder(d=6, h=2);
 }
 
 module m8(len) {
-    cylinder(d=14.38, h=5.3, $fn=6);
+    cylinder(d=14.38*1.01, h=5.3, $fn=6);
     translate([0,0,5.3]) cylinder(d=8, h=len);
 }
 
@@ -36,8 +38,7 @@ module sdc2300_battery() {
     difference() {
         cylinder(d=c_cell_diameter, h=total_length, $fn=81);
         union () {
-            //cylinder(d=10, h=3*total_length, center=true, $fn=41);
-            cylinder(d=18, h=30, center=true, $fn=41);
+            cylinder(d=18+clearance_d, h=30, center=true, $fn=61);
         }
     }
 }
@@ -57,4 +58,4 @@ module sdc_2300_holder() {
     }
 }
 
-sdc_2300_holder();
+rotate([180,0,0]) sdc_2300_holder();
