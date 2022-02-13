@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+$fn = 101;
+
 c_cell_diameter = 25.5;
 c_cell_length = 50.0;
 
@@ -36,9 +38,9 @@ module m8(len) {
 
 module sdc2300_battery() {
     difference() {
-        cylinder(d=c_cell_diameter, h=total_length, $fn=81);
+        cylinder(d=c_cell_diameter, h=total_length);
         union () {
-            cylinder(d=18+clearance_d, h=30, center=true, $fn=61);
+            cylinder(d=18+clearance_d, h=30, center=true);
         }
     }
 }
