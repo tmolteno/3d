@@ -30,9 +30,11 @@ module b18650() {
     translate([0,0,65]) cylinder(d=6, h=2);
 }
 
+
+m8_head = 5.3 - 1;
 module m8(len) {
-    cylinder(d=14.38 + 1, h=5.3, $fn=6);
-    translate([0,0,5.3]) cylinder(d=8+clearance_d, h=len);
+    cylinder(d=14.38 + 1, h=m8_head, $fn=6);
+    translate([0,0,m8_head]) cylinder(d=8+clearance_d, h=len);
 }
 
 
