@@ -25,8 +25,10 @@ clearance_d = 0.75;
 
 total_length = 2*c_cell_length;
 
+b18650_diameter = 18.33 + clearance_d; // From samsung data sheet
+
 module b18650() {
-    cylinder(d=18+clearance_d, h=65);
+    cylinder(d=b18650_diameter, h=65);
     translate([0,0,65]) cylinder(d=6, h=2);
 }
 
@@ -42,7 +44,7 @@ module sdc2300_battery() {
     difference() {
         cylinder(d=c_cell_diameter, h=total_length);
         union () {
-            cylinder(d=18+clearance_d, h=30, center=true);
+            cylinder(d=b18650_diameter, h=30, center=true);
         }
     }
 }
